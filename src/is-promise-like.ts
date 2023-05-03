@@ -7,5 +7,5 @@ export function isPromiseLike<T>(v: unknown): v is Promise<T> {
 	return (
 		v instanceof Promise ||
 		(v != null && typeof v === "object" && typeof (v as Promise<T>).then === "function")
-	);
+	)
 }
