@@ -1,0 +1,18 @@
+{
+	"name": "result",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "vitest run"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"prettier": "^2.8.8",
+		"tsx": "^3.12.7",
+		"typescript": "^5.0.4",
+		"vitest": "^0.31.0"
+	}
+}
