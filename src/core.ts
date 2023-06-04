@@ -1,6 +1,6 @@
 import {CaughtNonErrorPanic, Panic, PropagationPanic} from "./panic"
 
-type Methods<TValue> = {
+export type Methods<TValue> = {
 	/**
 	 * Unwraps value or throws a special {@link PropagationPanic} that's caught by {@link capture}.
 	 * Use this method to unwrap the value and propagate potential errors up the call stack.
@@ -23,6 +23,7 @@ type Methods<TValue> = {
 export class Ok<T> implements Methods<T> {
 	public readonly ok = true
 	public readonly value: T
+
 	public readonly error?: never
 
 	public constructor(value: T) {
@@ -49,8 +50,9 @@ export class Ok<T> implements Methods<T> {
 
 export class Err implements Methods<never> {
 	public readonly ok = false
-	public readonly value?: never
 	public readonly error: Error
+
+	public readonly value?: never
 
 	public constructor(errorOrMessage: Error | string) {
 		this.error = errorOrMessage instanceof Error ? errorOrMessage : new Error(errorOrMessage)

@@ -1,41 +1,50 @@
-import {Result, ok} from "./core"
+import {Methods, Result, err, ok} from "./core"
 import {CaughtNonErrorPanic, Panic, PropagationPanic} from "./panic"
 
-type Methods<TValue> = {
-	/**
-	 * Unwraps value or throws a special {@link PropagationPanic} that's caught by {@link capture}.
-	 * Use this method to unwrap the value and propagate potential errors up the call stack.
-	 */
-	propagate: () => TValue
-	/** Unwraps value, if result is an {@link Err} throw `panic`.  */
-	expect: (panicOrMessage: Panic | string) => TValue
-	/** Unwraps the value, and throw if the result is an {@link Err}. */
-	unwrap: () => TValue
-	/** Unwraps the error, and throw if the result is an {@link Ok}. */
-	unwrapErr: () => Error
-	/** Unwraps with a default value provided. */
-	unwrapOr: <T>(defaultValue: T) => T | TValue
-	/** Unwraps with a default value provided by a function. */
-	unwrapOrElse: <T>(defaultValue: (error: Error) => T) => T | TValue
-	/** Takes an object with two functions `ok` and `err` and executes the corresponding one based on the result type. */
-	match: <O, E>({ok, err}: {ok: (value: TValue) => O; err: (error: Error) => E}) => O | E
-}
-
 /** Represents the result of an operation that can either succeed with a value or fail */
-export class ResultAsync<T> implements PromiseLike<Result<T>> {
-	constructor(private readonly promise: Promise<Result<T>>) {}
+export class ResultAsync<T> implements PromiseLike<Result<T>>, Methods<Promise<T>> {
+	public constructor(private readonly promise: Promise<Result<T>>) {}
 
-	then<A, B>(
+	public then<A, B>(
 		successCallback?: (res: Result<T>) => A | PromiseLike<A>,
 		failureCallback?: (reason: unknown) => B | PromiseLike<B>,
 	): PromiseLike<A | B> {
 		return this.promise.then(successCallback, failureCallback)
 	}
 
-	public unwrap = async (): Promise<T> => {
+	public unwrap = async () => {
 		const result = await this.promise // What happens if promise rejects?
 		return result.unwrap()
 	}
+
+	public unwrapErr = async () => {
+		const result = await this.promise
+		return result.unwrapErr()
+	}
+
+	public propagate = async () => {
+		const result = await this.promise
+		return result.propagate()
+	}
+}
+
+export class OkAsync<T> extends ResultAsync<T> {}
+
+export function okAsync<T>(value: T): OkAsync<T> {
+	return new OkAsync(Promise.resolve(ok(value)))
+}
+
+export class ErrAsync extends ResultAsync<never> {}
+
+export function errAsync(error: Error | string): ErrAsync {
+	return new ErrAsync(Promise.resolve(err(error)))
+}
+
+async function ye(): ResultAsync<string> {
+	if (Math.random() > 0.5) {
+		return okAsync("ok")
+	}
+	return errAsync("err")
 }
 
 async function main() {
@@ -45,4 +54,6 @@ async function main() {
 		const ye = bar.value
 	}
 	const baz = await foo.unwrap()
+
+	const result = await ye().propagate()
 }
