@@ -1,6 +1,6 @@
 import { CaughtNonErrorPanic, Panic, PropagationPanic } from "./panic"
 
-export type Methods<TValue> = {
+export type Methods<TValue, TError extends Error> = {
 	/**
 	 * TODO: Fix capture link
 	 * Unwraps value or throws a special {@link PropagationPanic} that's caught by {@link capture}.
@@ -12,23 +12,20 @@ export type Methods<TValue> = {
 	/** Unwraps the value, and throw if the result is an {@link Err}. */
 	unwrap: () => TValue
 	/** Unwraps the error, and throw if the result is an {@link Ok}. */
-	unwrapErr: () => Error
+	unwrapErr: () => TError
 	/** Unwraps with a default value provided. */
 	unwrapOr: <T>(defaultValue: T) => T | TValue
 	/** Unwraps with a default value provided by a function. */
-	unwrapOrElse: <T>(defaultValue: (error: Error) => T) => T | TValue
+	unwrapOrElse: <T>(defaultValue: (error: TError) => T) => T | TValue
 	/** Takes an object with two functions `ok` and `err` and executes the corresponding one based on the result type. */
-	match: <O, E>({ ok, err }: { ok: (value: TValue) => O; err: (error: Error) => E }) => O | E
+	match: <V, E>({ ok, err }: { ok: (value: TValue) => V; err: (error: TError) => E }) => V | E
 }
 
-export class Ok<T> implements Methods<T> {
+export class Ok<TValue> implements Methods<TValue, never> {
 	public readonly ok = true
-	public readonly value: T
 	public readonly error?: never
 
-	public constructor(value: T) {
-		this.value = value
-	}
+	public constructor(public readonly value: TValue) { }
 
 	public propagate = () => this.value
 
@@ -44,17 +41,15 @@ export class Ok<T> implements Methods<T> {
 
 	public unwrapOrElse = () => this.value
 
-	public match = <O, E>(m: { ok: (value: T) => O; err: (error: Error) => E }): O | E =>
+	public match = <V, E>(m: { ok: (value: TValue) => V; err: (error: never) => E }): V | E =>
 		m.ok(this.value)
 }
 
-export class Err implements Methods<never> {
+export class Err<TError extends Error> implements Methods<never, TError> {
 	public readonly ok = false
-	public readonly error: Error
 	public readonly value?: never
 
-	public constructor(errorOrMessage: Error | string) {
-		this.error = errorOrMessage instanceof Error ? errorOrMessage : new Error(errorOrMessage)
+	public constructor(public readonly error: TError) {
 	}
 
 	public propagate = () => {
@@ -76,20 +71,22 @@ export class Err implements Methods<never> {
 
 	public unwrapOr = <T>(defaultValue: T) => defaultValue
 
-	public unwrapOrElse = <T>(defaultValue: (error: Error) => T) => defaultValue(this.error)
+	public unwrapOrElse = <T>(defaultValue: (error: TError) => T) => defaultValue(this.error)
 
-	public match = <O, E>(m: { ok: (value: never) => O; err: (error: Error) => E }) => m.err(this.error)
+	public match = <V, E>(m: { ok: (value: never) => V; err: (error: TError) => E }) => m.err(this.error)
 }
 
 /** Represents the result of an operation that can either succeed with a value or fail */
-export type Result<T> = Ok<T> | Err
+export type Result<V, E extends Error = Error> = Ok<V> | Err<E>
 
-export function ok<T>(value: T): Ok<T> {
+export function ok<T>(value: T) {
 	return new Ok(value)
 }
 
-export function err(error: Error | string): Err {
-	return new Err(error)
+export function err(error: string): Err<Error>
+export function err<T extends Error>(error: T): Err<T>
+export function err(error: any) {
+	return new Err(error instanceof Error ? error : new Error(error))
 }
 
 export function handleError(error: unknown) {

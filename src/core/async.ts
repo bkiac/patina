@@ -1,109 +1,79 @@
-import { Methods, Result, err, ok } from "./sync"
+import { Methods, Ok, Result, err, ok } from "./sync"
 import { CaughtNonErrorPanic, Panic, PropagationPanic } from "./panic"
+import { ErrorType, ValueType, ValueErrorType, Fn } from "../util"
+
+export type MethodsAsync<TValue, TError extends Error> = {
+	/**
+	 * Unwraps value or throws a special {@link PropagationPanic} that's caught by {@link capture}.
+	 * Use this method to unwrap the value and propagate potential errors up the call stack.
+	 */
+	propagate: () => Promise<TValue>
+	/** Unwraps value, if result is an {@link Err} throw `panic`.  */
+	expect: (panicOrMessage: Panic | string) => Promise<TValue>
+	/** Unwraps the value, and throw if the result is an {@link Err}. */
+	unwrap: () => Promise<TValue>
+	/** Unwraps the error, and throw if the result is an {@link Ok}. */
+	unwrapErr: () => Promise<TError>
+	/** Unwraps with a default value provided. */
+	unwrapOr: <T>(defaultValue: T) => Promise<T | TValue>
+	/** Unwraps with a default value provided by a function. */
+	unwrapOrElse: <T>(defaultValue: (error: TError) => T) => Promise<T | TValue>
+	/** Takes an object with two functions `ok` and `err` and executes the corresponding one based on the result type. */
+	match: <V, E>({ ok, err }: { ok: (value: TValue) => V; err: (error: TError) => E }) => Promise<V | E>
+}
 
 /** Represents the result of an operation that can either succeed with a value or fail */
-export class ResultAsync<T> implements PromiseLike<Result<T>>, Methods<Promise<T>> {
-	public constructor(private readonly promise: Promise<Result<T>>) { }
+export class PromiseResult<TValue, TError extends Error>
+	implements PromiseLike<Result<TValue, TError>>, MethodsAsync<TValue, TError> {
+	public constructor(public readonly promise: Promise<Result<TValue, TError>>) { }
 
 	public then<A, B>(
-		successCallback?: (res: Result<T>) => A | PromiseLike<A>,
+		successCallback?: (res: Result<TValue, TError>) => A | PromiseLike<A>,
 		failureCallback?: (reason: unknown) => B | PromiseLike<B>,
 	): PromiseLike<A | B> {
+		// TODO: Make sure this never rejects, although this should not be constructed by the consumer
 		return this.promise.then(successCallback, failureCallback)
 	}
 
-	public unwrap = async () => {
-		const result = await this.promise // What happens if promise rejects?
-		return result.unwrap()
-	}
+	public propagate = async () => (await this).propagate()
 
-	public unwrapErr = async () => {
-		const result = await this.promise
-		return result.unwrapErr()
-	}
+	public expect = async (panicOrMessage: Panic | string) => (await this).expect(panicOrMessage)
 
-	public propagate = async () => {
-		const result = await this.promise
-		return result.propagate()
-	}
+	public unwrap = async () => (await this).unwrap()
+
+	public unwrapErr = async () => (await this).unwrapErr()
+
+	public unwrapOr = async <T>(defaultValue: T) => (await this).unwrapOr(defaultValue)
+
+	public unwrapOrElse = async <T>(defaultValue: (error: TError) => T) => (await this).unwrapOrElse(defaultValue)
+
+	public match = async <V, E>({ ok, err }: { ok: (value: TValue) => V; err: (error: TError) => E }) =>
+		(await this).match({ ok, err })
 }
 
-export class OkAsync<T> extends ResultAsync<T> { }
-
-export function okAsync<T>(value: T): OkAsync<T> {
-	return new OkAsync(Promise.resolve(ok(value)))
+const asyncFn = <T extends (...args: any[]) => Promise<Result<any, any>>>(fn: T) => (...args: Parameters<T>) => {
+	return new PromiseResult<ValueType<T>, ErrorType<T>>(fn(...args))
 }
 
-export class ErrAsync extends ResultAsync<never> { }
-
-export function errAsync(error: Error | string): ErrAsync {
-	return new ErrAsync(Promise.resolve(err(error)))
-}
-
-function asyncFn<I, O>(fn: (args: I) => Promise<Result<O>>): (args: I) => ResultAsync<O> {
-	return (() => { }) as any
-}
-
-// Instead of:
-// async function ye(): ResultAsync<string> {
-// 	if (Math.random() > 0.5) {
-// 		return okAsync("ok")
-// 	}
-// 	return errAsync("err")
-// }
-// You'll have to do:
-const ye = asyncFn(async (args: number): Promise<Result<string>> => {
-	if (args > 1) {
-		return ok("ok")
+const testAsyncFn = asyncFn(async (seed: number) => {
+	const rand = Math.random() + seed
+	if (rand > 0.5) {
+		return ok("hello")
 	}
-	return err("err")
+	return err("oh no")
 })
 
-interface MyPromise extends Promise<string> { }
-
-// This will never work, so I'll need to use the custom wrapper
-// This is not a big deal since to make propagation work, we'll need the custom wrapper anyway
-async function myAsyncFn(): MyPromise {
-	return "hello"
-}
-
-// Second problem is, thw wrapper does not return a native promise, would that be a problem?
-// Prisma uses their own promise, but prisma is only in Node.js; I'm not sure how thenable works in the browser
-// Composition would be safer but it would require another call to get the value out
-export class ResultAsync2<T> /* implements Methods<Promise<T>> */ {
-	public constructor(private readonly promise: Promise<Result<T>>) { }
-
-	public settle = async () => {
-		// ResultAsync is a private entity, consumers should not instantiate it themselves
-		// a Promise<Result<T>> should never reject, if it does it should be a "panic" error
-		const result = await this.promise
-		return result
-	}
-
-	public unwrap = async () => {
-		const result = await this.promise // What happens if promise rejects?
-		return result.unwrap()
-	}
-
-	public propagate = async () => {
-		const result = await this.promise
-		return result.propagate()
-	}
-}
-
-// Instead of capture, there would be an R.function or R.fn that would wrap the function and return Result or ResultAsync
+const testFn = async () => new PromiseResult(Promise.resolve(ok("hello")))
 
 async function main() {
-	const foo = new ResultAsync(Promise.resolve(ok("hello")))
+	const wtf = await testAsyncFn(1)
+
+	const ye = await testFn()
+
+	const foo = new PromiseResult(Promise.resolve(ok("hello")))
 	const bar = await foo
 	if (bar.ok) {
 		const ye = bar.value
 	}
 	const baz = await foo.unwrap()
-
-	const str1 = await ye(2).propagate()
-	const str2 = await ye(1).propagate()
-
-	const fo22 = new ResultAsync2(Promise.resolve(ok("hello")))
-	const bar2 = await fo22.settle()
 }
