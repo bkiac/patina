@@ -1,4 +1,4 @@
-import {CaughtNonErrorPanic, Panic} from "./panic"
+import {InvalidErrorPanic, Panic, UnwrapPanic} from "./panic"
 
 export type Methods<TValue, TError extends Error> = {
 	/** Unwraps value, if result is an {@link Err} throw `panic`.  */
@@ -41,7 +41,7 @@ export class Ok<TValue> implements Methods<TValue, never> {
 	}
 
 	public unwrapErr(): never {
-		throw new Panic("Cannot unwrap error from Ok result")
+		throw new UnwrapPanic(new Error("Cannot unwrapErr on an Ok"))
 	}
 
 	public match<V, E>({ok}: {ok: (value: TValue) => V; err: (error: never) => E}): V | E {
@@ -66,7 +66,7 @@ export class Err<TError extends Error> implements Methods<never, TError> {
 	}
 
 	public unwrap(): never {
-		throw new Panic(this.error)
+		throw new UnwrapPanic(this.error)
 	}
 
 	public unwrapErr() {
@@ -117,5 +117,5 @@ export function handleError(error: unknown) {
 	if (error instanceof Error) {
 		return error
 	}
-	throw new CaughtNonErrorPanic(error)
+	throw new InvalidErrorPanic(error)
 }
