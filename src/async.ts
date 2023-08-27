@@ -1,6 +1,5 @@
-import {Ok, Result} from "./core"
-import {Panic} from "./panic"
-import {ErrorType, ValueType} from "./util"
+import {type Ok, Result} from "./core"
+import {type Panic} from "./panic"
 
 export type MethodsAsync<TValue, TError extends Error> = {
 	/** Unwraps value, if result is an {@link Err} throw `panic`.  */

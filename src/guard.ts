@@ -1,5 +1,5 @@
 import {tryAsyncFn, tryFn} from "./try"
-import {AsyncFn, Fn} from "./util"
+import type {AsyncFn, Fn} from "./util"
 
 export function guard<T extends Fn>(fn: T) {
 	return function (...args: Parameters<T>) {
