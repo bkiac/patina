@@ -15,21 +15,5 @@
 		"tsx": "^3.12.7",
 		"typescript": "^5.0.4",
 		"vitest": "^0.31.0"
-	},
-	"prettier": {
-		"arrowParens": "always",
-		"bracketSameLine": false,
-		"bracketSpacing": false,
-		"endOfLine": "lf",
-		"htmlWhitespaceSensitivity": "css",
-		"jsxSingleQuote": false,
-		"printWidth": 100,
-		"proseWrap": "preserve",
-		"quoteProps": "as-needed",
-		"semi": false,
-		"singleQuote": false,
-		"tabWidth": 1,
-		"trailingComma": "all",
-		"useTabs": true
 	}
 }

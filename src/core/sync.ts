@@ -72,7 +72,8 @@ export class Err<TError extends Error> implements Methods<never, TError> {
 
 	public unwrapOrElse = <T>(defaultValue: (error: TError) => T) => defaultValue(this.error)
 
-	public match = <V, E>(m: {ok: (value: never) => V; err: (error: TError) => E}) => m.err(this.error)
+	public match = <V, E>(m: {ok: (value: never) => V; err: (error: TError) => E}) =>
+		m.err(this.error)
 }
 
 /** Represents the result of an operation that can either succeed with a value or fail */
