@@ -1,31 +1,21 @@
-import {ok, err, handleError, type Result} from "./core"
-import {isPromiseLike} from "./is-promise-like"
+import { ok, err, handleError, type Result } from "./core"
 
-async function settle<T>(promise: Promise<T>): Promise<Result<T>> {
+export function tryFn<T>(fn: () => T): Result<T> {
 	try {
-		return ok<T>(await promise)
-	} catch (error) {
-		return err(handleError(error)) as Result<T>
-	}
-}
-
-export function tryCatch<T>(promise: Promise<T>): Promise<Result<T>>
-export function tryCatch(fn: () => never): Result<never>
-export function tryCatch<T>(fn: () => Promise<T>): Promise<Result<T>>
-export function tryCatch<T>(fn: () => T): Result<T>
-export function tryCatch<T>(
-	promiseOrFn: Promise<T> | (() => Promise<T>) | (() => T),
-): Result<T> | Promise<Result<T>> {
-	try {
-		if (isPromiseLike(promiseOrFn)) {
-			return settle(promiseOrFn)
-		}
-		const value = promiseOrFn()
-		if (isPromiseLike(value)) {
-			return settle(value)
-		}
-		return ok<T>(value)
+		return ok(fn())
 	} catch (error) {
 		return err(handleError(error))
 	}
+}
+
+export async function tryPromise<T>(promise: Promise<T>): Promise<Result<T>> {
+	try {
+		return ok(await promise)
+	} catch (error) {
+		return err(handleError(error))
+	}
+}
+
+export async function tryAsyncFn<T>(fn: () => Promise<T>): Promise<Result<T>> {
+	return tryPromise(fn())
 }

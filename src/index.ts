@@ -1,4 +1,4 @@
-import { capture } from "./capture"
+import { capture } from "./fn"
 import type { Ok, Err, Result } from "./core"
 import { ok, err } from "./core"
 import { guard } from "./guard"

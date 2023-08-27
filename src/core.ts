@@ -107,10 +107,14 @@ export function ok<T>(value: T) {
 	return new Ok(value)
 }
 
-export function err(error: string): Err<Error>
-export function err<T extends Error>(error: T): Err<T>
-export function err(error: any) {
-	return new Err(error instanceof Error ? error : new Error(error))
+export function err<T extends Error | string>(error: T): T extends Error ? Err<T> : Err<Error> {
+	if (error instanceof Error) {
+		if (error instanceof Panic) {
+			throw new Panic("Cannot create an Err from a Panic")
+		}
+		return new Err(error) as T extends Error ? Err<T> : Err<Error>
+	}
+	return new Err(new Error(error)) as T extends Error ? Err<T> : Err<Error>
 }
 
 export function handleError(error: unknown) {
