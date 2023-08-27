@@ -1,11 +1,9 @@
 /**
- * Returns true if the value is a Promise.
- *
- * This is needed because Prisma returns a Promise-like object that is not an instance of Promise.
+ * Returns true if the value is `PromiseLike`.
  */
-export function isPromiseLike<T>(v: unknown): v is Promise<T> {
+export function isPromiseLike<T>(v: unknown): v is PromiseLike<T> {
 	return (
 		v instanceof Promise ||
-		(v != null && typeof v === "object" && typeof (v as Promise<T>).then === "function")
+		(v != null && typeof v === "object" && typeof (v as PromiseLike<T>).then === "function")
 	)
 }
