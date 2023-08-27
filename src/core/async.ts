@@ -1,9 +1,9 @@
-import {Methods, Result, err, ok} from "./core"
-import {CaughtNonErrorPanic, Panic, PropagationPanic} from "./panic"
+import { Methods, Result, err, ok } from "./sync"
+import { CaughtNonErrorPanic, Panic, PropagationPanic } from "./panic"
 
 /** Represents the result of an operation that can either succeed with a value or fail */
 export class ResultAsync<T> implements PromiseLike<Result<T>>, Methods<Promise<T>> {
-	public constructor(private readonly promise: Promise<Result<T>>) {}
+	public constructor(private readonly promise: Promise<Result<T>>) { }
 
 	public then<A, B>(
 		successCallback?: (res: Result<T>) => A | PromiseLike<A>,
@@ -28,20 +28,20 @@ export class ResultAsync<T> implements PromiseLike<Result<T>>, Methods<Promise<T
 	}
 }
 
-export class OkAsync<T> extends ResultAsync<T> {}
+export class OkAsync<T> extends ResultAsync<T> { }
 
 export function okAsync<T>(value: T): OkAsync<T> {
 	return new OkAsync(Promise.resolve(ok(value)))
 }
 
-export class ErrAsync extends ResultAsync<never> {}
+export class ErrAsync extends ResultAsync<never> { }
 
 export function errAsync(error: Error | string): ErrAsync {
 	return new ErrAsync(Promise.resolve(err(error)))
 }
 
 function asyncFn<I, O>(fn: (args: I) => Promise<Result<O>>): (args: I) => ResultAsync<O> {
-	return (() => {}) as any
+	return (() => { }) as any
 }
 
 // Instead of:
@@ -59,7 +59,7 @@ const ye = asyncFn(async (args: number): Promise<Result<string>> => {
 	return err("err")
 })
 
-interface MyPromise extends Promise<string> {}
+interface MyPromise extends Promise<string> { }
 
 // This will never work, so I'll need to use the custom wrapper
 // This is not a big deal since to make propagation work, we'll need the custom wrapper anyway
@@ -71,7 +71,7 @@ async function myAsyncFn(): MyPromise {
 // Prisma uses their own promise, but prisma is only in Node.js; I'm not sure how thenable works in the browser
 // Composition would be safer but it would require another call to get the value out
 export class ResultAsync2<T> /* implements Methods<Promise<T>> */ {
-	public constructor(private readonly promise: Promise<Result<T>>) {}
+	public constructor(private readonly promise: Promise<Result<T>>) { }
 
 	public settle = async () => {
 		// ResultAsync is a private entity, consumers should not instantiate it themselves

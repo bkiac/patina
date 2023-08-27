@@ -1,6 +1,6 @@
-import {expect, it} from "vitest"
-import {R} from "."
-import {Panic, PropagationPanic} from "./panic"
+import { expect, it } from "vitest"
+import { R } from "."
+import { Panic, PropagationPanic } from "./core"
 
 it("returns Ok result when provided function does not throw", () => {
 	const fn = () => R.ok(42)

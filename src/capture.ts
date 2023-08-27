@@ -3,8 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
 import type {Fn, AsyncFn, NeverFn} from "./util"
-import {type Result, err} from "./core"
-import {PropagationPanic, Panic, CaughtNonErrorPanic} from "./panic"
+import {type Result, err, PropagationPanic, Panic, CaughtNonErrorPanic} from "./core"
 import type {UnwrapValue} from "./util"
 import {isPromiseLike} from "./is-promise-like"
 

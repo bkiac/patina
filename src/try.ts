@@ -1,5 +1,5 @@
-import {ok, err, handleError, type Result} from "./core"
-import {isPromiseLike} from "./is-promise-like"
+import { ok, err, handleError, type Result } from "./core"
+import { isPromiseLike } from "./is-promise-like"
 
 async function settle<T>(promise: Promise<T>): Promise<Result<T>> {
 	try {
