@@ -1,4 +1,4 @@
-import { CaughtNonErrorPanic, Panic } from "./panic"
+import {CaughtNonErrorPanic, Panic} from "./panic"
 
 export type Methods<TValue, TError extends Error> = {
 	/** Unwraps value, if result is an {@link Err} throw `panic`.  */
@@ -12,7 +12,7 @@ export type Methods<TValue, TError extends Error> = {
 	/** Unwraps the error, and throw if the result is an {@link Ok}. */
 	unwrapErr(): TError
 	/** Takes an object with two functions `ok` and `err` and executes the corresponding one based on the result type. */
-	match<V, E>(args: { ok: (value: TValue) => V; err: (error: TError) => E }): V | E
+	match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}): V | E
 }
 
 export class Ok<TValue> implements Methods<TValue, never> {
@@ -44,7 +44,7 @@ export class Ok<TValue> implements Methods<TValue, never> {
 		throw new Panic("Cannot unwrap error from Ok result")
 	}
 
-	public match<V, E>({ ok }: { ok: (value: TValue) => V; err: (error: never) => E }): V | E {
+	public match<V, E>({ok}: {ok: (value: TValue) => V; err: (error: never) => E}): V | E {
 		return ok(this.value)
 	}
 }
@@ -81,7 +81,7 @@ export class Err<TError extends Error> implements Methods<never, TError> {
 		return defaultValue(this.error)
 	}
 
-	public match<V, E>({ err }: { ok: (value: never) => V; err: (error: TError) => E }) {
+	public match<V, E>({err}: {ok: (value: never) => V; err: (error: TError) => E}) {
 		return err(this.error)
 	}
 }

@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest"
-import type { Result } from "./core"
-import { R } from "."
-import { Panic, PropagationPanic } from "./panic"
+import {describe, it, expect} from "vitest"
+import type {Result} from "./core"
+import {R} from "."
+import {Panic, PropagationPanic} from "./panic"
 
 it("creates an Ok result", () => {
 	const result = R.ok(42)

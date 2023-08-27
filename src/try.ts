@@ -1,4 +1,4 @@
-import { ok, err, handleError, type Result } from "./core"
+import {ok, err, handleError, type Result} from "./core"
 
 export function tryFn<T>(fn: () => T): Result<T> {
 	try {

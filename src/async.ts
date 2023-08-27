@@ -1,6 +1,6 @@
-import { Ok, Result } from "./core"
-import { Panic } from "./panic"
-import { ErrorType, ValueType } from "./util"
+import {Ok, Result} from "./core"
+import {Panic} from "./panic"
+import {ErrorType, ValueType} from "./util"
 
 export type MethodsAsync<TValue, TError extends Error> = {
 	/** Unwraps value, if result is an {@link Err} throw `panic`.  */
@@ -14,17 +14,14 @@ export type MethodsAsync<TValue, TError extends Error> = {
 	/** Unwraps the error, and throw if the result is an {@link Ok}. */
 	unwrapErr(): Promise<TError>
 	/** Takes an object with two functions `ok` and `err` and executes the corresponding one based on the result type. */
-	match<V, E>(args: {
-		ok: (value: TValue) => V
-		err: (error: TError) => E
-	}): Promise<V | E>
+	match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}): Promise<V | E>
 }
 
 /** Represents the result of an operation that can either succeed with a value or fail */
 export class PromiseResult<TValue, TError extends Error>
 	implements PromiseLike<Result<TValue, TError>>, MethodsAsync<TValue, TError>
 {
-	public constructor(public readonly promise: Promise<Result<TValue, TError>>) { }
+	public constructor(public readonly promise: Promise<Result<TValue, TError>>) {}
 
 	public then<A, B>(
 		successCallback?: (res: Result<TValue, TError>) => A | PromiseLike<A>,
@@ -54,7 +51,7 @@ export class PromiseResult<TValue, TError extends Error>
 		return (await this).unwrapOrElse(defaultValue)
 	}
 
-	public async match<V, E>(args: { ok: (value: TValue) => V; err: (error: TError) => E }) {
+	public async match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}) {
 		return (await this).match(args)
 	}
 }

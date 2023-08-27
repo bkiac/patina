@@ -1,8 +1,8 @@
-import type { ErrorType } from "./util"
-import { type Result, err } from "./core"
-import type { ValueType } from "./util"
-import { PropagationPanic, Panic, CaughtNonErrorPanic } from "./panic"
-import { PromiseResult } from "./async"
+import type {ErrorType} from "./util"
+import {type Result, err} from "./core"
+import type {ValueType} from "./util"
+import {PropagationPanic, Panic, CaughtNonErrorPanic} from "./panic"
+import {PromiseResult} from "./async"
 
 function handleCaptureError(error: unknown) {
 	if (error instanceof PropagationPanic) {
@@ -26,7 +26,9 @@ export function fn<T extends (...args: any[]) => Result<any, any>>(fn: T) {
 }
 
 export function asyncFn<T extends (...args: any[]) => Promise<Result<any, any>>>(fn: T) {
-	return function (...args: Parameters<T>): PromiseResult<ValueType<ReturnType<T>>, ErrorType<ReturnType<T>>> {
+	return function (
+		...args: Parameters<T>
+	): PromiseResult<ValueType<ReturnType<T>>, ErrorType<ReturnType<T>>> {
 		try {
 			return new PromiseResult(fn(...args))
 		} catch (error) {
