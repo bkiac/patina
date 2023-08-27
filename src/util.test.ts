@@ -1,17 +1,19 @@
-import { test, assert, describe } from "vitest"
-import { isPromiseLike } from "./util"
+import {test, assert, describe} from "vitest"
+import {isPromiseLike} from "./util"
 
 describe("isPromiseLike", () => {
 	describe("true", () => {
 		test("native Promise", () => {
 			// eslint-disable-next-line @typescript-eslint/no-empty-function
-			assert(isPromiseLike(new Promise<string>(() => { })))
+			assert(isPromiseLike(new Promise<string>(() => {})))
 		})
 
 		test("Promise-like object", () => {
-			assert(isPromiseLike({
-				then: (onFulfill: () => void) => onFulfill(),
-			}))
+			assert(
+				isPromiseLike({
+					then: (onFulfill: () => void) => onFulfill(),
+				}),
+			)
 		})
 	})
 
@@ -27,7 +29,7 @@ describe("isPromiseLike", () => {
 		test("non-primitive", () => {
 			assert(!isPromiseLike({}))
 			assert(!isPromiseLike([]))
-			assert(!isPromiseLike(new class Test { }))
+			assert(!isPromiseLike(new (class Test {})()))
 		})
 	})
-});
+})

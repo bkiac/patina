@@ -2,10 +2,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
-import type { Fn, AsyncFn, NeverFn } from "./util"
-import { type Result, err, PropagationPanic, Panic, CaughtNonErrorPanic } from "./core"
-import type { ValueType } from "./util"
-import { isPromiseLike } from "./is-promise-like"
+import type {Fn, AsyncFn, NeverFn} from "./util"
+import {type Result, err, PropagationPanic, Panic, CaughtNonErrorPanic} from "./core"
+import type {ValueType} from "./util"
+import {isPromiseLike} from "./is-promise-like"
 
 // Unfortunately these utilities mess up the hover type help	in VSCode so I did not use them
 // type CapturedResult<T extends Fn> = Result<UnwrapValue<ReturnType<T>>>;
@@ -24,7 +24,11 @@ function handleCaptureError(error: unknown) {
 	throw new CaughtNonErrorPanic(error)
 }
 
-export function capture<T extends Fn>(fn: T): (...args: Parameters<T>) => T extends NeverFn
+export function capture<T extends Fn>(
+	fn: T,
+): (
+	...args: Parameters<T>
+) => T extends NeverFn
 	? Result<ValueType<ReturnType<T>>>
 	: T extends AsyncFn
 	? Promise<Result<ValueType<Awaited<ReturnType<T>>>>>

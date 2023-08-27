@@ -1,6 +1,6 @@
-import { Methods, Ok, Result, err, ok } from "./sync"
-import { CaughtNonErrorPanic, Panic, PropagationPanic } from "./panic"
-import { ErrorType, ValueType, ValueErrorType, Fn } from "../util"
+import {Methods, Ok, Result, err, ok} from "./sync"
+import {CaughtNonErrorPanic, Panic, PropagationPanic} from "./panic"
+import {ErrorType, ValueType, ValueErrorType, Fn} from "../util"
 
 export type MethodsAsync<TValue, TError extends Error> = {
 	/**
@@ -19,13 +19,14 @@ export type MethodsAsync<TValue, TError extends Error> = {
 	/** Unwraps with a default value provided by a function. */
 	unwrapOrElse: <T>(defaultValue: (error: TError) => T) => Promise<T | TValue>
 	/** Takes an object with two functions `ok` and `err` and executes the corresponding one based on the result type. */
-	match: <V, E>({ ok, err }: { ok: (value: TValue) => V; err: (error: TError) => E }) => Promise<V | E>
+	match: <V, E>({ok, err}: {ok: (value: TValue) => V; err: (error: TError) => E}) => Promise<V | E>
 }
 
 /** Represents the result of an operation that can either succeed with a value or fail */
 export class PromiseResult<TValue, TError extends Error>
-	implements PromiseLike<Result<TValue, TError>>, MethodsAsync<TValue, TError> {
-	public constructor(public readonly promise: Promise<Result<TValue, TError>>) { }
+	implements PromiseLike<Result<TValue, TError>>, MethodsAsync<TValue, TError>
+{
+	public constructor(public readonly promise: Promise<Result<TValue, TError>>) {}
 
 	public then<A, B>(
 		successCallback?: (res: Result<TValue, TError>) => A | PromiseLike<A>,
@@ -45,15 +46,17 @@ export class PromiseResult<TValue, TError extends Error>
 
 	public unwrapOr = async <T>(defaultValue: T) => (await this).unwrapOr(defaultValue)
 
-	public unwrapOrElse = async <T>(defaultValue: (error: TError) => T) => (await this).unwrapOrElse(defaultValue)
+	public unwrapOrElse = async <T>(defaultValue: (error: TError) => T) =>
+		(await this).unwrapOrElse(defaultValue)
 
-	public match = async <V, E>({ ok, err }: { ok: (value: TValue) => V; err: (error: TError) => E }) =>
-		(await this).match({ ok, err })
+	public match = async <V, E>({ok, err}: {ok: (value: TValue) => V; err: (error: TError) => E}) =>
+		(await this).match({ok, err})
 }
 
-const asyncFn = <T extends (...args: any[]) => Promise<Result<any, any>>>(fn: T) => (...args: Parameters<T>) => {
-	return new PromiseResult<ValueType<T>, ErrorType<T>>(fn(...args))
-}
+const asyncFn =
+	<T extends (...args: any[]) => Promise<Result<any, any>>>(fn: T) =>
+	(...args: Parameters<T>) =>
+		new PromiseResult<ValueType<T>, ErrorType<T>>(fn(...args))
 
 const testAsyncFn = asyncFn(async (seed: number) => {
 	const rand = Math.random() + seed

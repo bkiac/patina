@@ -1,4 +1,4 @@
-import { CaughtNonErrorPanic, Panic, PropagationPanic } from "./panic"
+import {CaughtNonErrorPanic, Panic, PropagationPanic} from "./panic"
 
 export type Methods<TValue, TError extends Error> = {
 	/**
@@ -18,14 +18,14 @@ export type Methods<TValue, TError extends Error> = {
 	/** Unwraps with a default value provided by a function. */
 	unwrapOrElse: <T>(defaultValue: (error: TError) => T) => T | TValue
 	/** Takes an object with two functions `ok` and `err` and executes the corresponding one based on the result type. */
-	match: <V, E>({ ok, err }: { ok: (value: TValue) => V; err: (error: TError) => E }) => V | E
+	match: <V, E>({ok, err}: {ok: (value: TValue) => V; err: (error: TError) => E}) => V | E
 }
 
 export class Ok<TValue> implements Methods<TValue, never> {
 	public readonly ok = true
 	public readonly error?: never
 
-	public constructor(public readonly value: TValue) { }
+	public constructor(public readonly value: TValue) {}
 
 	public propagate = () => this.value
 
@@ -41,7 +41,7 @@ export class Ok<TValue> implements Methods<TValue, never> {
 
 	public unwrapOrElse = () => this.value
 
-	public match = <V, E>(m: { ok: (value: TValue) => V; err: (error: never) => E }): V | E =>
+	public match = <V, E>(m: {ok: (value: TValue) => V; err: (error: never) => E}): V | E =>
 		m.ok(this.value)
 }
 
@@ -49,8 +49,7 @@ export class Err<TError extends Error> implements Methods<never, TError> {
 	public readonly ok = false
 	public readonly value?: never
 
-	public constructor(public readonly error: TError) {
-	}
+	public constructor(public readonly error: TError) {}
 
 	public propagate = () => {
 		throw new PropagationPanic(this.error)
@@ -73,7 +72,7 @@ export class Err<TError extends Error> implements Methods<never, TError> {
 
 	public unwrapOrElse = <T>(defaultValue: (error: TError) => T) => defaultValue(this.error)
 
-	public match = <V, E>(m: { ok: (value: never) => V; err: (error: TError) => E }) => m.err(this.error)
+	public match = <V, E>(m: {ok: (value: never) => V; err: (error: TError) => E}) => m.err(this.error)
 }
 
 /** Represents the result of an operation that can either succeed with a value or fail */
