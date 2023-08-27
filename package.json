@@ -5,7 +5,9 @@
 	"main": "index.js",
 	"scripts": {
 		"test": "vitest run",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"format:check": "prettier --check .",
+		"types": "tsc --noEmit"
 	},
 	"keywords": [],
 	"author": "",
