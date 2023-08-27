@@ -1,7 +1,8 @@
-import {CaughtNonErrorPanic, Panic, PropagationPanic} from "./panic"
+import { CaughtNonErrorPanic, Panic, PropagationPanic } from "./panic"
 
 export type Methods<TValue> = {
 	/**
+	 * TODO: Fix capture link
 	 * Unwraps value or throws a special {@link PropagationPanic} that's caught by {@link capture}.
 	 * Use this method to unwrap the value and propagate potential errors up the call stack.
 	 */
@@ -17,13 +18,12 @@ export type Methods<TValue> = {
 	/** Unwraps with a default value provided by a function. */
 	unwrapOrElse: <T>(defaultValue: (error: Error) => T) => T | TValue
 	/** Takes an object with two functions `ok` and `err` and executes the corresponding one based on the result type. */
-	match: <O, E>({ok, err}: {ok: (value: TValue) => O; err: (error: Error) => E}) => O | E
+	match: <O, E>({ ok, err }: { ok: (value: TValue) => O; err: (error: Error) => E }) => O | E
 }
 
 export class Ok<T> implements Methods<T> {
 	public readonly ok = true
 	public readonly value: T
-
 	public readonly error?: never
 
 	public constructor(value: T) {
@@ -44,14 +44,13 @@ export class Ok<T> implements Methods<T> {
 
 	public unwrapOrElse = () => this.value
 
-	public match = <O, E>(m: {ok: (value: T) => O; err: (error: Error) => E}): O | E =>
+	public match = <O, E>(m: { ok: (value: T) => O; err: (error: Error) => E }): O | E =>
 		m.ok(this.value)
 }
 
 export class Err implements Methods<never> {
 	public readonly ok = false
 	public readonly error: Error
-
 	public readonly value?: never
 
 	public constructor(errorOrMessage: Error | string) {
@@ -79,7 +78,7 @@ export class Err implements Methods<never> {
 
 	public unwrapOrElse = <T>(defaultValue: (error: Error) => T) => defaultValue(this.error)
 
-	public match = <O, E>(m: {ok: (value: never) => O; err: (error: Error) => E}) => m.err(this.error)
+	public match = <O, E>(m: { ok: (value: never) => O; err: (error: Error) => E }) => m.err(this.error)
 }
 
 /** Represents the result of an operation that can either succeed with a value or fail */
