@@ -1,12 +1,6 @@
-import { CaughtNonErrorPanic, Panic, PropagationPanic } from "./panic"
+import { CaughtNonErrorPanic, Panic } from "./panic"
 
 export type Methods<TValue, TError extends Error> = {
-	/**
-	 * TODO: Fix capture link
-	 * Unwraps value or throws a special {@link PropagationPanic} that's caught by {@link capture}.
-	 * Use this method to unwrap the value and propagate potential errors up the call stack.
-	 */
-	propagate(): TValue
 	/** Unwraps value, if result is an {@link Err} throw `panic`.  */
 	expect(panicOrMessage: Panic | string): TValue
 	/** Unwraps the value, and throw if the result is an {@link Err}. */
@@ -28,10 +22,6 @@ export class Ok<TValue> implements Methods<TValue, never> {
 
 	public constructor(value: TValue) {
 		this.value = value
-	}
-
-	public propagate() {
-		return this.value
 	}
 
 	public expect() {
@@ -66,10 +56,6 @@ export class Err<TError extends Error> implements Methods<never, TError> {
 
 	public constructor(error: TError) {
 		this.error = error
-	}
-
-	public propagate(): never {
-		throw new PropagationPanic(this.error)
 	}
 
 	public expect(panicOrMessage: Panic | string): never {
@@ -108,10 +94,10 @@ export function ok<T>(value: T) {
 }
 
 export function err<T extends Error | string>(error: T): T extends Error ? Err<T> : Err<Error> {
+	if (error instanceof Panic) {
+		throw new Panic("Cannot create an Err from a Panic")
+	}
 	if (error instanceof Error) {
-		if (error instanceof Panic) {
-			throw new Panic("Cannot create an Err from a Panic")
-		}
 		return new Err(error) as T extends Error ? Err<T> : Err<Error>
 	}
 	return new Err(new Error(error)) as T extends Error ? Err<T> : Err<Error>

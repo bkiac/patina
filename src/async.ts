@@ -1,13 +1,8 @@
-import { Methods, Ok, Result, err, ok } from "./core"
-import { CaughtNonErrorPanic, Panic, PropagationPanic } from "./panic"
-import { ErrorType, ValueType, ValueErrorType, Fn } from "./util"
+import { Ok, Result } from "./core"
+import { Panic } from "./panic"
+import { ErrorType, ValueType } from "./util"
 
 export type MethodsAsync<TValue, TError extends Error> = {
-	/**
-	 * Unwraps value or throws a special {@link PropagationPanic} that's caught by {@link capture}.
-	 * Use this method to unwrap the value and propagate potential errors up the call stack.
-	 */
-	propagate(): Promise<TValue>
 	/** Unwraps value, if result is an {@link Err} throw `panic`.  */
 	expect(panicOrMessage: Panic | string): Promise<TValue>
 	/** Unwraps the value, and throw if the result is an {@link Err}. */
@@ -37,10 +32,6 @@ export class PromiseResult<TValue, TError extends Error>
 	): PromiseLike<A | B> {
 		// TODO: Make sure this never rejects, although this should not be constructed by the consumer
 		return this.promise.then(successCallback, failureCallback)
-	}
-
-	public async propagate() {
-		return (await this).propagate()
 	}
 
 	public async expect(panicOrMessage: Panic | string) {
