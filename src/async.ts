@@ -55,9 +55,3 @@ export class PromiseResult<TValue, TError extends Error>
 		return (await this).match(args)
 	}
 }
-
-export function asyncFn<T extends (...args: any[]) => Promise<Result<any, any>>>(fn: T) {
-	return function (...args: Parameters<T>) {
-		return new PromiseResult<ValueType<T>, ErrorType<T>>(fn(...args))
-	}
-}
