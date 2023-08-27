@@ -42,16 +42,16 @@ export class PromiseResult<TValue, TError extends Error = Error>
 		return (await this).unwrap()
 	}
 
-	public async unwrapErr() {
-		return (await this).unwrapErr()
-	}
-
 	public async unwrapOr<T>(defaultValue: T) {
 		return (await this).unwrapOr(defaultValue)
 	}
 
 	public async unwrapOrElse<T>(defaultValue: (error: TError) => T) {
 		return (await this).unwrapOrElse(defaultValue)
+	}
+
+	public async unwrapErr() {
+		return (await this).unwrapErr()
 	}
 
 	public async match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}) {
