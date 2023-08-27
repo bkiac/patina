@@ -18,10 +18,14 @@ export type MethodsAsync<TValue, TError extends Error> = {
 }
 
 /** Represents the result of an operation that can either succeed with a value or fail */
-export class PromiseResult<TValue, TError extends Error>
+export class PromiseResult<TValue, TError extends Error = Error>
 	implements PromiseLike<Result<TValue, TError>>, MethodsAsync<TValue, TError>
 {
-	public constructor(public readonly promise: Promise<Result<TValue, TError>>) {}
+	public readonly promise: Promise<Result<TValue, TError>>
+
+	public constructor(promise: Promise<Result<TValue, TError>>) {
+		this.promise = promise
+	}
 
 	public then<A, B>(
 		successCallback?: (res: Result<TValue, TError>) => A | PromiseLike<A>,
