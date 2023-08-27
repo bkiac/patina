@@ -89,18 +89,25 @@ export class Err<TError extends Error> implements Methods<never, TError> {
 /** Represents the result of an operation that can either succeed with a value or fail */
 export type Result<V, E extends Error = Error> = Ok<V> | Err<E>
 
-export function ok<T>(value: T) {
+export function ok(): Ok<undefined>
+export function ok<T>(value: T): Ok<T>
+export function ok<T>(value?: T) {
 	return new Ok(value)
 }
 
-export function err<T extends Error | string>(error: T): T extends Error ? Err<T> : Err<Error> {
+export function err<T extends Error>(error: T): Err<T>
+export function err(message: string): Err<Error>
+export function err(error: unknown) {
 	if (error instanceof Panic) {
 		throw new Panic("Cannot create an Err from a Panic")
 	}
 	if (error instanceof Error) {
-		return new Err(error) as T extends Error ? Err<T> : Err<Error>
+		return new Err(error)
 	}
-	return new Err(new Error(error)) as T extends Error ? Err<T> : Err<Error>
+	if (typeof error === "string") {
+		return new Err(new Error(error))
+	}
+	return new Err(new Error("Unknown Error"))
 }
 
 export function handleError(error: unknown) {
