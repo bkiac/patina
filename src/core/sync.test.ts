@@ -1,7 +1,7 @@
-import {describe, it, expect} from "vitest"
-import type {Result} from "./sync"
-import {R} from ".."
-import {Panic, PropagationPanic} from "./panic"
+import { describe, it, expect } from "vitest"
+import type { Result } from "./sync"
+import { R } from ".."
+import { Panic, PropagationPanic } from "./panic"
 
 it("creates an Ok result", () => {
 	const result = R.ok(42)
@@ -24,8 +24,8 @@ it("creates an Err result from string", () => {
 
 describe("expect", () => {
 	it("returns the value when called on an Ok result", () => {
-		const result = R.ok(42) as Result<number>
-		const value = result.expect("Should not panic")
+		const result = R.ok(42)
+		const value = result.expect()
 		expect(value).to.equal(42)
 	})
 
