@@ -1,12 +1,12 @@
-import {capture} from "./capture"
-import type {Ok, Err, Result} from "./core"
-import {ok, err} from "./core"
-import {guard} from "./guard"
-import {tryCatch} from "./try"
-import {Panic, PropagationPanic} from "./core/panic"
+import { capture } from "./capture"
+import type { Ok, Err, Result } from "./core"
+import { ok, err } from "./core"
+import { guard } from "./guard"
+import { tryCatch } from "./try"
+import { Panic, PropagationPanic } from "./panic"
 
-export type {Ok, Err, Result}
-export {Panic, PropagationPanic}
+export type { Ok, Err, Result }
+export { Panic, PropagationPanic }
 
 export class R {
 	/** Creates an {@link Ok} result with the provided value. */

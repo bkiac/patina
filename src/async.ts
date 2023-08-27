@@ -1,6 +1,6 @@
-import { Methods, Ok, Result, err, ok } from "./sync"
+import { Methods, Ok, Result, err, ok } from "./core"
 import { CaughtNonErrorPanic, Panic, PropagationPanic } from "./panic"
-import { ErrorType, ValueType, ValueErrorType, Fn } from "../util"
+import { ErrorType, ValueType, ValueErrorType, Fn } from "./util"
 
 export type MethodsAsync<TValue, TError extends Error> = {
 	/**
