@@ -1,9 +1,9 @@
 import {expect, it} from "vitest"
-import {R} from "."
+import {R} from "../dist"
 
 it("settles a Promise to an Ok result", async () => {
 	const promise = Promise.resolve(42)
-	const result = await R.try(promise)
+	const result = await R.tryPromise(promise)
 	expect(result.ok).toEqual(true)
 	expect(result.unwrap()).toEqual(42)
 })

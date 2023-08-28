@@ -18,6 +18,7 @@
 	"author": "bkiac <bkiac@pm.me>",
 	"license": "MIT",
 	"devDependencies": {
+		"execa": "^8.0.1",
 		"husky": "^8.0.3",
 		"lint-staged": "^14.0.1",
 		"prettier": "^3.0.2",
