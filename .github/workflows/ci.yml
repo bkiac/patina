@@ -9,7 +9,7 @@ on:
             - master
 
 jobs:
-    checks:
+    check:
         runs-on: ubuntu-22.04
         steps:
             - uses: actions/checkout@v3
@@ -25,7 +25,7 @@ jobs:
             - run: pnpm run types
 
     test:
-        needs: checks
+        needs: check
         runs-on: ubuntu-22.04
         strategy:
             matrix:
@@ -39,5 +39,5 @@ jobs:
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
-            - run: pnpm install
+            - run: pnpm install --frozen-lockfile
             - run: pnpm run test
