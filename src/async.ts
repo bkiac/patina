@@ -1,18 +1,12 @@
-import {type Ok, Result} from "./core"
+import {Result} from "./core"
 import {type Panic} from "./panic"
 
 export type MethodsAsync<TValue, TError extends Error> = {
-	/** Unwraps value, if result is an {@link Err} throw `panic`.  */
 	expect(panicOrMessage: Panic | string): Promise<TValue>
-	/** Unwraps the value, and throw if the result is an {@link Err}. */
 	unwrap(): Promise<TValue>
-	/** Unwraps with a default value provided. */
 	unwrapOr<T>(defaultValue: T): Promise<T | TValue>
-	/** Unwraps with a default value provided by a function. */
 	unwrapOrElse<T>(defaultValue: (error: TError) => T): Promise<T | TValue>
-	/** Unwraps the error, and throw if the result is an {@link Ok}. */
 	unwrapErr(): Promise<TError>
-	/** Takes an object with two functions `ok` and `err` and executes the corresponding one based on the result type. */
 	match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}): Promise<V | E>
 }
 

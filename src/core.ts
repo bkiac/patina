@@ -1,17 +1,11 @@
 import {InvalidErrorPanic, Panic, UnwrapPanic} from "./panic"
 
 export type Methods<TValue, TError extends Error> = {
-	/** Unwraps value, if result is an {@link Err} throw `panic`.  */
 	expect(panicOrMessage: Panic | string): TValue
-	/** Unwraps the value, and throw if the result is an {@link Err}. */
 	unwrap(): TValue
-	/** Unwraps with a default value provided. */
 	unwrapOr<T>(defaultValue: T): T | TValue
-	/** Unwraps with a default value provided by a function. */
 	unwrapOrElse<T>(defaultValue: (error: TError) => T): T | TValue
-	/** Unwraps the error, and throw if the result is an {@link Ok}. */
 	unwrapErr(): TError
-	/** Takes an object with two functions `ok` and `err` and executes the corresponding one based on the result type. */
 	match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}): V | E
 }
 

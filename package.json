@@ -1,21 +1,28 @@
 {
 	"name": "result",
 	"version": "1.0.0",
+	"type": "module",
+	"files": [
+		"dist"
+	],
 	"description": "",
-	"main": "index.js",
+	"module": "./dist/index.js",
 	"scripts": {
-		"test": "vitest run",
+		"build": "tsup",
+		"test": "vitest",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"types": "tsc --noEmit"
 	},
 	"keywords": [],
-	"author": "",
-	"license": "ISC",
+	"author": "bkiac <bkiac@pm.me>",
+	"license": "MIT",
 	"devDependencies": {
 		"husky": "^8.0.3",
 		"lint-staged": "^14.0.1",
-		"prettier": "^2.8.8",
+		"prettier": "^3.0.2",
+		"prettier-plugin-pkg": "^0.18.0",
+		"tsup": "^7.2.0",
 		"typescript": "^5.0.4",
 		"vitest": "^0.31.0"
 	}
