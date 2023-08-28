@@ -1,25 +1,63 @@
 import {describe, it, expect} from "vitest"
-import type {Result} from "./core"
-import {R} from "."
-import {Panic, PropagationPanic} from "./panic"
+import {R} from "../dist"
 
-it("creates an Ok result", () => {
-	const result = R.ok(42)
-	expect(result.ok).toEqual(true)
-	expect(result.value).toEqual(42)
+describe("handleError", () => {
+	it("throws a Panic when given a Panic", () => {
+		const msg = "Test panic"
+		const panic = new R.Panic(msg)
+		expect(() => R.handleError(panic)).to.throw(R.Panic, msg)
+	})
+
+	it("throws a Panic when given an unknown value", () => {
+		expect(() => R.handleError(0)).to.throw(R.InvalidErrorPanic)
+		expect(() => R.handleError(true)).to.throw(R.InvalidErrorPanic)
+		expect(() => R.handleError(undefined)).to.throw(R.InvalidErrorPanic)
+		expect(() => R.handleError(null)).to.throw(R.InvalidErrorPanic)
+		expect(() => R.handleError({})).to.throw(R.InvalidErrorPanic)
+		expect(() => R.handleError([])).to.throw(R.InvalidErrorPanic)
+	})
+
+	it("returns an Error when given an Error", () => {
+		class TestError extends Error {}
+		const error = new TestError("Test error")
+		const err = R.handleError(error)
+		expect(err).to.be.instanceof(TestError)
+	})
+
+	it("returns an Error when given a string", () => {
+		const err = R.handleError("Test error")
+		expect(err).to.be.instanceof(Error)
+	})
 })
 
-it("creates an Err result", () => {
-	const error = new Error("Test error")
-	const result = R.err(error)
-	expect(result.ok).toEqual(false)
-	expect(result.error).toEqual(error)
+describe("ok", () => {
+	it("returns an Ok result", () => {
+		const result = R.ok(42)
+		expect(result.ok).toEqual(true)
+		expect(result.value).toEqual(42)
+	})
 })
 
-it("creates an Err result from string", () => {
-	const result = R.err("Test error")
-	expect(result.ok).toEqual(false)
-	expect(result.error).toEqual(new Error("Test error"))
+describe("err", () => {
+	it("throws a Panic when given a Panic", () => {
+		const msg = "Test panic"
+		const panic = new R.Panic(msg)
+		expect(() => R.err(panic)).to.throw(R.Panic, msg)
+	})
+
+	it("returns an Err when given an Error", () => {
+		const error = new Error("Test error")
+		const result = R.err(error)
+		expect(result.ok).toEqual(false)
+		expect(result.error).toEqual(error)
+	})
+
+	it("returns an Err when given a string", () => {
+		const msg = "Test error"
+		const result = R.err(msg)
+		expect(result.ok).toEqual(false)
+		expect(result.error).toEqual(new Error(msg))
+	})
 })
 
 describe("expect", () => {
