@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest"
-import {R} from "../dist"
+import {R} from "../src"
 
 describe.concurrent("handleError", () => {
 	it("returns an Error when given an Error", () => {
