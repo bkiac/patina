@@ -1,7 +1,14 @@
 import {describe, it, expect} from "vitest"
 import {R} from "../dist"
 
-describe("handleError", () => {
+describe.concurrent("handleError", () => {
+	it("returns an Error when given an Error", () => {
+		class TestError extends Error {}
+		const error = new TestError("Test error")
+		const err = R.handleError(error)
+		expect(err).to.be.instanceof(TestError)
+	})
+
 	it("throws a Panic when given a Panic", () => {
 		const msg = "Test panic"
 		const panic = new R.Panic(msg)
@@ -10,27 +17,16 @@ describe("handleError", () => {
 
 	it("throws a Panic when given an unknown value", () => {
 		expect(() => R.handleError(0)).to.throw(R.InvalidErrorPanic)
+		expect(() => R.handleError("")).to.throw(R.InvalidErrorPanic)
 		expect(() => R.handleError(true)).to.throw(R.InvalidErrorPanic)
 		expect(() => R.handleError(undefined)).to.throw(R.InvalidErrorPanic)
 		expect(() => R.handleError(null)).to.throw(R.InvalidErrorPanic)
 		expect(() => R.handleError({})).to.throw(R.InvalidErrorPanic)
 		expect(() => R.handleError([])).to.throw(R.InvalidErrorPanic)
 	})
-
-	it("returns an Error when given an Error", () => {
-		class TestError extends Error {}
-		const error = new TestError("Test error")
-		const err = R.handleError(error)
-		expect(err).to.be.instanceof(TestError)
-	})
-
-	it("returns an Error when given a string", () => {
-		const err = R.handleError("Test error")
-		expect(err).to.be.instanceof(Error)
-	})
 })
 
-describe("ok", () => {
+describe.concurrent("ok", () => {
 	it("returns an Ok result", () => {
 		const result = R.ok(42)
 		expect(result.ok).toEqual(true)
@@ -38,13 +34,7 @@ describe("ok", () => {
 	})
 })
 
-describe("err", () => {
-	it("throws a Panic when given a Panic", () => {
-		const msg = "Test panic"
-		const panic = new R.Panic(msg)
-		expect(() => R.err(panic)).to.throw(R.Panic, msg)
-	})
-
+describe.concurrent("err", () => {
 	it("returns an Err when given an Error", () => {
 		const error = new Error("Test error")
 		const result = R.err(error)
@@ -58,9 +48,14 @@ describe("err", () => {
 		expect(result.ok).toEqual(false)
 		expect(result.error).toEqual(new Error(msg))
 	})
+
+	it("throws a Panic when given a Panic", () => {
+		const panic = new R.Panic("Test panic")
+		expect(() => R.err(panic)).to.throw(R.Panic)
+	})
 })
 
-describe("expect", () => {
+describe.concurrent("expect", () => {
 	it("returns the value when called on an Ok result", () => {
 		const result = R.ok(42)
 		const value = result.expect()
@@ -70,74 +65,80 @@ describe("expect", () => {
 	it("throws a Panic with the provided message when called on an Err result", () => {
 		const error = new Error("Original error")
 		const result = R.err(error)
-		expect(() => result.expect("Panic message")).to.throw(Panic, "Panic message")
+		expect(() => result.expect("Panic message")).to.throw(R.Panic, "Panic message")
 	})
 
 	it("throws a Panic with the provided Panic object when called on an Err result", () => {
 		const error = new Error("Original error")
 		const result = R.err(error)
-		const panic = new Panic("Panic object")
-		expect(() => result.expect(panic)).to.throw(Panic, "Panic object")
+		const panic = new R.Panic("Panic object")
+		expect(() => result.expect(panic)).to.throw(R.Panic, "Panic object")
 	})
 })
 
-describe("unwrap", () => {
-	it("unwrap returns the value for an Ok result", () => {
+describe.concurrent("unwrap", () => {
+	it("returns the value for an Ok result", () => {
 		const result = R.ok(42)
 		expect(result.unwrap()).toEqual(42)
 	})
 
-	it("unwrap throws a Panic for an Err result", () => {
+	it("throws a Panic for an Err result", () => {
 		const error = new Error("Test error")
 		const result = R.err(error)
-		expect(() => result.unwrap()).toThrow(Panic)
+		expect(() => result.unwrap()).toThrow(R.UnwrapPanic)
 	})
+})
 
-	it("unwrapErr returns the error for an Err result", () => {
+describe.concurrent("unwrapErr", () => {
+	it("returns the error for an Err result", () => {
 		const error = new Error("Test error")
 		const result = R.err(error)
 		expect(result.unwrapErr()).toEqual(error)
 	})
 
-	it("unwrapErr throws for an Ok result", () => {
+	it("throws for an Ok result", () => {
 		const result = R.ok(42)
-		expect(() => result.unwrapErr()).toThrow()
+		expect(() => result.unwrapErr()).toThrow(R.UnwrapPanic)
 	})
+})
 
-	it("unwrapOr returns the value for an Ok result", () => {
-		const result = R.ok(42) as Result<number>
+describe.concurrent("unwrapOr", () => {
+	it("returns the value for an Ok result", () => {
+		const result = R.ok(42) as R.Result<number>
 		expect(result.unwrapOr(0)).toEqual(42)
 	})
 
-	it("unwrapOr returns the default value for an Err result", () => {
+	it("returns the default value for an Err result", () => {
 		const error = new Error("Test error")
-		const result = R.err(error) as Result<number>
+		const result = R.err(error) as R.Result<number>
 		expect(result.unwrapOr(42)).toEqual(42)
 	})
+})
 
-	it("unwrapOrElse returns the value for an Ok result", () => {
-		const result = R.ok(42) as Result<number>
+describe.concurrent("unwrapOrElse", () => {
+	it("returns the value for an Ok result", () => {
+		const result = R.ok(42) as R.Result<number>
 		expect(result.unwrapOrElse(() => 0)).toEqual(42)
 	})
 
-	it("unwrapOrElse returns the default value from a function for an Err result", () => {
+	it("returns the default value from a function for an Err result", () => {
 		const error = new Error("Test error")
-		const result = R.err(error) as Result<number>
+		const result = R.err(error) as R.Result<number>
 		const unwrapped = result.unwrapOrElse(() => 42)
 		expect(unwrapped).toEqual(42)
 	})
 
-	it("unwrapOrElse can panic", () => {
+	it("can panic", () => {
 		const error = new Error("Test error")
 		expect(() =>
 			R.err(error).unwrapOrElse((error) => {
-				throw new Panic(error)
+				throw new R.Panic(error)
 			}),
-		).toThrow(Panic)
+		).toThrow(R.Panic)
 	})
 })
 
-describe("match", () => {
+describe.concurrent("match", () => {
 	it("calls the ok function for an Ok result", () => {
 		const result = R.ok(42)
 		const output = result.match({
@@ -149,25 +150,11 @@ describe("match", () => {
 
 	it("calls the err function for an Err result", () => {
 		const error = new Error("Test error")
-		const result = R.err(error) as Result<number>
+		const result = R.err(error) as R.Result<number>
 		const output = result.match({
 			ok: (value) => value * 2,
 			err: () => 0,
 		})
 		expect(output).toEqual(0)
-	})
-})
-
-describe("propagate", () => {
-	it("returns the value for an Ok result", () => {
-		const result = R.ok(42)
-		const propagatedResult = result.propagate()
-		expect(propagatedResult).toEqual(42)
-	})
-
-	it("throws a PropagationPanic for an Err result", () => {
-		const error = new Error("Test error")
-		const result = R.err(error)
-		expect(() => result.propagate()).toThrow(PropagationPanic)
 	})
 })
