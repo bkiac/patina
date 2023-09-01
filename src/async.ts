@@ -24,8 +24,24 @@ export class PromiseResult<TValue, TError extends Error = Error>
 		successCallback?: (res: Result<TValue, TError>) => A | PromiseLike<A>,
 		failureCallback?: (reason: unknown) => B | PromiseLike<B>,
 	): PromiseLike<A | B> {
-		// TODO: Make sure this never rejects, although this should not be constructed by the consumer
 		return this.promise.then(successCallback, failureCallback)
+	}
+
+	public catch<B>(rejectionCallback?: (reason: unknown) => B | PromiseLike<B>): PromiseLike<B> {
+		return this.promise.then(null, rejectionCallback)
+	}
+
+	public finally(callback: () => void): PromiseLike<Result<TValue, TError>> {
+		return this.then(
+			(value) => {
+				callback()
+				return value
+			},
+			(reason) => {
+				callback()
+				throw reason
+			},
+		)
 	}
 
 	public async expect(panicOrMessage: Panic | string) {

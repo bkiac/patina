@@ -47,10 +47,8 @@ describe.concurrent("tryAsyncFn", () => {
 
 	it("wraps a throwing async function call into an Err result", async () => {
 		const error = new Error("Test error")
-		const fn = async () => {
+		const fn = async (): Promise<number> => {
 			throw error
-			// @ts-expect-error It's supposed to throw
-			return Promise.resolve(42)
 		}
 		const result = await R.tryAsyncFn(fn)
 		expect(result.ok).toEqual(false)

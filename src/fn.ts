@@ -29,10 +29,13 @@ export function asyncFn<T extends (...args: any[]) => Promise<Result<any, any>>>
 	return function (
 		...args: Parameters<T>
 	): PromiseResult<ValueType<ReturnType<T>>, ErrorType<ReturnType<T>>> {
-		try {
-			return new PromiseResult(fn(...args))
-		} catch (error) {
-			return new PromiseResult(Promise.resolve(err(handleUnwrapPanic(error))))
+		async function withUnwrapCaught() {
+			try {
+				return await fn(...args)
+			} catch (error) {
+				return err(handleUnwrapPanic(error))
+			}
 		}
+		return new PromiseResult(withUnwrapCaught())
 	}
 }
