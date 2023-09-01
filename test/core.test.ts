@@ -68,11 +68,11 @@ describe.concurrent("expect", () => {
 		expect(() => result.expect("Panic message")).to.throw(R.Panic, "Panic message")
 	})
 
-	it("throws a Panic with the provided Panic object when called on an Err result", () => {
+	it("throws a Panic with the provided Panic when called on an Err result", () => {
 		const error = new Error("Original error")
 		const result = R.err(error)
-		const panic = new R.Panic("Panic object")
-		expect(() => result.expect(panic)).to.throw(R.Panic, "Panic object")
+		const panic = new R.Panic("custom panic")
+		expect(() => result.expect(panic)).to.throw(R.Panic, "custom panic")
 	})
 })
 
