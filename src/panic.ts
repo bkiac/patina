@@ -18,14 +18,14 @@ export class Panic extends Error {
 	}
 }
 
-export class PropagationPanic extends Panic {
+export class UnwrapPanic extends Panic {
 	constructor(public originalError: Error) {
-		super("Result propagation has not been caught")
+		super("Unexpected unwrap")
 	}
 }
 
-export class CaughtNonErrorPanic extends Panic {
-	constructor(public value: unknown) {
-		super("Caught non-Error value")
+export class InvalidErrorPanic extends Panic {
+	constructor(public error: unknown) {
+		super("Invalid Error value")
 	}
 }

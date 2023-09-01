@@ -1,0 +1,44 @@
+name: CI
+
+on:
+    push:
+        branches:
+            - master
+    pull_request:
+        branches:
+            - master
+
+jobs:
+    check:
+        runs-on: ubuntu-22.04
+        steps:
+            - uses: actions/checkout@v3
+            - uses: pnpm/action-setup@v2
+              with:
+                  version: 8
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: 18
+                  cache: "pnpm"
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm run format:check
+            - run: pnpm run types
+            - run: pnpm run build
+
+    test:
+        needs: check
+        runs-on: ubuntu-22.04
+        strategy:
+            matrix:
+                node-version: [16.x, 18.x, 20.x]
+        steps:
+            - uses: actions/checkout@v3
+            - uses: pnpm/action-setup@v2
+              with:
+                  version: 8
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: "pnpm"
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm run test
