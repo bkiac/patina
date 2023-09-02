@@ -1,8 +1,8 @@
 import {InvalidErrorPanic, Panic, PropagationPanic, UnwrapPanic} from "./panic"
 
-export type Methods<TValue, TError extends Error> = {
-	try(): TValue
+interface Methods<TValue, TError extends Error> {
 	match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}): V | E
+	try(): TValue
 	expect(panicOrMessage: Panic | string): TValue
 	unwrapUnsafe(): TValue
 	unwrapOr<T>(defaultValue: T): T | TValue
@@ -13,35 +13,24 @@ export type Methods<TValue, TError extends Error> = {
 export class Ok<TValue> implements Methods<TValue, never> {
 	public readonly ok = true
 	public readonly value: TValue
-	public readonly error?: never
 
 	public constructor(value: TValue) {
 		this.value = value
-	}
-
-	public try() {
-		return this.value
 	}
 
 	public match<V, E>({ok}: {ok: (value: TValue) => V; err: (error: never) => E}): V | E {
 		return ok(this.value)
 	}
 
-	public expect() {
+	private unwrap() {
 		return this.value
 	}
 
-	public unwrapUnsafe() {
-		return this.value
-	}
-
-	public unwrapOr() {
-		return this.value
-	}
-
-	public unwrapOrElse() {
-		return this.value
-	}
+	public try = this.unwrap
+	public expect = this.unwrap
+	public unwrapUnsafe = this.unwrap
+	public unwrapOr = this.unwrap
+	public unwrapOrElse = this.unwrap
 
 	public unwrapErrUnsafe(): never {
 		throw new UnwrapPanic("Cannot unwrapErr on an Ok")
@@ -50,11 +39,18 @@ export class Ok<TValue> implements Methods<TValue, never> {
 
 export class Err<TError extends Error> implements Methods<never, TError> {
 	public readonly ok = false
-	public readonly value?: never
 	public readonly error: TError
 
 	public constructor(error: TError) {
 		this.error = error
+	}
+
+	public match<V, E>({err}: {ok: (value: never) => V; err: (error: TError) => E}) {
+		return err(this.error)
+	}
+
+	public try(): never {
+		throw new PropagationPanic(this.error)
 	}
 
 	public expect(panicOrMessage: Panic | string): never {
@@ -62,14 +58,6 @@ export class Err<TError extends Error> implements Methods<never, TError> {
 			throw panicOrMessage
 		}
 		throw new Panic(panicOrMessage)
-	}
-
-	public try(): never {
-		throw new PropagationPanic(this.error)
-	}
-
-	public match<V, E>({err}: {ok: (value: never) => V; err: (error: TError) => E}) {
-		return err(this.error)
 	}
 
 	public unwrapUnsafe(): never {

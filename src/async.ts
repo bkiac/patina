@@ -1,9 +1,9 @@
 import {Result} from "./core"
 import {type Panic} from "./panic"
 
-export type MethodsAsync<TValue, TError extends Error> = {
-	try(): Promise<TValue>
+interface MethodsAsync<TValue, TError extends Error> {
 	match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}): Promise<V | E>
+	try(): Promise<TValue>
 	expect(panicOrMessage: Panic | string): Promise<TValue>
 	unwrapUnsafe(): Promise<TValue>
 	unwrapOr<T>(defaultValue: T): Promise<T | TValue>
@@ -45,12 +45,12 @@ export class PromiseResult<TValue, TError extends Error = Error>
 		)
 	}
 
-	public async try() {
-		return (await this).try()
-	}
-
 	public async match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}) {
 		return (await this).match(args)
+	}
+
+	public async try() {
+		return (await this).try()
 	}
 
 	public async expect(panicOrMessage: Panic | string) {
