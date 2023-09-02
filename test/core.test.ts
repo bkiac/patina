@@ -7,7 +7,7 @@ import {
 	UnwrapPanic,
 	err,
 	handleError,
-	ok,
+	Ok,
 } from "../src"
 
 describe.concurrent("handleError", () => {
@@ -37,7 +37,7 @@ describe.concurrent("handleError", () => {
 
 describe.concurrent("ok", () => {
 	it("returns an Ok result", () => {
-		const result = ok(42)
+		const result = new Ok(42)
 		expect(result.ok).toEqual(true)
 		expect(result.value).toEqual(42)
 	})
@@ -66,7 +66,7 @@ describe.concurrent("err", () => {
 
 describe.concurrent("expect", () => {
 	it("returns the value when called on an Ok result", () => {
-		const result = ok(42)
+		const result = new Ok(42)
 		const value = result.expect()
 		expect(value).to.equal(42)
 	})
@@ -87,7 +87,7 @@ describe.concurrent("expect", () => {
 
 describe.concurrent("unwrapUnsafe", () => {
 	it("returns the value for an Ok result", () => {
-		const result = ok(42)
+		const result = new Ok(42)
 		expect(result.unwrapUnsafe()).toEqual(42)
 	})
 
@@ -106,14 +106,14 @@ describe.concurrent("unwrapErrUnsafe", () => {
 	})
 
 	it("throws for an Ok result", () => {
-		const result = ok(42)
+		const result = new Ok(42)
 		expect(() => result.unwrapErrUnsafe()).toThrow(UnwrapPanic)
 	})
 })
 
 describe.concurrent("unwrapOr", () => {
 	it("returns the value for an Ok result", () => {
-		const result = ok(42) as Result<number>
+		const result = new Ok(42) as Result<number>
 		expect(result.unwrapOr(0)).toEqual(42)
 	})
 
@@ -126,7 +126,7 @@ describe.concurrent("unwrapOr", () => {
 
 describe.concurrent("unwrapOrElse", () => {
 	it("returns the value for an Ok result", () => {
-		const result = ok(42) as Result<number>
+		const result = new Ok(42) as Result<number>
 		expect(result.unwrapOrElse(() => 0)).toEqual(42)
 	})
 
@@ -149,7 +149,7 @@ describe.concurrent("unwrapOrElse", () => {
 
 describe.concurrent("try", () => {
 	it("returns value for an Ok result", () => {
-		const result = ok(1)
+		const result = new Ok(1)
 		expect(result.try()).toEqual(1)
 	})
 
@@ -167,7 +167,7 @@ describe.concurrent("try", () => {
 
 describe.concurrent("match", () => {
 	it("calls the ok function for an Ok result", () => {
-		const result = ok(42)
+		const result = new Ok(42)
 		const output = result.match({
 			ok: (value) => value * 2,
 			err: () => 0,

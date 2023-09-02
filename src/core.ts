@@ -10,13 +10,15 @@ export type Methods<TValue, TError extends Error> = {
 	unwrapErrUnsafe(): TError
 }
 
-export class Ok<TValue> implements Methods<TValue, never> {
+export class Ok<TValue = undefined> implements Methods<TValue, never> {
 	public readonly ok = true
 	public readonly value: TValue
 	public readonly error?: never
 
-	public constructor(value: TValue) {
-		this.value = value
+	constructor()
+	constructor(value: TValue)
+	constructor(value?: TValue) {
+		this.value = value as TValue
 	}
 
 	public try() {
@@ -91,12 +93,6 @@ export class Err<TError extends Error> implements Methods<never, TError> {
 
 /** Represents the result of an operation that can either succeed with a value or fail */
 export type Result<V, E extends Error = Error> = Ok<V> | Err<E>
-
-export function ok(): Ok<undefined>
-export function ok<T>(value: T): Ok<T>
-export function ok<T>(value?: T) {
-	return new Ok(value)
-}
 
 export function err<T extends Error>(error: T): Err<T>
 export function err(message: string): Err<Error>

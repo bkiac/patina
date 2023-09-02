@@ -1,9 +1,9 @@
 import {PromiseResult} from "./async"
-import {ok, err, handleError, type Result} from "./core"
+import {Ok, err, handleError, type Result} from "./core"
 
 export function fromFn<T>(fn: () => T): Result<T> {
 	try {
-		return ok(fn())
+		return new Ok(fn())
 	} catch (error) {
 		return err(handleError(error))
 	}
@@ -12,7 +12,7 @@ export function fromFn<T>(fn: () => T): Result<T> {
 export function fromPromise<T>(promise: Promise<T>): PromiseResult<T> {
 	return new PromiseResult(
 		promise.then(
-			(value) => ok(value),
+			(value) => new Ok(value),
 			(error) => err(handleError(error)),
 		),
 	)

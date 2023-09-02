@@ -1,9 +1,9 @@
 import {describe, it, expect} from "vitest"
-import {err, Panic, PromiseResult, ok, UnwrapPanic} from "../src"
+import {err, Panic, PromiseResult, Ok, UnwrapPanic} from "../src"
 
 describe.concurrent("expect", () => {
 	it("returns the value when called on an Ok result", async () => {
-		const result = new PromiseResult(Promise.resolve(ok(42)))
+		const result = new PromiseResult(Promise.resolve(new Ok(42)))
 		const value = await result.expect("")
 		expect(value).to.equal(42)
 	})
@@ -24,7 +24,7 @@ describe.concurrent("expect", () => {
 
 describe.concurrent("unwrapUnsafe", () => {
 	it("returns the value for an Ok result", async () => {
-		const result = new PromiseResult(Promise.resolve(ok(42)))
+		const result = new PromiseResult(Promise.resolve(new Ok(42)))
 		await expect(result.unwrapUnsafe()).resolves.toEqual(42)
 	})
 
@@ -43,14 +43,14 @@ describe.concurrent("unwrapErrUnsafe", () => {
 	})
 
 	it("throws for an Ok result", async () => {
-		const result = new PromiseResult(Promise.resolve(ok(42)))
+		const result = new PromiseResult(Promise.resolve(new Ok(42)))
 		await expect(result.unwrapErrUnsafe()).rejects.toThrow(UnwrapPanic)
 	})
 })
 
 describe.concurrent("unwrapOr", () => {
 	it("returns the value for an Ok result", async () => {
-		const result = new PromiseResult(Promise.resolve(ok(42)))
+		const result = new PromiseResult(Promise.resolve(new Ok(42)))
 		await expect(result.unwrapOr(0)).resolves.toEqual(42)
 	})
 
@@ -63,7 +63,7 @@ describe.concurrent("unwrapOr", () => {
 
 describe.concurrent("unwrapOrElse", () => {
 	it("returns the value for an Ok result", async () => {
-		const result = new PromiseResult(Promise.resolve(ok(42)))
+		const result = new PromiseResult(Promise.resolve(new Ok(42)))
 		await expect(result.unwrapOrElse(() => 0)).resolves.toEqual(42)
 	})
 
@@ -86,7 +86,7 @@ describe.concurrent("unwrapOrElse", () => {
 
 describe.concurrent("match", () => {
 	it("calls the ok function for an Ok result", async () => {
-		const result = new PromiseResult(Promise.resolve(ok(42)))
+		const result = new PromiseResult(Promise.resolve(new Ok(42)))
 		const output = result.match({
 			ok: (value) => value * 2,
 			err: () => 0,
