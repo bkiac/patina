@@ -1,34 +1,43 @@
 import {describe, it, expect} from "vitest"
-import {PropagationPanic, R} from "../src"
+import {
+	InvalidErrorPanic,
+	Panic,
+	PropagationPanic,
+	Result,
+	UnwrapPanic,
+	err,
+	handleError,
+	ok,
+} from "../src"
 
 describe.concurrent("handleError", () => {
 	it("returns an Error when given an Error", () => {
 		class TestError extends Error {}
 		const error = new TestError("Test error")
-		const err = R.handleError(error)
+		const err = handleError(error)
 		expect(err).to.be.instanceof(TestError)
 	})
 
 	it("throws a Panic when given a Panic", () => {
 		const msg = "Test panic"
-		const panic = new R.Panic(msg)
-		expect(() => R.handleError(panic)).to.throw(R.Panic, msg)
+		const panic = new Panic(msg)
+		expect(() => handleError(panic)).to.throw(Panic, msg)
 	})
 
 	it("throws a Panic when given an unknown value", () => {
-		expect(() => R.handleError(0)).to.throw(R.InvalidErrorPanic)
-		expect(() => R.handleError("")).to.throw(R.InvalidErrorPanic)
-		expect(() => R.handleError(true)).to.throw(R.InvalidErrorPanic)
-		expect(() => R.handleError(undefined)).to.throw(R.InvalidErrorPanic)
-		expect(() => R.handleError(null)).to.throw(R.InvalidErrorPanic)
-		expect(() => R.handleError({})).to.throw(R.InvalidErrorPanic)
-		expect(() => R.handleError([])).to.throw(R.InvalidErrorPanic)
+		expect(() => handleError(0)).to.throw(InvalidErrorPanic)
+		expect(() => handleError("")).to.throw(InvalidErrorPanic)
+		expect(() => handleError(true)).to.throw(InvalidErrorPanic)
+		expect(() => handleError(undefined)).to.throw(InvalidErrorPanic)
+		expect(() => handleError(null)).to.throw(InvalidErrorPanic)
+		expect(() => handleError({})).to.throw(InvalidErrorPanic)
+		expect(() => handleError([])).to.throw(InvalidErrorPanic)
 	})
 })
 
 describe.concurrent("ok", () => {
 	it("returns an Ok result", () => {
-		const result = R.ok(42)
+		const result = ok(42)
 		expect(result.ok).toEqual(true)
 		expect(result.value).toEqual(42)
 	})
@@ -37,93 +46,93 @@ describe.concurrent("ok", () => {
 describe.concurrent("err", () => {
 	it("returns an Err when given an Error", () => {
 		const error = new Error("Test error")
-		const result = R.err(error)
+		const result = err(error)
 		expect(result.ok).toEqual(false)
 		expect(result.error).toEqual(error)
 	})
 
 	it("returns an Err when given a string", () => {
 		const msg = "Test error"
-		const result = R.err(msg)
+		const result = err(msg)
 		expect(result.ok).toEqual(false)
 		expect(result.error).toEqual(new Error(msg))
 	})
 
 	it("throws a Panic when given a Panic", () => {
-		const panic = new R.Panic("Test panic")
-		expect(() => R.err(panic)).to.throw(R.Panic)
+		const panic = new Panic("Test panic")
+		expect(() => err(panic)).to.throw(Panic)
 	})
 })
 
 describe.concurrent("expect", () => {
 	it("returns the value when called on an Ok result", () => {
-		const result = R.ok(42)
+		const result = ok(42)
 		const value = result.expect()
 		expect(value).to.equal(42)
 	})
 
 	it("throws a Panic with the provided message when called on an Err result", () => {
 		const error = new Error("Original error")
-		const result = R.err(error)
-		expect(() => result.expect("Panic message")).to.throw(R.Panic, "Panic message")
+		const result = err(error)
+		expect(() => result.expect("Panic message")).to.throw(Panic, "Panic message")
 	})
 
 	it("throws a Panic with the provided Panic when called on an Err result", () => {
 		const error = new Error("Original error")
-		const result = R.err(error)
-		const panic = new R.Panic("custom panic")
-		expect(() => result.expect(panic)).to.throw(R.Panic, "custom panic")
+		const result = err(error)
+		const panic = new Panic("custom panic")
+		expect(() => result.expect(panic)).to.throw(Panic, "custom panic")
 	})
 })
 
 describe.concurrent("unwrapUnsafe", () => {
 	it("returns the value for an Ok result", () => {
-		const result = R.ok(42)
+		const result = ok(42)
 		expect(result.unwrapUnsafe()).toEqual(42)
 	})
 
 	it("throws a Panic for an Err result", () => {
 		const error = new Error("Test error")
-		const result = R.err(error)
-		expect(() => result.unwrapUnsafe()).toThrow(R.UnwrapPanic)
+		const result = err(error)
+		expect(() => result.unwrapUnsafe()).toThrow(UnwrapPanic)
 	})
 })
 
 describe.concurrent("unwrapErrUnsafe", () => {
 	it("returns the error for an Err result", () => {
 		const error = new Error("Test error")
-		const result = R.err(error)
+		const result = err(error)
 		expect(result.unwrapErrUnsafe()).toEqual(error)
 	})
 
 	it("throws for an Ok result", () => {
-		const result = R.ok(42)
-		expect(() => result.unwrapErrUnsafe()).toThrow(R.UnwrapPanic)
+		const result = ok(42)
+		expect(() => result.unwrapErrUnsafe()).toThrow(UnwrapPanic)
 	})
 })
 
 describe.concurrent("unwrapOr", () => {
 	it("returns the value for an Ok result", () => {
-		const result = R.ok(42) as R.Result<number>
+		const result = ok(42) as Result<number>
 		expect(result.unwrapOr(0)).toEqual(42)
 	})
 
 	it("returns the default value for an Err result", () => {
 		const error = new Error("Test error")
-		const result = R.err(error) as R.Result<number>
+		const result = err(error) as Result<number>
 		expect(result.unwrapOr(42)).toEqual(42)
 	})
 })
 
 describe.concurrent("unwrapOrElse", () => {
 	it("returns the value for an Ok result", () => {
-		const result = R.ok(42) as R.Result<number>
+		const result = ok(42) as Result<number>
 		expect(result.unwrapOrElse(() => 0)).toEqual(42)
 	})
 
 	it("returns the default value from a function for an Err result", () => {
 		const error = new Error("Test error")
-		const result = R.err(error) as R.Result<number>
+		const result = err(error) as Result<number>
 		const unwrapped = result.unwrapOrElse(() => 42)
 		expect(unwrapped).toEqual(42)
 	})
@@ -131,22 +140,22 @@ describe.concurrent("unwrapOrElse", () => {
 	it("can panic", () => {
 		const error = new Error("Test error")
 		expect(() =>
-			R.err(error).unwrapOrElse((error) => {
-				throw new R.Panic(error)
+			err(error).unwrapOrElse((error) => {
+				throw new Panic(error)
 			}),
-		).toThrow(R.Panic)
+		).toThrow(Panic)
 	})
 })
 
 describe.concurrent("try", () => {
 	it("returns value for an Ok result", () => {
-		const result = R.ok(1)
+		const result = ok(1)
 		expect(result.try()).toEqual(1)
 	})
 
 	it("throws PropagationPanic for an Err result", () => {
 		const error = new Error("custom error")
-		const result = R.err(error)
+		const result = err(error)
 		expect(() => result.try()).toThrow(PropagationPanic)
 		try {
 			result.try()
@@ -158,7 +167,7 @@ describe.concurrent("try", () => {
 
 describe.concurrent("match", () => {
 	it("calls the ok function for an Ok result", () => {
-		const result = R.ok(42)
+		const result = ok(42)
 		const output = result.match({
 			ok: (value) => value * 2,
 			err: () => 0,
@@ -168,7 +177,7 @@ describe.concurrent("match", () => {
 
 	it("calls the err function for an Err result", () => {
 		const error = new Error("Test error")
-		const result = R.err(error) as R.Result<number>
+		const result = err(error) as Result<number>
 		const output = result.match({
 			ok: (value) => value * 2,
 			err: () => 0,
