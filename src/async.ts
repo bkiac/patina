@@ -2,12 +2,13 @@ import {Result} from "./core"
 import {type Panic} from "./panic"
 
 export type MethodsAsync<TValue, TError extends Error> = {
+	try(): Promise<TValue>
+	match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}): Promise<V | E>
 	expect(panicOrMessage: Panic | string): Promise<TValue>
-	unwrap(): Promise<TValue>
+	unwrapUnsafe(): Promise<TValue>
 	unwrapOr<T>(defaultValue: T): Promise<T | TValue>
 	unwrapOrElse<T>(defaultValue: (error: TError) => T): Promise<T | TValue>
-	unwrapErr(): Promise<TError>
-	match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}): Promise<V | E>
+	unwrapErrUnsafe(): Promise<TError>
 }
 
 /** Represents the result of an operation that can either succeed with a value or fail */
@@ -44,12 +45,20 @@ export class PromiseResult<TValue, TError extends Error = Error>
 		)
 	}
 
+	public async try() {
+		return (await this).try()
+	}
+
+	public async match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}) {
+		return (await this).match(args)
+	}
+
 	public async expect(panicOrMessage: Panic | string) {
 		return (await this).expect(panicOrMessage)
 	}
 
-	public async unwrap() {
-		return (await this).unwrap()
+	public async unwrapUnsafe() {
+		return (await this).unwrapUnsafe()
 	}
 
 	public async unwrapOr<T>(defaultValue: T) {
@@ -60,11 +69,7 @@ export class PromiseResult<TValue, TError extends Error = Error>
 		return (await this).unwrapOrElse(defaultValue)
 	}
 
-	public async unwrapErr() {
-		return (await this).unwrapErr()
-	}
-
-	public async match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}) {
-		return (await this).match(args)
+	public async unwrapErrUnsafe() {
+		return (await this).unwrapErrUnsafe()
 	}
 }

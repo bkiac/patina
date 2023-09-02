@@ -1,32 +1,32 @@
 import {describe, expect, it} from "vitest"
-import {R, Panic, UnwrapPanic} from "../src"
+import {R, Panic, PropagationPanic} from "../src"
 
 describe.concurrent("fn", () => {
 	it("returns Ok result when provided function does not throw", () => {
 		const fn = () => R.ok(42)
 		const wrappedFn = R.fn(fn)
 		const result = wrappedFn()
-		expect(result.unwrap()).toEqual(42)
+		expect(result.unwrapUnsafe()).toEqual(42)
 	})
 
 	it("returns Err result when provided function returns Err", () => {
 		const fn = () => R.err("rekt")
 		const wrappedFn = R.fn(fn)
 		const result = wrappedFn()
-		expect(result.unwrapErr()).toEqual(new Error("rekt"))
+		expect(result.unwrapErrUnsafe()).toEqual(new Error("rekt"))
 	})
 
-	it("returns Err result when provided function throws UnwrapPanic", () => {
+	it("returns Err result when provided function throws PropagationPanic", () => {
 		const error = new Error("Original error")
 		const fn = (): R.Result<number> => {
-			throw new UnwrapPanic(error)
+			throw new PropagationPanic(error)
 		}
 		const wrappedFn = R.fn(fn)
 		const result = wrappedFn()
-		expect(result.unwrapErr()).toEqual(error)
+		expect(result.unwrapErrUnsafe()).toEqual(error)
 	})
 
-	it("throws when provided function throws an error other than UnwrapPanic", () => {
+	it("throws when provided function throws an error other than PropagationPanic", () => {
 		const error = new Error("Other error")
 		const fn = () => {
 			throw error
@@ -41,18 +41,18 @@ describe.concurrent("asyncFn", () => {
 		const fn = async () => Promise.resolve(R.ok(42))
 		const wrappedFn = R.asyncFn(fn)
 		const result = await wrappedFn()
-		expect(result.unwrap()).toEqual(42)
+		expect(result.unwrapUnsafe()).toEqual(42)
 	})
 
-	it("returns Err result when provided async function throws UnwrapPanic", async () => {
+	it("returns Err result when provided async function throws PropagationPanic", async () => {
 		const error = new Error("Original error")
-		const fn = async () => Promise.reject(new UnwrapPanic(error))
+		const fn = async () => Promise.reject(new PropagationPanic(error))
 		const wrappedFn = R.asyncFn(fn)
 		const result = await wrappedFn()
-		expect(result.unwrapErr()).toEqual(error)
+		expect(result.unwrapErrUnsafe()).toEqual(error)
 	})
 
-	it("throws when provided async function throws an error other than UnwrapPanic", async () => {
+	it("throws when provided async function throws an error other than PropagationPanic", async () => {
 		const error = new Error("Other error")
 		const fn = async () => Promise.reject(error)
 		const wrappedFn = R.asyncFn(fn)

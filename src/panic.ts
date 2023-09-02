@@ -19,8 +19,14 @@ export class Panic extends Error {
 }
 
 export class UnwrapPanic extends Panic {
+	constructor(messageOrError: string | Error) {
+		super(messageOrError)
+	}
+}
+
+export class PropagationPanic extends Panic {
 	constructor(public originalError: Error) {
-		super("Unexpected unwrap")
+		super("Uncaught propagation error")
 	}
 }
 

@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest"
-import {R} from "../src"
+import {PropagationPanic, R} from "../src"
 
 describe.concurrent("handleError", () => {
 	it("returns an Error when given an Error", () => {
@@ -76,29 +76,29 @@ describe.concurrent("expect", () => {
 	})
 })
 
-describe.concurrent("unwrap", () => {
+describe.concurrent("unwrapUnsafe", () => {
 	it("returns the value for an Ok result", () => {
 		const result = R.ok(42)
-		expect(result.unwrap()).toEqual(42)
+		expect(result.unwrapUnsafe()).toEqual(42)
 	})
 
 	it("throws a Panic for an Err result", () => {
 		const error = new Error("Test error")
 		const result = R.err(error)
-		expect(() => result.unwrap()).toThrow(R.UnwrapPanic)
+		expect(() => result.unwrapUnsafe()).toThrow(R.UnwrapPanic)
 	})
 })
 
-describe.concurrent("unwrapErr", () => {
+describe.concurrent("unwrapErrUnsafe", () => {
 	it("returns the error for an Err result", () => {
 		const error = new Error("Test error")
 		const result = R.err(error)
-		expect(result.unwrapErr()).toEqual(error)
+		expect(result.unwrapErrUnsafe()).toEqual(error)
 	})
 
 	it("throws for an Ok result", () => {
 		const result = R.ok(42)
-		expect(() => result.unwrapErr()).toThrow(R.UnwrapPanic)
+		expect(() => result.unwrapErrUnsafe()).toThrow(R.UnwrapPanic)
 	})
 })
 
@@ -135,6 +135,24 @@ describe.concurrent("unwrapOrElse", () => {
 				throw new R.Panic(error)
 			}),
 		).toThrow(R.Panic)
+	})
+})
+
+describe.concurrent("try", () => {
+	it("returns value for an Ok result", () => {
+		const result = R.ok(1)
+		expect(result.try()).toEqual(1)
+	})
+
+	it("throws PropagationPanic for an Err result", () => {
+		const error = new Error("custom error")
+		const result = R.err(error)
+		expect(() => result.try()).toThrow(PropagationPanic)
+		try {
+			result.try()
+		} catch (err) {
+			expect((err as PropagationPanic).originalError).toEqual(error)
+		}
 	})
 })
 

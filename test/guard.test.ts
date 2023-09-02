@@ -7,7 +7,7 @@ describe.concurrent("guard", () => {
 		const wrappedFn = R.guard(fn)
 		const result = wrappedFn(40, 2)
 		expect(result.ok).toEqual(true)
-		expect(result.unwrap()).toEqual(42)
+		expect(result.unwrapUnsafe()).toEqual(42)
 	})
 
 	it("transforms a throwing function into a function that returns an Err result", () => {
@@ -18,7 +18,7 @@ describe.concurrent("guard", () => {
 		const wrappedFn = R.guard(fn)
 		const result = wrappedFn()
 		expect(result.ok).toEqual(false)
-		expect(result.unwrapErr()).toEqual(error)
+		expect(result.unwrapErrUnsafe()).toEqual(error)
 	})
 })
 
@@ -28,7 +28,7 @@ describe.concurrent("guardAsync", () => {
 		const wrappedFn = R.guardAsync(fn)
 		const result = await wrappedFn(40, 2)
 		expect(result.ok).toEqual(true)
-		expect(result.unwrap()).toEqual(42)
+		expect(result.unwrapUnsafe()).toEqual(42)
 	})
 
 	it("transforms a throwing async function into a function that returns a Promise of an Err result", async () => {
@@ -39,6 +39,6 @@ describe.concurrent("guardAsync", () => {
 		const wrappedFn = R.guardAsync(fn)
 		const result = await wrappedFn()
 		expect(result.ok).toEqual(false)
-		expect(result.unwrapErr()).toEqual(error)
+		expect(result.unwrapErrUnsafe()).toEqual(error)
 	})
 })

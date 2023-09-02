@@ -1,11 +1,11 @@
 import type {ErrorType} from "./util"
 import {type Result, err} from "./core"
 import type {ValueType} from "./util"
-import {UnwrapPanic, Panic, InvalidErrorPanic} from "./panic"
+import {Panic, InvalidErrorPanic, PropagationPanic} from "./panic"
 import {PromiseResult} from "./async"
 
-function handleUnwrapPanic(error: unknown) {
-	if (error instanceof UnwrapPanic) {
+function handlePropagationPanic(error: unknown) {
+	if (error instanceof PropagationPanic) {
 		return error.originalError
 	}
 	// Encountering any other error is a bug, we panic
@@ -20,7 +20,7 @@ export function fn<T extends (...args: any[]) => Result<any, any>>(fn: T) {
 		try {
 			return fn(...args)
 		} catch (error) {
-			return err(handleUnwrapPanic(error))
+			return err(handlePropagationPanic(error))
 		}
 	} as T
 }
@@ -33,7 +33,7 @@ export function asyncFn<T extends (...args: any[]) => Promise<Result<any, any>>>
 			try {
 				return await fn(...args)
 			} catch (error) {
-				return err(handleUnwrapPanic(error))
+				return err(handlePropagationPanic(error))
 			}
 		}
 		return new PromiseResult(withUnwrapCaught())

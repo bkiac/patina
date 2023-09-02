@@ -6,7 +6,7 @@ describe.concurrent("fromPromise", () => {
 		const promise = Promise.resolve(42)
 		const result = await R.fromPromise(promise)
 		expect(result.ok).toEqual(true)
-		expect(result.unwrap()).toEqual(42)
+		expect(result.unwrapUnsafe()).toEqual(42)
 	})
 
 	it("settles a rejected Promise to an Err result", async () => {
@@ -14,7 +14,7 @@ describe.concurrent("fromPromise", () => {
 		const promise = Promise.reject(error)
 		const result = await R.fromPromise(promise)
 		expect(result.ok).toEqual(false)
-		expect(result.unwrapErr()).toEqual(error)
+		expect(result.unwrapErrUnsafe()).toEqual(error)
 	})
 })
 
@@ -23,7 +23,7 @@ describe.concurrent("fromFn", () => {
 		const fn = () => 42
 		const result = R.fromFn(fn)
 		expect(result.ok).toEqual(true)
-		expect(result.unwrap()).toEqual(42)
+		expect(result.unwrapUnsafe()).toEqual(42)
 	})
 
 	it("wraps a throwing function call into an Err result", () => {
@@ -33,7 +33,7 @@ describe.concurrent("fromFn", () => {
 		}
 		const result = R.fromFn(fn)
 		expect(result.ok).toEqual(false)
-		expect(result.unwrapErr()).toEqual(error)
+		expect(result.unwrapErrUnsafe()).toEqual(error)
 	})
 })
 
@@ -42,7 +42,7 @@ describe.concurrent("fromAsyncFn", () => {
 		const fn = async () => Promise.resolve(42)
 		const result = await R.fromAsyncFn(fn)
 		expect(result.ok).toEqual(true)
-		expect(result.unwrap()).toEqual(42)
+		expect(result.unwrapUnsafe()).toEqual(42)
 	})
 
 	it("wraps a throwing async function call into an Err result", async () => {
@@ -52,6 +52,6 @@ describe.concurrent("fromAsyncFn", () => {
 		}
 		const result = await R.fromAsyncFn(fn)
 		expect(result.ok).toEqual(false)
-		expect(result.unwrapErr()).toEqual(error)
+		expect(result.unwrapErrUnsafe()).toEqual(error)
 	})
 })

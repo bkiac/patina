@@ -1,12 +1,13 @@
-import {InvalidErrorPanic, Panic, UnwrapPanic} from "./panic"
+import {InvalidErrorPanic, Panic, PropagationPanic, UnwrapPanic} from "./panic"
 
 export type Methods<TValue, TError extends Error> = {
+	try(): TValue
+	match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}): V | E
 	expect(panicOrMessage: Panic | string): TValue
-	unwrap(): TValue
+	unwrapUnsafe(): TValue
 	unwrapOr<T>(defaultValue: T): T | TValue
 	unwrapOrElse<T>(defaultValue: (error: TError) => T): T | TValue
-	unwrapErr(): TError
-	match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}): V | E
+	unwrapErrUnsafe(): TError
 }
 
 export class Ok<TValue> implements Methods<TValue, never> {
@@ -18,11 +19,19 @@ export class Ok<TValue> implements Methods<TValue, never> {
 		this.value = value
 	}
 
+	public try() {
+		return this.value
+	}
+
+	public match<V, E>({ok}: {ok: (value: TValue) => V; err: (error: never) => E}): V | E {
+		return ok(this.value)
+	}
+
 	public expect() {
 		return this.value
 	}
 
-	public unwrap() {
+	public unwrapUnsafe() {
 		return this.value
 	}
 
@@ -34,12 +43,8 @@ export class Ok<TValue> implements Methods<TValue, never> {
 		return this.value
 	}
 
-	public unwrapErr(): never {
-		throw new UnwrapPanic(new Error("Cannot unwrapErr on an Ok"))
-	}
-
-	public match<V, E>({ok}: {ok: (value: TValue) => V; err: (error: never) => E}): V | E {
-		return ok(this.value)
+	public unwrapErrUnsafe(): never {
+		throw new UnwrapPanic("Cannot unwrapErr on an Ok")
 	}
 }
 
@@ -59,12 +64,16 @@ export class Err<TError extends Error> implements Methods<never, TError> {
 		throw new Panic(panicOrMessage)
 	}
 
-	public unwrap(): never {
-		throw new UnwrapPanic(this.error)
+	public try(): never {
+		throw new PropagationPanic(this.error)
 	}
 
-	public unwrapErr() {
-		return this.error
+	public match<V, E>({err}: {ok: (value: never) => V; err: (error: TError) => E}) {
+		return err(this.error)
+	}
+
+	public unwrapUnsafe(): never {
+		throw new UnwrapPanic(this.error)
 	}
 
 	public unwrapOr<T>(defaultValue: T) {
@@ -75,8 +84,8 @@ export class Err<TError extends Error> implements Methods<never, TError> {
 		return defaultValue(this.error)
 	}
 
-	public match<V, E>({err}: {ok: (value: never) => V; err: (error: TError) => E}) {
-		return err(this.error)
+	public unwrapErrUnsafe() {
+		return this.error
 	}
 }
 

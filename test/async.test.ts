@@ -22,29 +22,29 @@ describe.concurrent("expect", () => {
 	})
 })
 
-describe.concurrent("unwrap", () => {
+describe.concurrent("unwrapUnsafe", () => {
 	it("returns the value for an Ok result", async () => {
 		const result = new R.PromiseResult(Promise.resolve(R.ok(42)))
-		await expect(result.unwrap()).resolves.toEqual(42)
+		await expect(result.unwrapUnsafe()).resolves.toEqual(42)
 	})
 
 	it("throws a Panic for an Err result", async () => {
 		const error = new Error("Test error")
 		const result = new R.PromiseResult(Promise.resolve(R.err(error)))
-		await expect(result.unwrap()).rejects.toThrow(R.UnwrapPanic)
+		await expect(result.unwrapUnsafe()).rejects.toThrow(R.UnwrapPanic)
 	})
 })
 
-describe.concurrent("unwrapErr", () => {
+describe.concurrent("unwrapErrUnsafe", () => {
 	it("returns the error for an Err result", async () => {
 		const error = new Error("Test error")
 		const result = new R.PromiseResult(Promise.resolve(R.err(error)))
-		await expect(result.unwrapErr()).resolves.toEqual(error)
+		await expect(result.unwrapErrUnsafe()).resolves.toEqual(error)
 	})
 
 	it("throws for an Ok result", async () => {
 		const result = new R.PromiseResult(Promise.resolve(R.ok(42)))
-		await expect(result.unwrapErr()).rejects.toThrow(R.UnwrapPanic)
+		await expect(result.unwrapErrUnsafe()).rejects.toThrow(R.UnwrapPanic)
 	})
 })
 
