@@ -11,8 +11,8 @@ interface Methods<TValue, TError extends Error> {
 }
 
 export class Ok<TValue = undefined> implements Methods<TValue, never> {
-	public readonly ok = true
-	public readonly value: TValue
+	readonly ok = true
+	readonly value: TValue
 
 	constructor()
 	constructor(value: TValue)
@@ -20,7 +20,7 @@ export class Ok<TValue = undefined> implements Methods<TValue, never> {
 		this.value = value as TValue
 	}
 
-	public match<V, E>({ok}: {ok: (value: TValue) => V; err: (error: never) => E}): V | E {
+	match<V, E>({ok}: {ok: (value: TValue) => V; err: (error: never) => E}): V | E {
 		return ok(this.value)
 	}
 
@@ -28,24 +28,24 @@ export class Ok<TValue = undefined> implements Methods<TValue, never> {
 		return this.value
 	}
 
-	public try = this.unwrap
-	public expect = this.unwrap
-	public unwrapUnsafe = this.unwrap
-	public unwrapOr = this.unwrap
-	public unwrapOrElse = this.unwrap
+	try = this.unwrap
+	expect = this.unwrap
+	unwrapUnsafe = this.unwrap
+	unwrapOr = this.unwrap
+	unwrapOrElse = this.unwrap
 
-	public unwrapErrUnsafe(): never {
+	unwrapErrUnsafe(): never {
 		throw new UnwrapPanic("Cannot unwrapErr on an Ok")
 	}
 }
 
 export class Err<TError extends Error> implements Methods<never, TError> {
-	public readonly ok = false
-	public readonly error: TError
+	readonly ok = false
+	readonly error: TError
 
-	public constructor(error: TError)
-	public constructor(message: string)
-	public constructor(errorOrMessage: unknown) {
+	constructor(error: TError)
+	constructor(message: string)
+	constructor(errorOrMessage: unknown) {
 		if (errorOrMessage instanceof Panic) {
 			throw new Panic("Cannot create an Err from a Panic")
 		}
@@ -58,34 +58,34 @@ export class Err<TError extends Error> implements Methods<never, TError> {
 		}
 	}
 
-	public match<V, E>({err}: {ok: (value: never) => V; err: (error: TError) => E}) {
+	match<V, E>({err}: {ok: (value: never) => V; err: (error: TError) => E}) {
 		return err(this.error)
 	}
 
-	public try(): never {
+	try(): never {
 		throw new PropagationPanic(this.error)
 	}
 
-	public expect(panicOrMessage: Panic | string): never {
+	expect(panicOrMessage: Panic | string): never {
 		if (panicOrMessage instanceof Panic) {
 			throw panicOrMessage
 		}
 		throw new Panic(panicOrMessage)
 	}
 
-	public unwrapUnsafe(): never {
+	unwrapUnsafe(): never {
 		throw new UnwrapPanic(this.error)
 	}
 
-	public unwrapOr<T>(defaultValue: T) {
+	unwrapOr<T>(defaultValue: T) {
 		return defaultValue
 	}
 
-	public unwrapOrElse<T>(defaultValue: (error: TError) => T) {
+	unwrapOrElse<T>(defaultValue: (error: TError) => T) {
 		return defaultValue(this.error)
 	}
 
-	public unwrapErrUnsafe() {
+	unwrapErrUnsafe() {
 		return this.error
 	}
 }
