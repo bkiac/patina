@@ -1,10 +1,10 @@
 import {describe, expect, it} from "vitest"
 import {R} from "../src"
 
-describe.concurrent("tryPromise", () => {
+describe.concurrent("fromPromise", () => {
 	it("settles a Promise to an Ok result", async () => {
 		const promise = Promise.resolve(42)
-		const result = await R.tryPromise(promise)
+		const result = await R.fromPromise(promise)
 		expect(result.ok).toEqual(true)
 		expect(result.unwrap()).toEqual(42)
 	})
@@ -12,16 +12,16 @@ describe.concurrent("tryPromise", () => {
 	it("settles a rejected Promise to an Err result", async () => {
 		const error = new Error("Test error")
 		const promise = Promise.reject(error)
-		const result = await R.tryPromise(promise)
+		const result = await R.fromPromise(promise)
 		expect(result.ok).toEqual(false)
 		expect(result.unwrapErr()).toEqual(error)
 	})
 })
 
-describe.concurrent("tryFn", () => {
+describe.concurrent("fromFn", () => {
 	it("wraps a function call into a Result object", () => {
 		const fn = () => 42
-		const result = R.tryFn(fn)
+		const result = R.fromFn(fn)
 		expect(result.ok).toEqual(true)
 		expect(result.unwrap()).toEqual(42)
 	})
@@ -31,16 +31,16 @@ describe.concurrent("tryFn", () => {
 		const fn = () => {
 			throw error
 		}
-		const result = R.tryFn(fn)
+		const result = R.fromFn(fn)
 		expect(result.ok).toEqual(false)
 		expect(result.unwrapErr()).toEqual(error)
 	})
 })
 
-describe.concurrent("tryAsyncFn", () => {
+describe.concurrent("fromAsyncFn", () => {
 	it("wraps an async function call into a Result object", async () => {
 		const fn = async () => Promise.resolve(42)
-		const result = await R.tryAsyncFn(fn)
+		const result = await R.fromAsyncFn(fn)
 		expect(result.ok).toEqual(true)
 		expect(result.unwrap()).toEqual(42)
 	})
@@ -50,7 +50,7 @@ describe.concurrent("tryAsyncFn", () => {
 		const fn = async (): Promise<number> => {
 			throw error
 		}
-		const result = await R.tryAsyncFn(fn)
+		const result = await R.fromAsyncFn(fn)
 		expect(result.ok).toEqual(false)
 		expect(result.unwrapErr()).toEqual(error)
 	})
