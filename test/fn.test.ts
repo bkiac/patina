@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest"
-import {Panic, PropagationPanic, Result, asyncFn, err, fn, Ok} from "../src"
+import {Panic, PropagationPanic, Result, asyncFn, fn, Ok, Err} from "../src"
 
 describe.concurrent("fn", () => {
 	it("returns Ok result when provided function does not throw", () => {
@@ -9,7 +9,7 @@ describe.concurrent("fn", () => {
 	})
 
 	it("returns Err result when provided function returns Err", () => {
-		const wrappedFn = fn(() => err("rekt"))
+		const wrappedFn = fn(() => new Err("rekt"))
 		const result = wrappedFn()
 		expect(result.unwrapErrUnsafe()).toEqual(new Error("rekt"))
 	})

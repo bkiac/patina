@@ -55,8 +55,19 @@ export class Err<TError extends Error> implements Methods<never, TError> {
 	public readonly value?: never
 	public readonly error: TError
 
-	public constructor(error: TError) {
-		this.error = error
+	public constructor(error: TError)
+	public constructor(message: string)
+	public constructor(errorOrMessage: unknown) {
+		if (errorOrMessage instanceof Panic) {
+			throw new Panic("Cannot create an Err from a Panic")
+		}
+		if (errorOrMessage instanceof Error) {
+			this.error = errorOrMessage as TError
+		} else if (typeof errorOrMessage === "string") {
+			this.error = new Error(errorOrMessage) as TError
+		} else {
+			this.error = new Error("Unknown Error") as TError
+		}
 	}
 
 	public expect(panicOrMessage: Panic | string): never {
@@ -93,21 +104,6 @@ export class Err<TError extends Error> implements Methods<never, TError> {
 
 /** Represents the result of an operation that can either succeed with a value or fail */
 export type Result<V, E extends Error = Error> = Ok<V> | Err<E>
-
-export function err<T extends Error>(error: T): Err<T>
-export function err(message: string): Err<Error>
-export function err(error: unknown) {
-	if (error instanceof Panic) {
-		throw new Panic("Cannot create an Err from a Panic")
-	}
-	if (error instanceof Error) {
-		return new Err(error)
-	}
-	if (typeof error === "string") {
-		return new Err(new Error(error))
-	}
-	return new Err(new Error("Unknown Error"))
-}
 
 export function handleError(error: unknown) {
 	if (error instanceof Panic) {
