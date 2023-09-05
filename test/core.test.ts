@@ -151,18 +151,18 @@ describe.concurrent("unwrapOrElse", () => {
 	})
 })
 
-describe.concurrent("try", () => {
+describe.concurrent("tap", () => {
 	it("returns value for an Ok result", () => {
 		const result = new Ok(1)
-		expect(result.try()).toEqual(1)
+		expect(result.tap()).toEqual(1)
 	})
 
 	it("throws PropagationPanic for an Err result", () => {
 		const error = new Error("custom error")
 		const result = new Err(error)
-		expect(() => result.try()).toThrow(PropagationPanic)
+		expect(() => result.tap()).toThrow(PropagationPanic)
 		try {
-			result.try()
+			result.tap()
 		} catch (err) {
 			expect((err as PropagationPanic).originalError).toEqual(error)
 		}

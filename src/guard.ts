@@ -1,14 +1,14 @@
-import {fromAsyncFn, fromFn} from "./from"
+import {tryAsyncFn, tryFn} from "./try"
 import type {AsyncFn, Fn} from "./util"
 
 export function guard<T extends Fn>(fn: T) {
 	return function (...args: Parameters<T>) {
-		return fromFn<ReturnType<T>>(() => fn(...args))
+		return tryFn<ReturnType<T>>(() => fn(...args))
 	}
 }
 
 export function guardAsync<T extends AsyncFn>(fn: T) {
 	return function (...args: Parameters<T>) {
-		return fromAsyncFn<Awaited<ReturnType<T>>>(() => fn(...args))
+		return tryAsyncFn<Awaited<ReturnType<T>>>(() => fn(...args))
 	}
 }

@@ -2,7 +2,7 @@ import {InvalidErrorPanic, Panic, PropagationPanic, UnwrapPanic} from "./panic"
 
 interface Methods<TValue, TError extends Error> {
 	match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}): V | E
-	try(): TValue
+	tap(): TValue
 	expect(panicOrMessage: Panic | string): TValue
 	unwrapUnsafe(): TValue
 	unwrapOr<T>(defaultValue: T): T | TValue
@@ -28,7 +28,7 @@ export class Ok<TValue = undefined> implements Methods<TValue, never> {
 		return this.value
 	}
 
-	try = this.unwrap
+	tap = this.unwrap
 	expect = this.unwrap
 	unwrapUnsafe = this.unwrap
 	unwrapOr = this.unwrap
@@ -62,7 +62,7 @@ export class Err<TError extends Error> implements Methods<never, TError> {
 		return err(this.error)
 	}
 
-	try(): never {
+	tap(): never {
 		throw new PropagationPanic(this.error)
 	}
 

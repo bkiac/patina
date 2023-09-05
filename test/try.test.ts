@@ -1,10 +1,10 @@
 import {describe, expect, it} from "vitest"
-import {fromAsyncFn, fromFn, fromPromise} from "../src"
+import {tryAsyncFn, tryFn, tryPromise} from "../src"
 
-describe.concurrent("fromPromise", () => {
+describe.concurrent("tryPromise", () => {
 	it("settles a Promise to an Ok result", async () => {
 		const promise = Promise.resolve(42)
-		const result = await fromPromise(promise)
+		const result = await tryPromise(promise)
 		expect(result.ok).toEqual(true)
 		expect(result.unwrapUnsafe()).toEqual(42)
 	})
@@ -12,16 +12,16 @@ describe.concurrent("fromPromise", () => {
 	it("settles a rejected Promise to an Err result", async () => {
 		const error = new Error("Test error")
 		const promise = Promise.reject(error)
-		const result = await fromPromise(promise)
+		const result = await tryPromise(promise)
 		expect(result.ok).toEqual(false)
 		expect(result.unwrapErrUnsafe()).toEqual(error)
 	})
 })
 
-describe.concurrent("fromFn", () => {
+describe.concurrent("tryFn", () => {
 	it("wraps a function call into a Result object", () => {
 		const fn = () => 42
-		const result = fromFn(fn)
+		const result = tryFn(fn)
 		expect(result.ok).toEqual(true)
 		expect(result.unwrapUnsafe()).toEqual(42)
 	})
@@ -31,16 +31,16 @@ describe.concurrent("fromFn", () => {
 		const fn = () => {
 			throw error
 		}
-		const result = fromFn(fn)
+		const result = tryFn(fn)
 		expect(result.ok).toEqual(false)
 		expect(result.unwrapErrUnsafe()).toEqual(error)
 	})
 })
 
-describe.concurrent("fromAsyncFn", () => {
+describe.concurrent("tryAsyncFn", () => {
 	it("wraps an async function call into a Result object", async () => {
 		const fn = async () => Promise.resolve(42)
-		const result = await fromAsyncFn(fn)
+		const result = await tryAsyncFn(fn)
 		expect(result.ok).toEqual(true)
 		expect(result.unwrapUnsafe()).toEqual(42)
 	})
@@ -50,7 +50,7 @@ describe.concurrent("fromAsyncFn", () => {
 		const fn = async (): Promise<number> => {
 			throw error
 		}
-		const result = await fromAsyncFn(fn)
+		const result = await tryAsyncFn(fn)
 		expect(result.ok).toEqual(false)
 		expect(result.unwrapErrUnsafe()).toEqual(error)
 	})

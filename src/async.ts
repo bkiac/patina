@@ -50,7 +50,7 @@ export class PromiseResult<TValue, TError extends Error = Error>
 	}
 
 	public async try() {
-		return (await this).try()
+		return (await this).tap()
 	}
 
 	public async expect(panicOrMessage: Panic | string) {
