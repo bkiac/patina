@@ -35,3 +35,21 @@ export class InvalidErrorPanic extends Panic {
 		super("Invalid Error value")
 	}
 }
+
+export class TodoPanic extends Panic {
+	constructor(message = "Todo") {
+		super(message)
+	}
+}
+
+export class UnreachablePanic extends Panic {
+	constructor(message = "Unreachable") {
+		super(message)
+	}
+}
+
+export class UnimplementedPanic extends Panic {
+	constructor(message = "Unimplemented") {
+		super(message)
+	}
+}
