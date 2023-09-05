@@ -1,11 +1,19 @@
 {
 	"name": "ruts",
-	"version": "0.1.1",
-	"type": "module",
+	"version": "0.1.2",
+	"description": "",
+	"license": "MIT",
+	"repository": "bkiac/ruts",
+	"keywords": [
+		"result",
+		"error",
+		"typescript"
+	],
+	"author": "bkiac <bkiac@pm.me>",
 	"files": [
 		"dist"
 	],
-	"description": "",
+	"type": "module",
 	"module": "./dist/index.js",
 	"scripts": {
 		"build": "tsup",
@@ -15,13 +23,6 @@
 		"types": "tsc --noEmit",
 		"prepublishOnly": "pnpm run build"
 	},
-	"keywords": [
-		"result",
-		"error",
-		"typescript"
-	],
-	"author": "bkiac <bkiac@pm.me>",
-	"license": "MIT",
 	"devDependencies": {
 		"husky": "^8.0.3",
 		"lint-staged": "^14.0.1",
