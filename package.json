@@ -1,6 +1,6 @@
 {
 	"name": "ruts",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"files": [
 		"dist"
@@ -12,7 +12,8 @@
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"test": "vitest",
-		"types": "tsc --noEmit"
+		"types": "tsc --noEmit",
+		"prepublishOnly": "pnpm run build"
 	},
 	"keywords": [
 		"result",
