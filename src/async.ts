@@ -15,24 +15,24 @@ interface MethodsAsync<TValue, TError extends Error> {
 export class PromiseResult<TValue, TError extends Error = Error>
 	implements PromiseLike<Result<TValue, TError>>, MethodsAsync<TValue, TError>
 {
-	public readonly promise: Promise<Result<TValue, TError>>
+	readonly promise: Promise<Result<TValue, TError>>
 
-	public constructor(promise: Promise<Result<TValue, TError>>) {
+	constructor(promise: Promise<Result<TValue, TError>>) {
 		this.promise = promise
 	}
 
-	public then<A, B>(
+	then<A, B>(
 		successCallback?: (res: Result<TValue, TError>) => A | PromiseLike<A>,
 		failureCallback?: (reason: unknown) => B | PromiseLike<B>,
 	): PromiseLike<A | B> {
 		return this.promise.then(successCallback, failureCallback)
 	}
 
-	public catch<B>(rejectionCallback?: (reason: unknown) => B | PromiseLike<B>): PromiseLike<B> {
+	catch<B>(rejectionCallback?: (reason: unknown) => B | PromiseLike<B>): PromiseLike<B> {
 		return this.promise.then(null, rejectionCallback)
 	}
 
-	public finally(callback: () => void): PromiseLike<Result<TValue, TError>> {
+	finally(callback: () => void): PromiseLike<Result<TValue, TError>> {
 		return this.then(
 			(value) => {
 				callback()
@@ -45,31 +45,31 @@ export class PromiseResult<TValue, TError extends Error = Error>
 		)
 	}
 
-	public async match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}) {
+	async match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}) {
 		return (await this).match(args)
 	}
 
-	public async tap() {
+	async tap() {
 		return (await this).tap()
 	}
 
-	public async expect(panicOrMessage: Panic | string) {
+	async expect(panicOrMessage: Panic | string) {
 		return (await this).expect(panicOrMessage)
 	}
 
-	public async unwrapUnsafe() {
+	async unwrapUnsafe() {
 		return (await this).unwrapUnsafe()
 	}
 
-	public async unwrapOr<T>(defaultValue: T) {
+	async unwrapOr<T>(defaultValue: T) {
 		return (await this).unwrapOr(defaultValue)
 	}
 
-	public async unwrapOrElse<T>(defaultValue: (error: TError) => T) {
+	async unwrapOrElse<T>(defaultValue: (error: TError) => T) {
 		return (await this).unwrapOrElse(defaultValue)
 	}
 
-	public async unwrapErrUnsafe() {
+	async unwrapErrUnsafe() {
 		return (await this).unwrapErrUnsafe()
 	}
 }
