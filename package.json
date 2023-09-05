@@ -1,6 +1,6 @@
 {
-	"name": "result",
-	"version": "1.0.0",
+	"name": "ruts",
+	"version": "0.1.0",
 	"type": "module",
 	"files": [
 		"dist"
@@ -9,16 +9,19 @@
 	"module": "./dist/index.js",
 	"scripts": {
 		"build": "tsup",
-		"test": "vitest",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
+		"test": "vitest",
 		"types": "tsc --noEmit"
 	},
-	"keywords": [],
+	"keywords": [
+		"result",
+		"error",
+		"typescript"
+	],
 	"author": "bkiac <bkiac@pm.me>",
 	"license": "MIT",
 	"devDependencies": {
-		"execa": "^8.0.1",
 		"husky": "^8.0.3",
 		"lint-staged": "^14.0.1",
 		"prettier": "^3.0.2",
