@@ -3,7 +3,7 @@ import {type Panic} from "./panic"
 
 interface MethodsAsync<TValue, TError extends Error> {
 	match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}): Promise<V | E>
-	try(): Promise<TValue>
+	tap(): Promise<TValue>
 	expect(panicOrMessage: Panic | string): Promise<TValue>
 	unwrapUnsafe(): Promise<TValue>
 	unwrapOr<T>(defaultValue: T): Promise<T | TValue>
@@ -49,7 +49,7 @@ export class PromiseResult<TValue, TError extends Error = Error>
 		return (await this).match(args)
 	}
 
-	public async try() {
+	public async tap() {
 		return (await this).tap()
 	}
 
