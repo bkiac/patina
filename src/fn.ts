@@ -1,4 +1,3 @@
-import type {ErrorType} from "./util"
 import {type Result, Err} from "./core"
 import type {ValueType} from "./util"
 import {Panic, InvalidErrorPanic, PropagationPanic} from "./panic"
@@ -15,7 +14,7 @@ function handlePropagationPanic(error: unknown) {
 	throw new InvalidErrorPanic(error)
 }
 
-export function fn<T extends (...args: any[]) => Result<any, any>>(fn: T) {
+export function fn<T extends (...args: any[]) => Result<any>>(fn: T) {
 	return function (...args) {
 		try {
 			return fn(...args)
@@ -25,10 +24,8 @@ export function fn<T extends (...args: any[]) => Result<any, any>>(fn: T) {
 	} as T
 }
 
-export function asyncFn<T extends (...args: any[]) => Promise<Result<any, any>>>(fn: T) {
-	return function (
-		...args: Parameters<T>
-	): PromiseResult<ValueType<ReturnType<T>>, ErrorType<ReturnType<T>>> {
+export function asyncFn<T extends (...args: any[]) => Promise<Result<any>>>(fn: T) {
+	return function (...args: Parameters<T>): PromiseResult<ValueType<ReturnType<T>>> {
 		async function withUnwrapCaught() {
 			try {
 				return await fn(...args)

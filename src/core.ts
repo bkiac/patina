@@ -1,26 +1,26 @@
 import {InvalidErrorPanic, Panic, PropagationPanic, UnwrapPanic} from "./panic"
 
-interface Methods<TValue, TError extends Error> {
-	match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}): V | E
-	tap(): TValue
-	expect(panicOrMessage: Panic | string): TValue
-	unwrapUnsafe(): TValue
-	unwrapOr<T>(defaultValue: T): T | TValue
-	unwrapOrElse<T>(defaultValue: (error: TError) => T): T | TValue
-	unwrapErrUnsafe(): TError
+interface Methods<T> {
+	match<A, B>(args: {ok: (value: T) => A; err: (error: Error) => B}): A | B
+	tap(): T
+	expect(panicOrMessage: Panic | string): T
+	unwrapUnsafe(): T
+	unwrapOr<U>(defaultValue: U): T | U
+	unwrapOrElse<U>(defaultValue: (error: Error) => U): T | U
+	unwrapErrUnsafe(): Error
 }
 
-export class Ok<TValue = undefined> implements Methods<TValue, never> {
+export class Ok<T = undefined> implements Methods<T> {
 	readonly ok = true
-	readonly value: TValue
+	readonly value: T
 
 	constructor()
-	constructor(value: TValue)
-	constructor(value?: TValue) {
-		this.value = value as TValue
+	constructor(value: T)
+	constructor(value?: T) {
+		this.value = value as T
 	}
 
-	match<V, E>({ok}: {ok: (value: TValue) => V; err: (error: never) => E}): V | E {
+	match<A, B>({ok}: {ok: (value: T) => A; err: (error: never) => B}) {
 		return ok(this.value)
 	}
 
@@ -39,26 +39,26 @@ export class Ok<TValue = undefined> implements Methods<TValue, never> {
 	}
 }
 
-export class Err<TError extends Error> implements Methods<never, TError> {
+export class Err implements Methods<never> {
 	readonly ok = false
-	readonly error: TError
+	readonly error: Error
 
-	constructor(error: TError)
+	constructor(error: Error)
 	constructor(message: string)
 	constructor(errorOrMessage: unknown) {
 		if (errorOrMessage instanceof Panic) {
 			throw new Panic("Cannot create an Err from a Panic")
 		}
 		if (errorOrMessage instanceof Error) {
-			this.error = errorOrMessage as TError
+			this.error = errorOrMessage
 		} else if (typeof errorOrMessage === "string") {
-			this.error = new Error(errorOrMessage) as TError
+			this.error = new Error(errorOrMessage)
 		} else {
-			this.error = new Error("Unknown Error") as TError
+			this.error = new Error("Unknown Error")
 		}
 	}
 
-	match<V, E>({err}: {ok: (value: never) => V; err: (error: TError) => E}) {
+	match<A, B>({err}: {ok: (value: never) => A; err: (error: Error) => B}) {
 		return err(this.error)
 	}
 
@@ -77,11 +77,11 @@ export class Err<TError extends Error> implements Methods<never, TError> {
 		throw new UnwrapPanic(this.error)
 	}
 
-	unwrapOr<T>(defaultValue: T) {
+	unwrapOr<U>(defaultValue: U) {
 		return defaultValue
 	}
 
-	unwrapOrElse<T>(defaultValue: (error: TError) => T) {
+	unwrapOrElse<U>(defaultValue: (error: Error) => U) {
 		return defaultValue(this.error)
 	}
 
@@ -90,8 +90,7 @@ export class Err<TError extends Error> implements Methods<never, TError> {
 	}
 }
 
-/** Represents the result of an operation that can either succeed with a value or fail */
-export type Result<V, E extends Error = Error> = Ok<V> | Err<E>
+export type Result<T> = Ok<T> | Err
 
 export function handleError(error: unknown) {
 	if (error instanceof Panic) {
