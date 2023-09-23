@@ -3,6 +3,7 @@ import {InvalidErrorPanic, Panic, PropagationPanic, UnwrapPanic} from "./panic"
 export type MatchArgs<T, E, A, B> = {ok: (value: T) => A; err: (error: E) => B}
 
 interface Methods<T, E extends Error> {
+	and<U, F extends Error>(other: Result<U, F>): Result<U, E | F>
 	match<A, B>(args: MatchArgs<T, E, A, B>): A | B
 	tap(): T
 	expect(panic: Panic | string): T
@@ -23,7 +24,11 @@ export class Ok<T = undefined> implements Methods<T, never> {
 		this.value = value as T
 	}
 
-	match<A, B>({ok}: MatchArgs<T, never, A, B>): A {
+	and<U, F extends Error>(other: Result<U, F>) {
+		return other
+	}
+
+	match<A, B>({ok}: MatchArgs<T, never, A, B>) {
 		return ok(this.value)
 	}
 
@@ -61,7 +66,11 @@ export class Err<E extends Error> implements Methods<never, E> {
 		}
 	}
 
-	match<A, B>({err}: MatchArgs<never, E, A, B>): B {
+	and<U, F extends Error>(_other: Result<U, F>) {
+		return this
+	}
+
+	match<A, B>({err}: MatchArgs<never, E, A, B>) {
 		return err(this.error)
 	}
 

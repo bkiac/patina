@@ -10,6 +10,40 @@ import {
 	Err,
 } from "../src"
 
+class CustomErrorA extends Error {
+	tag: "CustomError" = "CustomError"
+}
+
+class CustomErrorB extends Error {
+	tag: "AsdError" = "AsdError"
+}
+
+describe.concurrent("and", () => {
+	it("returns the error when Ok & Err", () => {
+		const a = new Ok(2) as Result<number, CustomErrorA>
+		const b = new Err("late error") as Result<string, CustomErrorB>
+		expect(a.and(b)).toEqual(b)
+	})
+
+	it("returns the error when Err & Ok", () => {
+		const a = new Err("early error") as Result<number, CustomErrorA>
+		const b = new Ok("foo") as Result<string, CustomErrorB>
+		expect(a.and(b)).toEqual(a)
+	})
+
+	it("returns the early error when Err & Err", () => {
+		const a = new Err("early error") as Result<number, CustomErrorA>
+		const b = new Err("late error") as Result<string, CustomErrorB>
+		expect(a.and(b)).toEqual(a)
+	})
+
+	it("returns the late value when Ok & Ok", () => {
+		const a = new Ok(2) as Result<number, CustomErrorA>
+		const b = new Ok("str") as Result<string, CustomErrorB>
+		expect(a.and(b)).toEqual(b)
+	})
+})
+
 describe.concurrent("handleError", () => {
 	it("returns an Error when given an Error", () => {
 		class TestError extends Error {}
