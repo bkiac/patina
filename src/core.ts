@@ -1,7 +1,5 @@
 import {InvalidErrorPanic, Panic, PropagationPanic, UnwrapPanic} from "./panic"
 
-export type MatchArgs<T, E, A, B> = {ok: (value: T) => A; err: (error: E) => B}
-
 interface Methods<T, E extends Error> {
 	and<U, E2 extends Error>(other: Result<U, E2>): Result<U, E | E2>
 	andThen<U, E2 extends Error>(f: (value: T) => Result<U, E2>): Result<U, E | E2>
@@ -17,7 +15,7 @@ interface Methods<T, E extends Error> {
 	unwrapOr<U>(defaultValue: U): T | U
 	unwrapOrElse<U>(defaultValue: (error: E) => U): T | U
 	unwrapErr(): E
-	match<A, B>(args: MatchArgs<T, E, A, B>): A | B
+	match<A, B>(ok: (value: T) => A, err: (error: E) => B): A | B
 	tap(): T
 }
 
@@ -86,7 +84,7 @@ export class Ok<T = undefined> implements Methods<T, never> {
 		throw new UnwrapPanic("Cannot unwrapErr on an Ok")
 	}
 
-	match<A, B>({ok}: MatchArgs<T, never, A, B>) {
+	match<A, B>(ok: (value: T) => A, _err: (error: never) => B) {
 		return ok(this.value)
 	}
 
@@ -173,7 +171,7 @@ export class Err<E extends Error> implements Methods<never, E> {
 		return this.error
 	}
 
-	match<A, B>({err}: MatchArgs<never, E, A, B>) {
+	match<A, B>(_ok: (value: never) => A, err: (error: E) => B) {
 		return err(this.error)
 	}
 

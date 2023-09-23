@@ -1,8 +1,8 @@
-import {MatchArgs, Result} from "./core"
+import {Result} from "./core"
 import {type Panic} from "./panic"
 
 interface MethodsAsync<T, E extends Error> {
-	match<A, B>(args: MatchArgs<T, E, A, B>): Promise<A | B>
+	match<A, B>(ok: (value: T) => A, err: (error: E) => B): Promise<A | B>
 	tap(): Promise<T>
 	expect(panic: Panic | string): Promise<T>
 	unwrap(): Promise<T>
@@ -41,8 +41,8 @@ export class PromiseResult<T, E extends Error = Error>
 		)
 	}
 
-	async match<A, B>(args: MatchArgs<T, E, A, B>) {
-		return (await this).match(args)
+	async match<A, B>(ok: (value: T) => A, err: (error: E) => B) {
+		return (await this).match(ok, err)
 	}
 
 	async tap() {
