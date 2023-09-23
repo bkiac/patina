@@ -56,6 +56,46 @@ describe.concurrent("andThen", () => {
 	})
 })
 
+describe.concurrent("expect", () => {
+	it("returns the value when called on an Ok result", () => {
+		const result = new Ok(42)
+		const value = result.expect()
+		expect(value).to.equal(42)
+	})
+
+	it("throws a Panic with the provided message when called on an Err result", () => {
+		const error = new Error("Original error")
+		const result = new Err(error)
+		expect(() => result.expect("Panic message")).to.throw(Panic, "Panic message")
+	})
+
+	it("throws a Panic with the provided Panic when called on an Err result", () => {
+		const error = new Error("Original error")
+		const result = new Err(error)
+		const panic = new Panic("custom panic")
+		expect(() => result.expect(panic)).to.throw(panic)
+	})
+})
+
+describe.concurrent("expectErr", () => {
+	it("returns the value when called on an Err result", () => {
+		const error = new Error("Original error")
+		const err = new Err(error)
+		expect(err.expectErr()).toEqual(error)
+	})
+
+	it("throws a Panic with the provided message when called on an Ok result", () => {
+		const ok = new Ok()
+		expect(() => ok.expectErr("Panic message")).to.throw(Panic, "Panic message")
+	})
+
+	it("throws a Panic with the provided Panic when called on an Ok result", () => {
+		const result = new Ok()
+		const panic = new Panic("custom panic")
+		expect(() => result.expectErr(panic)).to.throw(panic)
+	})
+})
+
 describe.concurrent("handleError", () => {
 	it("returns an Error when given an Error", () => {
 		class TestError extends Error {}
@@ -111,27 +151,6 @@ describe.concurrent("err", () => {
 	it("throws a Panic when given a Panic", () => {
 		const panic = new Panic("Test panic")
 		expect(() => new Err(panic)).to.throw(Panic)
-	})
-})
-
-describe.concurrent("expect", () => {
-	it("returns the value when called on an Ok result", () => {
-		const result = new Ok(42)
-		const value = result.expect()
-		expect(value).to.equal(42)
-	})
-
-	it("throws a Panic with the provided message when called on an Err result", () => {
-		const error = new Error("Original error")
-		const result = new Err(error)
-		expect(() => result.expect("Panic message")).to.throw(Panic, "Panic message")
-	})
-
-	it("throws a Panic with the provided Panic when called on an Err result", () => {
-		const error = new Error("Original error")
-		const result = new Err(error)
-		const panic = new Panic("custom panic")
-		expect(() => result.expect(panic)).to.throw(Panic, "custom panic")
 	})
 })
 

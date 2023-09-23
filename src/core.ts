@@ -5,13 +5,14 @@ export type MatchArgs<T, E, A, B> = {ok: (value: T) => A; err: (error: E) => B}
 interface Methods<T, E extends Error> {
 	and<U, F extends Error>(other: Result<U, F>): Result<U, E | F>
 	andThen<U, F extends Error>(f: (value: T) => Result<U, F>): Result<U, E | F>
-	match<A, B>(args: MatchArgs<T, E, A, B>): A | B
-	tap(): T
 	expect(panic: Panic | string): T
+	expectErr(panic: Panic | string): E
 	unwrap(): T
 	unwrapOr<U>(defaultValue: U): T | U
 	unwrapOrElse<U>(defaultValue: (error: E) => U): T | U
 	unwrapErr(): E
+	match<A, B>(args: MatchArgs<T, E, A, B>): A | B
+	tap(): T
 }
 
 export class Ok<T = undefined> implements Methods<T, never> {
@@ -33,22 +34,32 @@ export class Ok<T = undefined> implements Methods<T, never> {
 		return f(this.value)
 	}
 
-	match<A, B>({ok}: MatchArgs<T, never, A, B>) {
-		return ok(this.value)
+	expect = this.unwrap
+
+	expectErr(panic: string | Panic): never {
+		if (panic instanceof Panic) {
+			throw panic
+		}
+		throw new Panic(panic)
 	}
 
 	unwrap() {
 		return this.value
 	}
 
-	tap = this.unwrap
-	expect = this.unwrap
 	unwrapOr = this.unwrap
+
 	unwrapOrElse = this.unwrap
 
 	unwrapErr(): never {
 		throw new UnwrapPanic("Cannot unwrapErr on an Ok")
 	}
+
+	match<A, B>({ok}: MatchArgs<T, never, A, B>) {
+		return ok(this.value)
+	}
+
+	tap = this.unwrap
 }
 
 export class Err<E extends Error> implements Methods<never, E> {
@@ -79,19 +90,15 @@ export class Err<E extends Error> implements Methods<never, E> {
 		return this
 	}
 
-	match<A, B>({err}: MatchArgs<never, E, A, B>) {
-		return err(this.error)
-	}
-
-	tap(): never {
-		throw new PropagationPanic(this.error)
-	}
-
 	expect(panic: Panic | string): never {
 		if (panic instanceof Panic) {
 			throw panic
 		}
 		throw new Panic(panic)
+	}
+
+	expectErr() {
+		return this.error
 	}
 
 	unwrap(): never {
@@ -108,6 +115,14 @@ export class Err<E extends Error> implements Methods<never, E> {
 
 	unwrapErr() {
 		return this.error
+	}
+
+	match<A, B>({err}: MatchArgs<never, E, A, B>) {
+		return err(this.error)
+	}
+
+	tap(): never {
+		throw new PropagationPanic(this.error)
 	}
 }
 
