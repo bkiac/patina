@@ -4,6 +4,7 @@ export type MatchArgs<T, E, A, B> = {ok: (value: T) => A; err: (error: E) => B}
 
 interface Methods<T, E extends Error> {
 	and<U, F extends Error>(other: Result<U, F>): Result<U, E | F>
+	andThen<U, F extends Error>(f: (value: T) => Result<U, F>): Result<U, E | F>
 	match<A, B>(args: MatchArgs<T, E, A, B>): A | B
 	tap(): T
 	expect(panic: Panic | string): T
@@ -26,6 +27,10 @@ export class Ok<T = undefined> implements Methods<T, never> {
 
 	and<U, F extends Error>(other: Result<U, F>) {
 		return other
+	}
+
+	andThen<U, F extends Error>(f: (value: T) => Result<U, F>) {
+		return f(this.value)
 	}
 
 	match<A, B>({ok}: MatchArgs<T, never, A, B>) {
@@ -67,6 +72,10 @@ export class Err<E extends Error> implements Methods<never, E> {
 	}
 
 	and<U, F extends Error>(_other: Result<U, F>) {
+		return this
+	}
+
+	andThen<U, F extends Error>(_f: (value: never) => Result<U, F>) {
 		return this
 	}
 

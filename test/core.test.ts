@@ -44,6 +44,18 @@ describe.concurrent("and", () => {
 	})
 })
 
+describe.concurrent("andThen", () => {
+	it("returns the error when Ok & Err", () => {
+		const a = new Ok(0) as Result<number, CustomErrorA>
+		expect(a.andThen((value) => new Ok(value + 1))).toEqual(new Ok(1))
+	})
+
+	it("returns the error when Err & Ok", () => {
+		const a = new Err("early error") as Result<number, CustomErrorA>
+		expect(a.andThen((value) => new Ok(value + 1))).toEqual(a)
+	})
+})
+
 describe.concurrent("handleError", () => {
 	it("returns an Error when given an Error", () => {
 		class TestError extends Error {}
