@@ -291,6 +291,18 @@ describe.concurrent("or", () => {
 	})
 })
 
+describe.concurrent("orElse", () => {
+	it("returns the result for an Ok result", () => {
+		const a = new Ok(0) as Result<number, CustomErrorA>
+		expect(a.orElse(() => new Ok(1))).toEqual(a)
+	})
+
+	it("returns the mapped value for an Err result", () => {
+		const a = new Err("early error") as Result<number, CustomErrorA>
+		expect(a.orElse(() => new Ok(1))).toEqual(new Ok(1))
+	})
+})
+
 describe.concurrent("unwrap", () => {
 	it("returns the value for an Ok result", () => {
 		const result = new Ok(42)
