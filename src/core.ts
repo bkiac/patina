@@ -3,13 +3,13 @@ import {InvalidErrorPanic, Panic, PropagationPanic, UnwrapPanic} from "./panic"
 export type MatchArgs<T, E, A, B> = {ok: (value: T) => A; err: (error: E) => B}
 
 interface Methods<T, E extends Error> {
-	and<U, F extends Error>(other: Result<U, F>): Result<U, E | F>
-	andThen<U, F extends Error>(f: (value: T) => Result<U, F>): Result<U, E | F>
+	and<T2, E2 extends Error>(other: Result<T2, E2>): Result<T2, E | E2>
+	andThen<T2, E2 extends Error>(f: (value: T) => Result<T2, E2>): Result<T2, E | E2>
 	expect(panic: Panic | string): T
 	expectErr(panic: Panic | string): E
 	unwrap(): T
-	unwrapOr<U>(defaultValue: U): T | U
-	unwrapOrElse<U>(defaultValue: (error: E) => U): T | U
+	unwrapOr<T2>(defaultValue: T2): T | T2
+	unwrapOrElse<T2>(defaultValue: (error: E) => T2): T | T2
 	unwrapErr(): E
 	match<A, B>(args: MatchArgs<T, E, A, B>): A | B
 	tap(): T
@@ -26,11 +26,11 @@ export class Ok<T = undefined> implements Methods<T, never> {
 		this.value = value as T
 	}
 
-	and<U, F extends Error>(other: Result<U, F>) {
+	and<T2, E2 extends Error>(other: Result<T2, E2>) {
 		return other
 	}
 
-	andThen<U, F extends Error>(f: (value: T) => Result<U, F>) {
+	andThen<T2, E2 extends Error>(f: (value: T) => Result<T2, E2>) {
 		return f(this.value)
 	}
 
@@ -82,11 +82,11 @@ export class Err<E extends Error> implements Methods<never, E> {
 		}
 	}
 
-	and<U, F extends Error>(_other: Result<U, F>) {
+	and<T2, E2 extends Error>(_other: Result<T2, E2>) {
 		return this
 	}
 
-	andThen<U, F extends Error>(_f: (value: never) => Result<U, F>) {
+	andThen<T2, E2 extends Error>(_f: (value: never) => Result<T2, E2>) {
 		return this
 	}
 
@@ -105,11 +105,11 @@ export class Err<E extends Error> implements Methods<never, E> {
 		throw new UnwrapPanic(this.error)
 	}
 
-	unwrapOr<U>(defaultValue: U) {
+	unwrapOr<T2>(defaultValue: T2) {
 		return defaultValue
 	}
 
-	unwrapOrElse<U>(defaultValue: (error: E) => U) {
+	unwrapOrElse<T2>(defaultValue: (error: E) => T2) {
 		return defaultValue(this.error)
 	}
 
