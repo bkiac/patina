@@ -77,38 +77,38 @@ describe.concurrent("err", () => {
 })
 
 describe.concurrent("and", () => {
-	it("returns the error when Ok & Err", () => {
+	it("returns the error when Ok and Err", () => {
 		const a = new Ok(2) as Result<number, CustomErrorA>
 		const b = new Err("late error") as Result<string, CustomErrorB>
 		expect(a.and(b)).toEqual(b)
 	})
 
-	it("returns the error when Err & Ok", () => {
+	it("returns the late value when Ok and Ok", () => {
+		const a = new Ok(2) as Result<number, CustomErrorA>
+		const b = new Ok("str") as Result<string, CustomErrorB>
+		expect(a.and(b)).toEqual(b)
+	})
+
+	it("returns the error when Err and Ok", () => {
 		const a = new Err("early error") as Result<number, CustomErrorA>
 		const b = new Ok("foo") as Result<string, CustomErrorB>
 		expect(a.and(b)).toEqual(a)
 	})
 
-	it("returns the early error when Err & Err", () => {
+	it("returns the early error when Err and Err", () => {
 		const a = new Err("early error") as Result<number, CustomErrorA>
 		const b = new Err("late error") as Result<string, CustomErrorB>
 		expect(a.and(b)).toEqual(a)
 	})
-
-	it("returns the late value when Ok & Ok", () => {
-		const a = new Ok(2) as Result<number, CustomErrorA>
-		const b = new Ok("str") as Result<string, CustomErrorB>
-		expect(a.and(b)).toEqual(b)
-	})
 })
 
 describe.concurrent("andThen", () => {
-	it("returns the error when Ok & Err", () => {
+	it("returns the mapped value for an Ok result", () => {
 		const a = new Ok(0) as Result<number, CustomErrorA>
 		expect(a.andThen((value) => new Ok(value + 1))).toEqual(new Ok(1))
 	})
 
-	it("returns the error when Err & Ok", () => {
+	it("returns the result for an Err result", () => {
 		const a = new Err("early error") as Result<number, CustomErrorA>
 		expect(a.andThen((value) => new Ok(value + 1))).toEqual(a)
 	})
@@ -262,6 +262,32 @@ describe.concurrent("mapOrElse", () => {
 			(value) => value * 2,
 		)
 		expect(result2).toEqual(0)
+	})
+})
+
+describe.concurrent("or", () => {
+	it("returns the value when Ok or Err", () => {
+		const a = new Ok(2) as Result<number, CustomErrorA>
+		const b = new Err("late error") as Result<string, CustomErrorB>
+		expect(a.or(b)).toEqual(a)
+	})
+
+	it("returns the early value when Ok or Ok", () => {
+		const a = new Ok(2) as Result<number, CustomErrorA>
+		const b = new Ok("str") as Result<string, CustomErrorB>
+		expect(a.or(b)).toEqual(a)
+	})
+
+	it("returns the late value when Err or Ok", () => {
+		const a = new Err("early error") as Result<number, CustomErrorA>
+		const b = new Ok("foo") as Result<string, CustomErrorB>
+		expect(a.or(b)).toEqual(b)
+	})
+
+	it("returns the late error when Err and Err", () => {
+		const a = new Err("early error") as Result<number, CustomErrorA>
+		const b = new Err("late error") as Result<string, CustomErrorB>
+		expect(a.or(b)).toEqual(b)
 	})
 })
 
