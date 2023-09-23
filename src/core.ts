@@ -7,6 +7,8 @@ interface Methods<T, E extends Error> {
 	andThen<T2, E2 extends Error>(f: (value: T) => Result<T2, E2>): Result<T2, E | E2>
 	expect(panic: Panic | string): T
 	expectErr(panic: Panic | string): E
+	inspect(f: (value: T) => void): Result<T, E>
+	inspectErr(f: (error: E) => void): Result<T, E>
 	unwrap(): T
 	unwrapOr<T2>(defaultValue: T2): T | T2
 	unwrapOrElse<T2>(defaultValue: (error: E) => T2): T | T2
@@ -41,6 +43,15 @@ export class Ok<T = undefined> implements Methods<T, never> {
 			throw panic
 		}
 		throw new Panic(panic)
+	}
+
+	inspect(f: (value: T) => void) {
+		f(this.value)
+		return this
+	}
+
+	inspectErr() {
+		return this
 	}
 
 	unwrap() {
@@ -99,6 +110,15 @@ export class Err<E extends Error> implements Methods<never, E> {
 
 	expectErr() {
 		return this.error
+	}
+
+	inspect() {
+		return this
+	}
+
+	inspectErr(f: (error: E) => void) {
+		f(this.error)
+		return this
 	}
 
 	unwrap(): never {

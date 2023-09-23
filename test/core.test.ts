@@ -96,6 +96,48 @@ describe.concurrent("expectErr", () => {
 	})
 })
 
+describe.concurrent("inspect", () => {
+	it("returns this and calls inspect on Ok result", () => {
+		let counter = 0
+		const result = new Ok(42)
+		const result2 = result.inspect((value) => {
+			counter += value
+		})
+		expect(counter).toEqual(42)
+		expect(result2).toEqual(result)
+	})
+
+	it("returns this and does not call inspectErr on Ok result", () => {
+		let counter = 0
+		const result = new Ok(42) as Result<number, CustomErrorA>
+		const result2 = result.inspectErr(() => {
+			counter += 1
+		})
+		expect(counter).toEqual(0)
+		expect(result2).toEqual(result)
+	})
+
+	it("returns this and calls inspectErr on Err result", () => {
+		let counter = 0
+		const result = new Err("")
+		const result2 = result.inspectErr(() => {
+			counter += 1
+		})
+		expect(counter).toEqual(1)
+		expect(result2).toEqual(result)
+	})
+
+	it("returns this and does not call inspect on Err result", () => {
+		let counter = 0
+		const result = new Err("") as Result<number, CustomErrorA>
+		const result2 = result.inspect(() => {
+			counter += 1
+		})
+		expect(counter).toEqual(0)
+		expect(result2).toEqual(result)
+	})
+})
+
 describe.concurrent("handleError", () => {
 	it("returns an Error when given an Error", () => {
 		class TestError extends Error {}
