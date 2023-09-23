@@ -9,6 +9,8 @@ interface Methods<T, E extends Error> {
 	expectErr(panic: Panic | string): E
 	inspect(f: (value: T) => void): Result<T, E>
 	inspectErr(f: (error: E) => void): Result<T, E>
+	map<T2>(f: (value: T) => T2): Result<T2, E>
+	mapErr<E2 extends Error>(f: (error: E) => E2): Result<T, E2>
 	unwrap(): T
 	unwrapOr<T2>(defaultValue: T2): T | T2
 	unwrapOrElse<T2>(defaultValue: (error: E) => T2): T | T2
@@ -51,6 +53,14 @@ export class Ok<T = undefined> implements Methods<T, never> {
 	}
 
 	inspectErr() {
+		return this
+	}
+
+	map<T2>(f: (value: T) => T2) {
+		return new Ok(f(this.value))
+	}
+
+	mapErr() {
 		return this
 	}
 
@@ -119,6 +129,14 @@ export class Err<E extends Error> implements Methods<never, E> {
 	inspectErr(f: (error: E) => void) {
 		f(this.error)
 		return this
+	}
+
+	map() {
+		return this
+	}
+
+	mapErr<E2 extends Error>(f: (error: E) => E2) {
+		return new Err(f(this.error))
 	}
 
 	unwrap(): never {

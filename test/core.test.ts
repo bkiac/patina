@@ -107,6 +107,18 @@ describe.concurrent("inspect", () => {
 		expect(result2).toEqual(result)
 	})
 
+	it("returns this and does not call inspect on Err result", () => {
+		let counter = 0
+		const result = new Err("") as Result<number, CustomErrorA>
+		const result2 = result.inspect(() => {
+			counter += 1
+		})
+		expect(counter).toEqual(0)
+		expect(result2).toEqual(result)
+	})
+})
+
+describe.concurrent("inspectErr", () => {
 	it("returns this and does not call inspectErr on Ok result", () => {
 		let counter = 0
 		const result = new Ok(42) as Result<number, CustomErrorA>
@@ -126,14 +138,35 @@ describe.concurrent("inspect", () => {
 		expect(counter).toEqual(1)
 		expect(result2).toEqual(result)
 	})
+})
 
-	it("returns this and does not call inspect on Err result", () => {
-		let counter = 0
-		const result = new Err("") as Result<number, CustomErrorA>
-		const result2 = result.inspect(() => {
-			counter += 1
-		})
-		expect(counter).toEqual(0)
+describe.concurrent("map", () => {
+	it("returns the mapped value for an Ok result", () => {
+		const result = new Ok(42)
+		const result2 = result.map((value) => value * 2)
+		expect(result2).toEqual(new Ok(84))
+	})
+
+	it("returns the original Err for an Err result", () => {
+		const error = new Error("Test error")
+		const result = new Err(error) as Result<number>
+		const result2 = result.map((value) => value * 2)
+		expect(result2).toEqual(result)
+	})
+})
+
+describe.concurrent("mapErr", () => {
+	it("returns the mapped error for an Err result", () => {
+		const error = new Error("Test error")
+		const result = new Err(error)
+		const result2 = result.mapErr(() => new Error("New error"))
+		expect(result2).toEqual(new Err(new Error("New error")))
+	})
+
+	it("returns the original Ok for an Err result", () => {
+		const error = new Error("Test error")
+		const result = new Err(error) as Result<number>
+		const result2 = result.map((value) => value * 2)
 		expect(result2).toEqual(result)
 	})
 })
