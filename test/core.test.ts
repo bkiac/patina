@@ -18,6 +18,64 @@ class CustomErrorB extends Error {
 	tag: "AsdError" = "AsdError"
 }
 
+describe.concurrent("handleError", () => {
+	it("returns an Error when given an Error", () => {
+		class TestError extends Error {}
+		const error = new TestError("Test error")
+		const err = handleError(error)
+		expect(err).to.be.instanceof(TestError)
+	})
+
+	it("throws a Panic when given a Panic", () => {
+		const msg = "Test panic"
+		const panic = new Panic(msg)
+		expect(() => handleError(panic)).to.throw(Panic, msg)
+	})
+
+	it("throws a Panic when given an unknown value", () => {
+		expect(() => handleError(0)).to.throw(InvalidErrorPanic)
+		expect(() => handleError("")).to.throw(InvalidErrorPanic)
+		expect(() => handleError(true)).to.throw(InvalidErrorPanic)
+		expect(() => handleError(undefined)).to.throw(InvalidErrorPanic)
+		expect(() => handleError(null)).to.throw(InvalidErrorPanic)
+		expect(() => handleError({})).to.throw(InvalidErrorPanic)
+		expect(() => handleError([])).to.throw(InvalidErrorPanic)
+	})
+})
+
+describe.concurrent("ok", () => {
+	it("returns an Ok result", () => {
+		const result = new Ok(42)
+		expect(result.ok).toEqual(true)
+		expect(result.value).toEqual(42)
+	})
+})
+
+describe.concurrent("err", () => {
+	it("returns an Err when given an Error", () => {
+		const error = new (class CustomError extends Error {
+			constructor() {
+				super("Custom Error")
+			}
+		})()
+		const result = new Err(error)
+		expect(result.ok).toEqual(false)
+		expect(result.error).toEqual(error)
+	})
+
+	it("returns an Err when given a string", () => {
+		const msg = "Test error"
+		const result = new Err(msg)
+		expect(result.ok).toEqual(false)
+		expect(result.error).toEqual(new Error(msg))
+	})
+
+	it("throws a Panic when given a Panic", () => {
+		const panic = new Panic("Test panic")
+		expect(() => new Err(panic)).to.throw(Panic)
+	})
+})
+
 describe.concurrent("and", () => {
 	it("returns the error when Ok & Err", () => {
 		const a = new Ok(2) as Result<number, CustomErrorA>
@@ -171,61 +229,18 @@ describe.concurrent("mapErr", () => {
 	})
 })
 
-describe.concurrent("handleError", () => {
-	it("returns an Error when given an Error", () => {
-		class TestError extends Error {}
-		const error = new TestError("Test error")
-		const err = handleError(error)
-		expect(err).to.be.instanceof(TestError)
+describe.concurrent("mapOr", () => {
+	it("returns the mapped value for an Ok result", () => {
+		const result = new Ok(42) as Result<number>
+		const result2 = result.mapOr(0, (value) => value * 2)
+		expect(result2).toEqual(84)
 	})
 
-	it("throws a Panic when given a Panic", () => {
-		const msg = "Test panic"
-		const panic = new Panic(msg)
-		expect(() => handleError(panic)).to.throw(Panic, msg)
-	})
-
-	it("throws a Panic when given an unknown value", () => {
-		expect(() => handleError(0)).to.throw(InvalidErrorPanic)
-		expect(() => handleError("")).to.throw(InvalidErrorPanic)
-		expect(() => handleError(true)).to.throw(InvalidErrorPanic)
-		expect(() => handleError(undefined)).to.throw(InvalidErrorPanic)
-		expect(() => handleError(null)).to.throw(InvalidErrorPanic)
-		expect(() => handleError({})).to.throw(InvalidErrorPanic)
-		expect(() => handleError([])).to.throw(InvalidErrorPanic)
-	})
-})
-
-describe.concurrent("ok", () => {
-	it("returns an Ok result", () => {
-		const result = new Ok(42)
-		expect(result.ok).toEqual(true)
-		expect(result.value).toEqual(42)
-	})
-})
-
-describe.concurrent("err", () => {
-	it("returns an Err when given an Error", () => {
-		const error = new (class CustomError extends Error {
-			constructor() {
-				super("Custom Error")
-			}
-		})()
-		const result = new Err(error)
-		expect(result.ok).toEqual(false)
-		expect(result.error).toEqual(error)
-	})
-
-	it("returns an Err when given a string", () => {
-		const msg = "Test error"
-		const result = new Err(msg)
-		expect(result.ok).toEqual(false)
-		expect(result.error).toEqual(new Error(msg))
-	})
-
-	it("throws a Panic when given a Panic", () => {
-		const panic = new Panic("Test panic")
-		expect(() => new Err(panic)).to.throw(Panic)
+	it("returns the default value for an Err result", () => {
+		const error = new Error("Test error")
+		const result = new Err(error) as Result<number>
+		const result2 = result.mapOr(0, (value) => value * 2)
+		expect(result2).toEqual(0)
 	})
 })
 
@@ -291,24 +306,6 @@ describe.concurrent("unwrapOrElse", () => {
 	})
 })
 
-describe.concurrent("tap", () => {
-	it("returns value for an Ok result", () => {
-		const result = new Ok(1)
-		expect(result.tap()).toEqual(1)
-	})
-
-	it("throws PropagationPanic for an Err result", () => {
-		const error = new Error("custom error")
-		const result = new Err(error)
-		expect(() => result.tap()).toThrow(PropagationPanic)
-		try {
-			result.tap()
-		} catch (err) {
-			expect((err as PropagationPanic).originalError).toEqual(error)
-		}
-	})
-})
-
 describe.concurrent("match", () => {
 	it("calls the ok function for an Ok result", () => {
 		const result = new Ok(42)
@@ -327,5 +324,23 @@ describe.concurrent("match", () => {
 			err: () => 0,
 		})
 		expect(output).toEqual(0)
+	})
+})
+
+describe.concurrent("tap", () => {
+	it("returns value for an Ok result", () => {
+		const result = new Ok(1)
+		expect(result.tap()).toEqual(1)
+	})
+
+	it("throws PropagationPanic for an Err result", () => {
+		const error = new Error("custom error")
+		const result = new Err(error)
+		expect(() => result.tap()).toThrow(PropagationPanic)
+		try {
+			result.tap()
+		} catch (err) {
+			expect((err as PropagationPanic).originalError).toEqual(error)
+		}
 	})
 })

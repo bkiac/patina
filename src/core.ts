@@ -11,6 +11,7 @@ interface Methods<T, E extends Error> {
 	inspectErr(f: (error: E) => void): Result<T, E>
 	map<T2>(f: (value: T) => T2): Result<T2, E>
 	mapErr<E2 extends Error>(f: (error: E) => E2): Result<T, E2>
+	mapOr<T2>(defaultValue: T2, f: (value: T) => T2): T2
 	unwrap(): T
 	unwrapOr<T2>(defaultValue: T2): T | T2
 	unwrapOrElse<T2>(defaultValue: (error: E) => T2): T | T2
@@ -62,6 +63,10 @@ export class Ok<T = undefined> implements Methods<T, never> {
 
 	mapErr() {
 		return this
+	}
+
+	mapOr<T2>(_defaultValue: T2, f: (value: T) => T2) {
+		return f(this.value)
 	}
 
 	unwrap() {
@@ -137,6 +142,10 @@ export class Err<E extends Error> implements Methods<never, E> {
 
 	mapErr<E2 extends Error>(f: (error: E) => E2) {
 		return new Err(f(this.error))
+	}
+
+	mapOr<T2>(defaultValue: T2, _f: (value: never) => T2) {
+		return defaultValue
 	}
 
 	unwrap(): never {
