@@ -22,6 +22,25 @@ describe.concurrent("expect", () => {
 	})
 })
 
+describe.concurrent("expectErr", () => {
+	it("returns the error when called on an Err result", async () => {
+		const result = new PromiseResult(Promise.resolve(new Err(new Error("Test error"))))
+		const error = await result.expectErr("")
+		expect(error).toEqual(new Error("Test error"))
+	})
+
+	it("throws a Panic with the provided message when called on an Ok result", async () => {
+		const result = new PromiseResult(Promise.resolve(new Ok()))
+		await expect(result.expectErr("Panic message")).rejects.toThrow(Panic)
+	})
+
+	it("throws a Panic with the provided Panic when called on an Ok result", async () => {
+		const result = new PromiseResult(Promise.resolve(new Ok()))
+		const panic = new Panic("Panic")
+		await expect(result.expectErr(panic)).rejects.toEqual(panic)
+	})
+})
+
 describe.concurrent("unwrap", () => {
 	it("returns the value for an Ok result", async () => {
 		const result = new PromiseResult(Promise.resolve(new Ok(42)))
