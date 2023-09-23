@@ -244,6 +244,27 @@ describe.concurrent("mapOr", () => {
 	})
 })
 
+describe.concurrent("mapOrElse", () => {
+	it("returns the mapped value for an Ok result", () => {
+		const result = new Ok(42) as Result<number>
+		const result2 = result.mapOrElse(
+			() => 0,
+			(value) => value * 2,
+		)
+		expect(result2).toEqual(84)
+	})
+
+	it("returns the default value from a function for an Err result", () => {
+		const error = new Error("Test error")
+		const result = new Err(error) as Result<number>
+		const result2 = result.mapOrElse(
+			() => 0,
+			(value) => value * 2,
+		)
+		expect(result2).toEqual(0)
+	})
+})
+
 describe.concurrent("unwrap", () => {
 	it("returns the value for an Ok result", () => {
 		const result = new Ok(42)
