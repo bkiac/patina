@@ -89,29 +89,29 @@ describe.concurrent("expect", () => {
 	})
 })
 
-describe.concurrent("unwrapUnsafe", () => {
+describe.concurrent("unwrap", () => {
 	it("returns the value for an Ok result", () => {
 		const result = new Ok(42)
-		expect(result.unwrapUnsafe()).toEqual(42)
+		expect(result.unwrap()).toEqual(42)
 	})
 
 	it("throws a Panic for an Err result", () => {
 		const error = new Error("Test error")
 		const result = new Err(error)
-		expect(() => result.unwrapUnsafe()).toThrow(UnwrapPanic)
+		expect(() => result.unwrap()).toThrow(UnwrapPanic)
 	})
 })
 
-describe.concurrent("unwrapErrUnsafe", () => {
+describe.concurrent("unwrapErr", () => {
 	it("returns the error for an Err result", () => {
 		const error = new Error("Test error")
 		const result = new Err(error)
-		expect(result.unwrapErrUnsafe()).toEqual(error)
+		expect(result.unwrapErr()).toEqual(error)
 	})
 
 	it("throws for an Ok result", () => {
 		const result = new Ok(42)
-		expect(() => result.unwrapErrUnsafe()).toThrow(UnwrapPanic)
+		expect(() => result.unwrapErr()).toThrow(UnwrapPanic)
 	})
 })
 

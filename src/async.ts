@@ -1,28 +1,24 @@
-import {Result} from "./core"
+import {MatchArgs, Result} from "./core"
 import {type Panic} from "./panic"
 
-interface MethodsAsync<TValue, TError extends Error> {
-	match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}): Promise<V | E>
-	tap(): Promise<TValue>
-	expect(panicOrMessage: Panic | string): Promise<TValue>
-	unwrapUnsafe(): Promise<TValue>
-	unwrapOr<T>(defaultValue: T): Promise<T | TValue>
-	unwrapOrElse<T>(defaultValue: (error: TError) => T): Promise<T | TValue>
-	unwrapErrUnsafe(): Promise<TError>
+interface MethodsAsync<T, E extends Error> {
+	match<A, B>(args: MatchArgs<T, E, A, B>): Promise<A | B>
+	tap(): Promise<T>
+	expect(panic: Panic | string): Promise<T>
+	unwrap(): Promise<T>
+	unwrapOr<U>(defaultValue: U): Promise<T | U>
+	unwrapOrElse<U>(defaultValue: (error: E) => U): Promise<T | U>
+	unwrapErr(): Promise<E>
 }
 
 /** Represents the result of an operation that can either succeed with a value or fail */
-export class PromiseResult<TValue, TError extends Error = Error>
-	implements PromiseLike<Result<TValue, TError>>, MethodsAsync<TValue, TError>
+export class PromiseResult<T, E extends Error = Error>
+	implements PromiseLike<Result<T, E>>, MethodsAsync<T, E>
 {
-	readonly promise: Promise<Result<TValue, TError>>
-
-	constructor(promise: Promise<Result<TValue, TError>>) {
-		this.promise = promise
-	}
+	constructor(readonly promise: Promise<Result<T, E>>) {}
 
 	then<A, B>(
-		successCallback?: (res: Result<TValue, TError>) => A | PromiseLike<A>,
+		successCallback?: (res: Result<T, E>) => A | PromiseLike<A>,
 		failureCallback?: (reason: unknown) => B | PromiseLike<B>,
 	): PromiseLike<A | B> {
 		return this.promise.then(successCallback, failureCallback)
@@ -32,7 +28,7 @@ export class PromiseResult<TValue, TError extends Error = Error>
 		return this.promise.then(null, rejectionCallback)
 	}
 
-	finally(callback: () => void): PromiseLike<Result<TValue, TError>> {
+	finally(callback: () => void): PromiseLike<Result<T, E>> {
 		return this.then(
 			(value) => {
 				callback()
@@ -45,7 +41,7 @@ export class PromiseResult<TValue, TError extends Error = Error>
 		)
 	}
 
-	async match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}) {
+	async match<A, B>(args: MatchArgs<T, E, A, B>) {
 		return (await this).match(args)
 	}
 
@@ -53,23 +49,23 @@ export class PromiseResult<TValue, TError extends Error = Error>
 		return (await this).tap()
 	}
 
-	async expect(panicOrMessage: Panic | string) {
-		return (await this).expect(panicOrMessage)
+	async expect(panic: Panic | string) {
+		return (await this).expect(panic)
 	}
 
-	async unwrapUnsafe() {
-		return (await this).unwrapUnsafe()
+	async unwrap() {
+		return (await this).unwrap()
 	}
 
-	async unwrapOr<T>(defaultValue: T) {
+	async unwrapOr<U>(defaultValue: U) {
 		return (await this).unwrapOr(defaultValue)
 	}
 
-	async unwrapOrElse<T>(defaultValue: (error: TError) => T) {
+	async unwrapOrElse<U>(defaultValue: (error: E) => U) {
 		return (await this).unwrapOrElse(defaultValue)
 	}
 
-	async unwrapErrUnsafe() {
-		return (await this).unwrapErrUnsafe()
+	async unwrapErr() {
+		return (await this).unwrapErr()
 	}
 }

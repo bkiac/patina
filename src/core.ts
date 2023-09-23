@@ -1,64 +1,67 @@
 import {InvalidErrorPanic, Panic, PropagationPanic, UnwrapPanic} from "./panic"
 
-interface Methods<TValue, TError extends Error> {
-	match<V, E>(args: {ok: (value: TValue) => V; err: (error: TError) => E}): V | E
-	tap(): TValue
-	expect(panicOrMessage: Panic | string): TValue
-	unwrapUnsafe(): TValue
-	unwrapOr<T>(defaultValue: T): T | TValue
-	unwrapOrElse<T>(defaultValue: (error: TError) => T): T | TValue
-	unwrapErrUnsafe(): TError
+export type MatchArgs<T, E, A, B> = {ok: (value: T) => A; err: (error: E) => B}
+
+interface Methods<T, E extends Error> {
+	match<A, B>(args: MatchArgs<T, E, A, B>): A | B
+	tap(): T
+	expect(panic: Panic | string): T
+	unwrap(): T
+	unwrapOr<U>(defaultValue: U): T | U
+	unwrapOrElse<U>(defaultValue: (error: E) => U): T | U
+	unwrapErr(): E
 }
 
-export class Ok<TValue = undefined> implements Methods<TValue, never> {
+export class Ok<T = undefined> implements Methods<T, never> {
 	readonly ok = true
-	readonly value: TValue
+	readonly value: T
+	readonly error?: never
 
 	constructor()
-	constructor(value: TValue)
-	constructor(value?: TValue) {
-		this.value = value as TValue
+	constructor(value: T)
+	constructor(value?: T) {
+		this.value = value as T
 	}
 
-	match<V, E>({ok}: {ok: (value: TValue) => V; err: (error: never) => E}): V | E {
+	match<A, B>({ok}: MatchArgs<T, never, A, B>): A {
 		return ok(this.value)
 	}
 
-	private unwrap() {
+	unwrap() {
 		return this.value
 	}
 
 	tap = this.unwrap
 	expect = this.unwrap
-	unwrapUnsafe = this.unwrap
 	unwrapOr = this.unwrap
 	unwrapOrElse = this.unwrap
 
-	unwrapErrUnsafe(): never {
+	unwrapErr(): never {
 		throw new UnwrapPanic("Cannot unwrapErr on an Ok")
 	}
 }
 
-export class Err<TError extends Error> implements Methods<never, TError> {
+export class Err<E extends Error> implements Methods<never, E> {
 	readonly ok = false
-	readonly error: TError
+	readonly value?: never
+	readonly error: E
 
-	constructor(error: TError)
+	constructor(error: E)
 	constructor(message: string)
 	constructor(errorOrMessage: unknown) {
 		if (errorOrMessage instanceof Panic) {
 			throw new Panic("Cannot create an Err from a Panic")
 		}
 		if (errorOrMessage instanceof Error) {
-			this.error = errorOrMessage as TError
+			this.error = errorOrMessage as E
 		} else if (typeof errorOrMessage === "string") {
-			this.error = new Error(errorOrMessage) as TError
+			this.error = new Error(errorOrMessage) as E
 		} else {
-			this.error = new Error("Unknown Error") as TError
+			this.error = new Error("Unknown Error") as E
 		}
 	}
 
-	match<V, E>({err}: {ok: (value: never) => V; err: (error: TError) => E}) {
+	match<A, B>({err}: MatchArgs<never, E, A, B>): B {
 		return err(this.error)
 	}
 
@@ -66,32 +69,32 @@ export class Err<TError extends Error> implements Methods<never, TError> {
 		throw new PropagationPanic(this.error)
 	}
 
-	expect(panicOrMessage: Panic | string): never {
-		if (panicOrMessage instanceof Panic) {
-			throw panicOrMessage
+	expect(panic: Panic | string): never {
+		if (panic instanceof Panic) {
+			throw panic
 		}
-		throw new Panic(panicOrMessage)
+		throw new Panic(panic)
 	}
 
-	unwrapUnsafe(): never {
+	unwrap(): never {
 		throw new UnwrapPanic(this.error)
 	}
 
-	unwrapOr<T>(defaultValue: T) {
+	unwrapOr<U>(defaultValue: U) {
 		return defaultValue
 	}
 
-	unwrapOrElse<T>(defaultValue: (error: TError) => T) {
+	unwrapOrElse<U>(defaultValue: (error: E) => U) {
 		return defaultValue(this.error)
 	}
 
-	unwrapErrUnsafe() {
+	unwrapErr() {
 		return this.error
 	}
 }
 
 /** Represents the result of an operation that can either succeed with a value or fail */
-export type Result<V, E extends Error = Error> = Ok<V> | Err<E>
+export type Result<T, E extends Error = Error> = Ok<T> | Err<E>
 
 export function handleError(error: unknown) {
 	if (error instanceof Panic) {
