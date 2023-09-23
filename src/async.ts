@@ -4,6 +4,7 @@ import {type Panic} from "./panic"
 interface MethodsAsync<T, E extends Error> {
 	expect(panic: Panic | string): Promise<T>
 	expectErr(panic: Panic | string): Promise<E>
+	map<U>(f: (value: T) => U): PromiseResult<U, E>
 	unwrap(): Promise<T>
 	unwrapErr(): Promise<E>
 	unwrapOr<U>(defaultValue: U): Promise<T | U>
@@ -16,7 +17,7 @@ interface MethodsAsync<T, E extends Error> {
 export class PromiseResult<T, E extends Error = Error>
 	implements PromiseLike<Result<T, E>>, MethodsAsync<T, E>
 {
-	constructor(readonly promise: Promise<Result<T, E>>) {}
+	constructor(readonly promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>>) {}
 
 	then<A, B>(
 		successCallback?: (res: Result<T, E>) => A | PromiseLike<A>,
@@ -48,6 +49,10 @@ export class PromiseResult<T, E extends Error = Error>
 
 	async expectErr(panic: Panic | string) {
 		return (await this).expectErr(panic)
+	}
+
+	map<U>(f: (value: T) => U): PromiseResult<U, E> {
+		return new PromiseResult(this.then((result) => result.map(f)))
 	}
 
 	async unwrap() {
