@@ -12,9 +12,9 @@ interface Methods<T, E extends Error> {
 	mapOr<U>(defaultValue: U, f: (value: T) => U): U
 	mapOrElse<U>(defaultValue: (error: E) => U, f: (value: T) => U): U
 	unwrap(): T
+	unwrapErr(): E
 	unwrapOr<U>(defaultValue: U): T | U
 	unwrapOrElse<U>(defaultValue: (error: E) => U): T | U
-	unwrapErr(): E
 	match<A, B>(ok: (value: T) => A, err: (error: E) => B): A | B
 	tap(): T
 }
@@ -76,13 +76,13 @@ export class Ok<T = undefined> implements Methods<T, never> {
 		return this.value
 	}
 
-	unwrapOr = this.unwrap
-
-	unwrapOrElse = this.unwrap
-
 	unwrapErr(): never {
 		throw new UnwrapPanic("Cannot unwrapErr on an Ok")
 	}
+
+	unwrapOr = this.unwrap
+
+	unwrapOrElse = this.unwrap
 
 	match<A, B>(ok: (value: T) => A, _err: (error: never) => B) {
 		return ok(this.value)
@@ -159,16 +159,16 @@ export class Err<E extends Error> implements Methods<never, E> {
 		throw new UnwrapPanic(this.error)
 	}
 
+	unwrapErr() {
+		return this.error
+	}
+
 	unwrapOr<U>(defaultValue: U) {
 		return defaultValue
 	}
 
 	unwrapOrElse<U>(defaultValue: (error: E) => U) {
 		return defaultValue(this.error)
-	}
-
-	unwrapErr() {
-		return this.error
 	}
 
 	match<A, B>(_ok: (value: never) => A, err: (error: E) => B) {
