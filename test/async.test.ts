@@ -57,6 +57,21 @@ describe.concurrent("map", () => {
 	})
 })
 
+describe.concurrent("mapErr", () => {
+	it("returns the mapped error for an Err result", async () => {
+		const error = new Error("Test error")
+		const result = new PromiseResult(Promise.resolve(new Err(error)))
+		const result2 = result.mapErr(() => new Error("New error"))
+		await expect(result2).resolves.toEqual(new Err(new Error("New error")))
+	})
+
+	it("returns the original Ok for an Err result", async () => {
+		const result = new PromiseResult(Promise.resolve(new Ok()))
+		const result2 = result.mapErr(() => new Error("New error"))
+		await expect(result2).resolves.toEqual(new Ok())
+	})
+})
+
 describe.concurrent("unwrap", () => {
 	it("returns the value for an Ok result", async () => {
 		const result = new PromiseResult(Promise.resolve(new Ok(42)))

@@ -222,9 +222,8 @@ describe.concurrent("mapErr", () => {
 	})
 
 	it("returns the original Ok for an Err result", () => {
-		const error = new Error("Test error")
-		const result = new Err(error) as Result<number>
-		const result2 = result.map((value) => value * 2)
+		const result = new Ok() as Result<number>
+		const result2 = result.mapErr(() => new Error("New error"))
 		expect(result2).toEqual(result)
 	})
 })

@@ -5,6 +5,7 @@ interface MethodsAsync<T, E extends Error> {
 	expect(panic: Panic | string): Promise<T>
 	expectErr(panic: Panic | string): Promise<E>
 	map<U>(f: (value: T) => U): PromiseResult<U, E>
+	mapErr<E2 extends Error>(f: (error: E) => E2): PromiseResult<T, E2>
 	unwrap(): Promise<T>
 	unwrapErr(): Promise<E>
 	unwrapOr<U>(defaultValue: U): Promise<T | U>
@@ -53,6 +54,10 @@ export class PromiseResult<T, E extends Error = Error>
 
 	map<U>(f: (value: T) => U): PromiseResult<U, E> {
 		return new PromiseResult(this.then((result) => result.map(f)))
+	}
+
+	mapErr<E2 extends Error>(f: (error: E) => E2) {
+		return new PromiseResult<T, E2>(this.then((result) => result.mapErr(f)))
 	}
 
 	async unwrap() {
