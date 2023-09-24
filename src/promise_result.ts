@@ -1,4 +1,4 @@
-import {Result} from "./core"
+import {Result} from "./result"
 import {type Panic} from "./panic"
 
 interface MethodsAsync<T, E extends Error> {

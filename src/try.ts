@@ -1,5 +1,5 @@
-import {PromiseResult} from "./async"
-import {Ok, type Result, Err} from "./core"
+import {PromiseResult} from "./promise_result"
+import {Ok, type Result, Err} from "./result"
 import {InvalidErrorPanic, Panic} from "./panic"
 
 export function handleError(error: unknown) {

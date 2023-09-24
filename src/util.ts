@@ -1,4 +1,4 @@
-import type {Result} from "./core"
+import type {Result} from "./result"
 
 export type ValueErrorType<T> = T extends
 	| Result<infer V, infer E>
