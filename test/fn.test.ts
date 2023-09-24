@@ -11,7 +11,7 @@ describe.concurrent("fn", () => {
 	it("returns Err result when provided function returns Err", () => {
 		const wrappedFn = fn(() => new Err("rekt"))
 		const result = wrappedFn()
-		expect(result.unwrapErr()).toEqual(new Error("rekt"))
+		expect(result.unwrapErr()).toEqual("rekt")
 	})
 
 	it("returns Err result when provided function throws PropagationPanic", () => {
