@@ -1,10 +1,26 @@
 import {InvalidErrorPanic, Panic, PropagationPanic, UnwrapPanic} from "./panic"
 
-interface Methods<T, E extends Error> {
+export type OkVariant<T> = {
+	ok: true
+	value: T
+	error?: never
+}
+
+export type ErrVariant<E extends Error> = {
+	ok: false
+	value?: never
+	error: E
+}
+
+export type ResultVariants<T, E extends Error> = OkVariant<T> | ErrVariant<E>
+
+export type Result<T, E extends Error = Error> = ResultMethods<T, E> & ResultVariants<T, E>
+
+export interface ResultMethods<T, E extends Error> {
 	and<U, E2 extends Error>(other: Result<U, E2>): Result<U, E | E2>
 	andThen<U, E2 extends Error>(f: (value: T) => Result<U, E2>): Result<U, E | E2>
-	expect(panic: Panic | string): T
-	expectErr(panic: Panic | string): E
+	expect(panic: string | Panic): T
+	expectErr(panic: string | Panic): E
 	inspect(f: (value: T) => void): Result<T, E>
 	inspectErr(f: (error: E) => void): Result<T, E>
 	map<U>(f: (value: T) => U): Result<U, E>
@@ -21,7 +37,7 @@ interface Methods<T, E extends Error> {
 	tap(): T
 }
 
-export class Ok<T = undefined> implements Methods<T, never> {
+export class Ok<T = undefined> implements OkVariant<T>, ResultMethods<T, never> {
 	readonly ok = true
 	readonly value: T
 	readonly error?: never
@@ -40,7 +56,9 @@ export class Ok<T = undefined> implements Methods<T, never> {
 		return f(this.value)
 	}
 
-	expect = this.unwrap
+	expect(_panic: string | Panic) {
+		return this.value
+	}
 
 	expectErr(panic: string | Panic): never {
 		if (panic instanceof Panic) {
@@ -54,7 +72,7 @@ export class Ok<T = undefined> implements Methods<T, never> {
 		return this
 	}
 
-	inspectErr() {
+	inspectErr(_f: (error: never) => void) {
 		return this
 	}
 
@@ -62,7 +80,7 @@ export class Ok<T = undefined> implements Methods<T, never> {
 		return new Ok(f(this.value))
 	}
 
-	mapErr() {
+	mapErr(_f: (error: never) => never) {
 		return this
 	}
 
@@ -90,18 +108,24 @@ export class Ok<T = undefined> implements Methods<T, never> {
 		throw new UnwrapPanic("Cannot unwrapErr on an Ok")
 	}
 
-	unwrapOr = this.unwrap
+	unwrapOr<U>(_defaultValue: U) {
+		return this.value
+	}
 
-	unwrapOrElse = this.unwrap
+	unwrapOrElse<U>(_defaultValue: (error: never) => U) {
+		return this.value
+	}
 
 	match<A, B>(ok: (value: T) => A, _err: (error: never) => B) {
 		return ok(this.value)
 	}
 
-	tap = this.unwrap
+	tap() {
+		return this.value
+	}
 }
 
-export class Err<E extends Error> implements Methods<never, E> {
+export class Err<E extends Error> implements ErrVariant<E>, ResultMethods<never, E> {
 	readonly ok = false
 	readonly value?: never
 	readonly error: E
@@ -129,18 +153,18 @@ export class Err<E extends Error> implements Methods<never, E> {
 		return this
 	}
 
-	expect(panic: Panic | string): never {
+	expect(panic: string | Panic): never {
 		if (panic instanceof Panic) {
 			throw panic
 		}
 		throw new Panic(panic)
 	}
 
-	expectErr() {
+	expectErr(_panic: string | Panic) {
 		return this.error
 	}
 
-	inspect() {
+	inspect(_f: (value: never) => void) {
 		return this
 	}
 
@@ -149,7 +173,7 @@ export class Err<E extends Error> implements Methods<never, E> {
 		return this
 	}
 
-	map() {
+	map<U>(_f: (value: never) => U) {
 		return this
 	}
 
@@ -197,9 +221,6 @@ export class Err<E extends Error> implements Methods<never, E> {
 		throw new PropagationPanic(this.error)
 	}
 }
-
-/** Represents the result of an operation that can either succeed with a value or fail */
-export type Result<T, E extends Error = Error> = Ok<T> | Err<E>
 
 export function handleError(error: unknown) {
 	if (error instanceof Panic) {
