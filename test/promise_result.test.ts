@@ -41,6 +41,56 @@ describe.concurrent("expectErr", () => {
 	})
 })
 
+describe.concurrent("inspect", async () => {
+	it("returns result and calls inspect on Ok result", async () => {
+		let counter = 0
+		const result = new PromiseResult(Promise.resolve(new Ok(42)))
+		const result2 = result.inspect((value) => {
+			counter += value
+		})
+		const awaitedResult = await result
+		await expect(result2).resolves.toEqual(awaitedResult)
+		expect(counter).toEqual(42)
+	})
+
+	it("returns result and does not call inspect on Err result", async () => {
+		let counter = 0
+		const result = new PromiseResult(Promise.resolve(new Err()))
+		const result2 = result.inspect(() => {
+			counter += 1
+		})
+		const awaitedResult = await result
+		await expect(result2).resolves.toEqual(awaitedResult)
+		expect(counter).toEqual(0)
+	})
+})
+
+describe.concurrent("inspectErr", async () => {
+	it("returns result and does not call inspectErr on Ok result", async () => {
+		let counter = 0
+		const result = new PromiseResult(Promise.resolve(new Ok()))
+		const result2 = result.inspectErr((error) => {
+			counter += 1
+			expect(error).toEqual(undefined)
+		})
+		const awaitedResult = await result
+		await expect(result2).resolves.toEqual(awaitedResult)
+		expect(counter).toEqual(0)
+	})
+
+	it("returns result and calls inspectErr on Err result", async () => {
+		let counter = 0
+		const result = new PromiseResult(Promise.resolve(new Err("foo")))
+		const result2 = result.inspectErr((error) => {
+			counter += 1
+			expect(error).toEqual("foo")
+		})
+		const awaitedResult = await result
+		await expect(result2).resolves.toEqual(awaitedResult)
+		expect(counter).toEqual(1)
+	})
+})
+
 describe.concurrent("isErr", () => {
 	it("returns false for an Ok result", async () => {
 		const result = new PromiseResult(Promise.resolve(new Ok()))
