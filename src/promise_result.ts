@@ -1,22 +1,7 @@
 import {Result} from "./result"
 import {type Panic} from "./panic"
 
-interface MethodsAsync<T, E> {
-	expect(panic: Panic | string): Promise<T>
-	expectErr(panic: Panic | string): Promise<E>
-	map<U>(f: (value: T) => U): PromiseResult<U, E>
-	mapErr<F>(f: (error: E) => F): PromiseResult<T, F>
-	mapOr<U>(defaultValue: U, f: (value: T) => U): Promise<U>
-	mapOrElse<U>(defaultValue: (error: E) => U, f: (value: T) => U): Promise<U>
-	unwrap(): Promise<T>
-	unwrapErr(): Promise<E>
-	unwrapOr<U>(defaultValue: U): Promise<T | U>
-	unwrapOrElse<U>(defaultValue: (error: E) => U): Promise<T | U>
-	match<A, B>(ok: (value: T) => A, err: (error: E) => B): Promise<A | B>
-	tap(): Promise<T>
-}
-
-export class PromiseResult<T, E> implements PromiseLike<Result<T, E>>, MethodsAsync<T, E> {
+export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 	constructor(readonly promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>>) {}
 
 	then<A, B>(
