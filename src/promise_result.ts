@@ -1,11 +1,11 @@
 import {Result} from "./result"
 import {type Panic} from "./panic"
 
-interface MethodsAsync<T, E extends Error> {
+interface MethodsAsync<T, E> {
 	expect(panic: Panic | string): Promise<T>
 	expectErr(panic: Panic | string): Promise<E>
 	map<U>(f: (value: T) => U): PromiseResult<U, E>
-	mapErr<E2 extends Error>(f: (error: E) => E2): PromiseResult<T, E2>
+	mapErr<F>(f: (error: E) => F): PromiseResult<T, F>
 	mapOr<U>(defaultValue: U, f: (value: T) => U): Promise<U>
 	mapOrElse<U>(defaultValue: (error: E) => U, f: (value: T) => U): Promise<U>
 	unwrap(): Promise<T>
@@ -16,10 +16,7 @@ interface MethodsAsync<T, E extends Error> {
 	tap(): Promise<T>
 }
 
-/** Represents the result of an operation that can either succeed with a value or fail */
-export class PromiseResult<T, E extends Error = Error>
-	implements PromiseLike<Result<T, E>>, MethodsAsync<T, E>
-{
+export class PromiseResult<T, E> implements PromiseLike<Result<T, E>>, MethodsAsync<T, E> {
 	constructor(readonly promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>>) {}
 
 	then<A, B>(
@@ -58,8 +55,8 @@ export class PromiseResult<T, E extends Error = Error>
 		return new PromiseResult(this.then((result) => result.map(f)))
 	}
 
-	mapErr<E2 extends Error>(f: (error: E) => E2) {
-		return new PromiseResult<T, E2>(this.then((result) => result.mapErr(f)))
+	mapErr<F>(f: (error: E) => F) {
+		return new PromiseResult<T, F>(this.then((result) => result.mapErr(f)))
 	}
 
 	async mapOr<U>(defaultValue: U, f: (value: T) => U) {

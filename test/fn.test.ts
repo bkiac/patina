@@ -16,7 +16,7 @@ describe.concurrent("fn", () => {
 
 	it("returns Err result when provided function throws PropagationPanic", () => {
 		const error = new Error("Original error")
-		const wrappedFn = fn((): Result<number> => {
+		const wrappedFn = fn((): Result<number, Error> => {
 			throw new PropagationPanic(error)
 		})
 		const result = wrappedFn()

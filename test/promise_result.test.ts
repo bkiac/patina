@@ -50,7 +50,7 @@ describe.concurrent("map", () => {
 
 	it("returns the original Err for an Err result", async () => {
 		const error = new Error("Test error")
-		const result = new PromiseResult<number>(Promise.resolve(new Err(error)))
+		const result = new PromiseResult<number, Error>(Promise.resolve(new Err(error)))
 		const result2 = result.map((value) => value * 2)
 		const awaitedResult = await result
 		await expect(result2).resolves.toEqual(awaitedResult)
@@ -81,7 +81,7 @@ describe.concurrent("mapOr", () => {
 
 	it("returns the default value for an Err result", async () => {
 		const error = new Error("Test error")
-		const result = new PromiseResult<number>(Promise.resolve(new Err(error)))
+		const result = new PromiseResult<number, Error>(Promise.resolve(new Err(error)))
 		const value = await result.mapOr(0, (value) => value * 2)
 		expect(value).toEqual(0)
 	})
@@ -98,7 +98,9 @@ describe.concurrent("mapOrElse", () => {
 	})
 
 	it("returns the default value from a function for an Err result", async () => {
-		const result = new PromiseResult<number>(Promise.resolve(new Err(new Error("Test error"))))
+		const result = new PromiseResult<number, Error>(
+			Promise.resolve(new Err(new Error("Test error"))),
+		)
 		const value = await result.mapOrElse(
 			() => 0,
 			(value) => value * 2,
@@ -181,7 +183,7 @@ describe.concurrent("match", () => {
 
 	it("calls the err function for an Err result", async () => {
 		const error = new Error("Test error")
-		const result = new PromiseResult<number>(Promise.resolve(new Err(error)))
+		const result = new PromiseResult<number, Error>(Promise.resolve(new Err(error)))
 		const output = result.match(
 			(value) => value * 2,
 			() => 0,
@@ -203,7 +205,7 @@ describe.concurrent("tap", () => {
 		try {
 			await result.tap()
 		} catch (err) {
-			expect((err as PropagationPanic).originalError).toEqual(error)
+			expect((err as PropagationPanic<Error>).originalError).toEqual(error)
 		}
 	})
 })

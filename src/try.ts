@@ -12,7 +12,7 @@ export function handleError(error: unknown) {
 	throw new InvalidErrorPanic(error)
 }
 
-export function tryFn<T>(fn: () => T): Result<T> {
+export function tryFn<T>(fn: () => T): Result<T, Error> {
 	try {
 		return new Ok(fn())
 	} catch (error) {
@@ -20,7 +20,7 @@ export function tryFn<T>(fn: () => T): Result<T> {
 	}
 }
 
-export function tryPromise<T>(promise: Promise<T>): PromiseResult<T> {
+export function tryPromise<T>(promise: Promise<T>): PromiseResult<T, Error> {
 	return new PromiseResult(
 		promise.then(
 			(value) => new Ok(value),
@@ -29,6 +29,6 @@ export function tryPromise<T>(promise: Promise<T>): PromiseResult<T> {
 	)
 }
 
-export function tryAsyncFn<T>(fn: () => Promise<T>): PromiseResult<T> {
+export function tryAsyncFn<T>(fn: () => Promise<T>): PromiseResult<T, Error> {
 	return tryPromise(fn())
 }
