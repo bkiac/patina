@@ -1,39 +1,5 @@
 import {describe, it, expect} from "vitest"
-import {
-	InvalidErrorPanic,
-	Panic,
-	PropagationPanic,
-	Result,
-	UnwrapPanic,
-	handleError,
-	Ok,
-	Err,
-} from "../src"
-
-describe.concurrent("handleError", () => {
-	it("returns an Error when given an Error", () => {
-		class TestError extends Error {}
-		const error = new TestError("Test error")
-		const err = handleError(error)
-		expect(err).to.be.instanceof(TestError)
-	})
-
-	it("throws a Panic when given a Panic", () => {
-		const msg = "Test panic"
-		const panic = new Panic(msg)
-		expect(() => handleError(panic)).to.throw(Panic, msg)
-	})
-
-	it("throws a Panic when given an unknown value", () => {
-		expect(() => handleError(0)).to.throw(InvalidErrorPanic)
-		expect(() => handleError("")).to.throw(InvalidErrorPanic)
-		expect(() => handleError(true)).to.throw(InvalidErrorPanic)
-		expect(() => handleError(undefined)).to.throw(InvalidErrorPanic)
-		expect(() => handleError(null)).to.throw(InvalidErrorPanic)
-		expect(() => handleError({})).to.throw(InvalidErrorPanic)
-		expect(() => handleError([])).to.throw(InvalidErrorPanic)
-	})
-})
+import {Panic, PropagationPanic, Result, UnwrapPanic, Ok, Err} from "../src"
 
 describe.concurrent("ok", () => {
 	it("returns an Ok result", () => {

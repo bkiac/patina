@@ -1,5 +1,16 @@
 import {PromiseResult} from "./async"
-import {Ok, handleError, type Result, Err} from "./core"
+import {Ok, type Result, Err} from "./core"
+import {InvalidErrorPanic, Panic} from "./panic"
+
+export function handleError(error: unknown) {
+	if (error instanceof Panic) {
+		throw error
+	}
+	if (error instanceof Error) {
+		return error
+	}
+	throw new InvalidErrorPanic(error)
+}
 
 export function tryFn<T>(fn: () => T): Result<T> {
 	try {

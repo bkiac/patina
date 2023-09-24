@@ -1,4 +1,4 @@
-import {InvalidErrorPanic, Panic, PropagationPanic, UnwrapPanic} from "./panic"
+import {Panic, PropagationPanic, UnwrapPanic} from "./panic"
 
 export type OkVariant<T> = {
 	ok: true
@@ -220,14 +220,4 @@ export class Err<E extends Error> implements ErrVariant<E>, ResultMethods<never,
 	tap(): never {
 		throw new PropagationPanic(this.error)
 	}
-}
-
-export function handleError(error: unknown) {
-	if (error instanceof Panic) {
-		throw error
-	}
-	if (error instanceof Error) {
-		return error
-	}
-	throw new InvalidErrorPanic(error)
 }
