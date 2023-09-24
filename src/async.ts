@@ -1,4 +1,4 @@
-import {Ok, Result} from "./core"
+import {Result} from "./core"
 import {type Panic} from "./panic"
 
 interface MethodsAsync<T, E extends Error> {
@@ -6,6 +6,7 @@ interface MethodsAsync<T, E extends Error> {
 	expectErr(panic: Panic | string): Promise<E>
 	map<U>(f: (value: T) => U): PromiseResult<U, E>
 	mapErr<E2 extends Error>(f: (error: E) => E2): PromiseResult<T, E2>
+	mapOr<U>(defaultValue: U, f: (value: T) => U): Promise<U>
 	unwrap(): Promise<T>
 	unwrapErr(): Promise<E>
 	unwrapOr<U>(defaultValue: U): Promise<T | U>
@@ -58,6 +59,10 @@ export class PromiseResult<T, E extends Error = Error>
 
 	mapErr<E2 extends Error>(f: (error: E) => E2) {
 		return new PromiseResult<T, E2>(this.then((result) => result.mapErr(f)))
+	}
+
+	async mapOr<U>(defaultValue: U, f: (value: T) => U) {
+		return (await this).mapOr(defaultValue, f)
 	}
 
 	async unwrap() {

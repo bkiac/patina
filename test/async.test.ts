@@ -72,6 +72,21 @@ describe.concurrent("mapErr", () => {
 	})
 })
 
+describe.concurrent("mapOr", () => {
+	it("returns the mapped value for an Ok result", async () => {
+		const result = new PromiseResult(Promise.resolve(new Ok(42)))
+		const value = await result.mapOr(0, (value) => value * 2)
+		expect(value).toEqual(84)
+	})
+
+	it("returns the default value for an Err result", async () => {
+		const error = new Error("Test error")
+		const result = new PromiseResult<number>(Promise.resolve(new Err(error)))
+		const value = await result.mapOr(0, (value) => value * 2)
+		expect(value).toEqual(0)
+	})
+})
+
 describe.concurrent("unwrap", () => {
 	it("returns the value for an Ok result", async () => {
 		const result = new PromiseResult(Promise.resolve(new Ok(42)))

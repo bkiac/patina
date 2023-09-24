@@ -231,15 +231,15 @@ describe.concurrent("mapErr", () => {
 describe.concurrent("mapOr", () => {
 	it("returns the mapped value for an Ok result", () => {
 		const result = new Ok(42) as Result<number>
-		const result2 = result.mapOr(0, (value) => value * 2)
-		expect(result2).toEqual(84)
+		const value = result.mapOr(0, (value) => value * 2)
+		expect(value).toEqual(84)
 	})
 
 	it("returns the default value for an Err result", () => {
 		const error = new Error("Test error")
 		const result = new Err(error) as Result<number>
-		const result2 = result.mapOr(0, (value) => value * 2)
-		expect(result2).toEqual(0)
+		const value = result.mapOr(0, (value) => value * 2)
+		expect(value).toEqual(0)
 	})
 })
 
