@@ -1,4 +1,4 @@
-import {Result} from "./result"
+import type {Result} from "./result"
 import {type Panic} from "./panic"
 
 export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
@@ -34,6 +34,22 @@ export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 
 	async expectErr(panic: Panic | string) {
 		return (await this).expectErr(panic)
+	}
+
+	async isErr(): Promise<boolean> {
+		return (await this).isErr()
+	}
+
+	async isErrAnd(f: (error: E) => boolean): Promise<boolean> {
+		return (await this).isErrAnd(f)
+	}
+
+	async isOk(): Promise<boolean> {
+		return (await this).isOk()
+	}
+
+	async isOkAnd(f: (value: T) => boolean): Promise<boolean> {
+		return (await this).isOkAnd(f)
 	}
 
 	map<U>(f: (value: T) => U): PromiseResult<U, E> {

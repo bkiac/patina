@@ -21,6 +21,10 @@ export interface ResultMethods<T, E> {
 	expectErr(panic: string | Panic): E
 	inspect(f: (value: T) => void): Result<T, E>
 	inspectErr(f: (error: E) => void): Result<T, E>
+	isErr(): this is Err<E>
+	isErrAnd(f: (error: E) => boolean): this is Err<E>
+	isOk(): this is Ok<T>
+	isOkAnd(f: (value: T) => boolean): this is Ok<T>
 	map<U>(f: (value: T) => U): Result<U, E>
 	mapErr<F>(f: (error: E) => F): Result<T, F>
 	mapOr<U>(defaultValue: U, f: (value: T) => U): U
@@ -74,6 +78,22 @@ export class Ok<T = undefined> implements OkVariant<T>, ResultMethods<T, never> 
 
 	inspectErr(_f: (error: never) => void) {
 		return this
+	}
+
+	isErr(): this is Err<never> {
+		return false
+	}
+
+	isErrAnd(_f: (error: never) => boolean): this is Err<never> {
+		return false
+	}
+
+	isOk(): this is Ok<T> {
+		return true
+	}
+
+	isOkAnd(f: (value: T) => boolean): this is Ok<T> {
+		return f(this.value)
 	}
 
 	map<U>(f: (value: T) => U) {
@@ -162,6 +182,22 @@ export class Err<E = undefined> implements ErrVariant<E>, ResultMethods<never, E
 	inspectErr(f: (error: E) => void) {
 		f(this.error)
 		return this
+	}
+
+	isErr(): this is Err<E> {
+		return true
+	}
+
+	isErrAnd(f: (error: E) => boolean): this is Err<E> {
+		return f(this.error)
+	}
+
+	isOk(): this is Ok<never> {
+		return false
+	}
+
+	isOkAnd(_f: (value: never) => boolean): this is Ok<never> {
+		return false
 	}
 
 	map<U>(_f: (value: never) => U) {

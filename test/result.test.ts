@@ -139,6 +139,54 @@ describe.concurrent("inspectErr", () => {
 	})
 })
 
+describe.concurrent("isErr", () => {
+	it("returns false for an Ok result", () => {
+		const result = new Ok(42)
+		expect(result.isErr()).toEqual(false)
+	})
+
+	it("returns true for an Err result", () => {
+		const result = new Err("error")
+		expect(result.isErr()).toEqual(true)
+	})
+})
+
+describe.concurrent("isErrAnd", () => {
+	it("returns false for an Ok result", () => {
+		const result = new Ok(42)
+		expect(result.isErrAnd(() => true)).toEqual(false)
+	})
+
+	it("returns true for an Err result", () => {
+		const result = new Err("error")
+		expect(result.isErrAnd(() => true)).toEqual(true)
+	})
+})
+
+describe.concurrent("isOk", () => {
+	it("returns true for an Ok result", () => {
+		const result = new Ok(42)
+		expect(result.isOk()).toEqual(true)
+	})
+
+	it("returns false for an Err result", () => {
+		const result = new Err("error")
+		expect(result.isOk()).toEqual(false)
+	})
+})
+
+describe.concurrent("isOkAnd", () => {
+	it("returns true for an Ok result", () => {
+		const result = new Ok(42)
+		expect(result.isOkAnd(() => true)).toEqual(true)
+	})
+
+	it("returns false for an Err result", () => {
+		const result = new Err("error")
+		expect(result.isOkAnd(() => true)).toEqual(false)
+	})
+})
+
 describe.concurrent("map", () => {
 	it("returns the mapped value for an Ok result", () => {
 		const result = new Ok(42)
