@@ -7,6 +7,7 @@ interface MethodsAsync<T, E extends Error> {
 	map<U>(f: (value: T) => U): PromiseResult<U, E>
 	mapErr<E2 extends Error>(f: (error: E) => E2): PromiseResult<T, E2>
 	mapOr<U>(defaultValue: U, f: (value: T) => U): Promise<U>
+	mapOrElse<U>(defaultValue: (error: E) => U, f: (value: T) => U): Promise<U>
 	unwrap(): Promise<T>
 	unwrapErr(): Promise<E>
 	unwrapOr<U>(defaultValue: U): Promise<T | U>
@@ -63,6 +64,10 @@ export class PromiseResult<T, E extends Error = Error>
 
 	async mapOr<U>(defaultValue: U, f: (value: T) => U) {
 		return (await this).mapOr(defaultValue, f)
+	}
+
+	async mapOrElse<U>(defaultValue: (error: E) => U, f: (value: T) => U) {
+		return (await this).mapOrElse(defaultValue, f)
 	}
 
 	async unwrap() {
