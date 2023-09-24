@@ -6,29 +6,27 @@ export type OkVariant<T> = {
 	error?: never
 }
 
-export type ErrVariant<E extends Error> = {
+export type ErrVariant<E> = {
 	ok: false
 	value?: never
 	error: E
 }
 
-export type ResultVariants<T, E extends Error> = OkVariant<T> | ErrVariant<E>
+export type ResultVariants<T, E> = OkVariant<T> | ErrVariant<E>
 
-export type Result<T, E extends Error = Error> = ResultMethods<T, E> & ResultVariants<T, E>
-
-export interface ResultMethods<T, E extends Error> {
-	and<U, E2 extends Error>(other: Result<U, E2>): Result<U, E | E2>
-	andThen<U, E2 extends Error>(f: (value: T) => Result<U, E2>): Result<U, E | E2>
+export interface ResultMethods<T, E> {
+	and<U, F>(other: Result<U, F>): Result<U, E | F>
+	andThen<U, F>(f: (value: T) => Result<U, F>): Result<U, E | F>
 	expect(panic: string | Panic): T
 	expectErr(panic: string | Panic): E
 	inspect(f: (value: T) => void): Result<T, E>
 	inspectErr(f: (error: E) => void): Result<T, E>
 	map<U>(f: (value: T) => U): Result<U, E>
-	mapErr<E2 extends Error>(f: (error: E) => E2): Result<T, E2>
+	mapErr<F>(f: (error: E) => F): Result<T, F>
 	mapOr<U>(defaultValue: U, f: (value: T) => U): U
 	mapOrElse<U>(defaultValue: (error: E) => U, f: (value: T) => U): U
-	or<U, E2 extends Error>(other: Result<U, E2>): Result<T | U, E | E2>
-	orElse<U, E2 extends Error>(f: (error: E) => Result<U, E2>): Result<T | U, E | E2>
+	or<U, F>(other: Result<U, F>): Result<T | U, E | F>
+	orElse<U, F>(f: (error: E) => Result<U, F>): Result<T | U, E | F>
 	unwrap(): T
 	unwrapErr(): E
 	unwrapOr<U>(defaultValue: U): T | U
@@ -36,6 +34,8 @@ export interface ResultMethods<T, E extends Error> {
 	match<A, B>(ok: (value: T) => A, err: (error: E) => B): A | B
 	tap(): T
 }
+
+export type Result<T, E> = ResultMethods<T, E> & ResultVariants<T, E>
 
 export class Ok<T = undefined> implements OkVariant<T>, ResultMethods<T, never> {
 	readonly ok = true
@@ -48,11 +48,11 @@ export class Ok<T = undefined> implements OkVariant<T>, ResultMethods<T, never> 
 		this.value = value as T
 	}
 
-	and<U, E2 extends Error>(other: Result<U, E2>) {
+	and<U, F>(other: Result<U, F>) {
 		return other
 	}
 
-	andThen<U, E2 extends Error>(f: (value: T) => Result<U, E2>) {
+	andThen<U, F>(f: (value: T) => Result<U, F>) {
 		return f(this.value)
 	}
 
@@ -80,7 +80,7 @@ export class Ok<T = undefined> implements OkVariant<T>, ResultMethods<T, never> 
 		return new Ok(f(this.value))
 	}
 
-	mapErr(_f: (error: never) => never) {
+	mapErr<F>(_f: (error: never) => F) {
 		return this
 	}
 
@@ -92,11 +92,11 @@ export class Ok<T = undefined> implements OkVariant<T>, ResultMethods<T, never> 
 		return f(this.value)
 	}
 
-	or<U, E2 extends Error>(_other: Result<U, E2>) {
+	or<U, F>(_other: Result<U, F>) {
 		return this
 	}
 
-	orElse<U, E2 extends Error>(_f: (error: never) => Result<U, E2>) {
+	orElse<U, F>(_f: (error: never) => Result<U, F>) {
 		return this
 	}
 
@@ -125,31 +125,22 @@ export class Ok<T = undefined> implements OkVariant<T>, ResultMethods<T, never> 
 	}
 }
 
-export class Err<E extends Error> implements ErrVariant<E>, ResultMethods<never, E> {
+export class Err<E = undefined> implements ErrVariant<E>, ResultMethods<never, E> {
 	readonly ok = false
 	readonly value?: never
 	readonly error: E
 
+	constructor()
 	constructor(error: E)
-	constructor(message: string)
-	constructor(errorOrMessage: unknown) {
-		if (errorOrMessage instanceof Panic) {
-			throw new Panic("Cannot create an Err from a Panic")
-		}
-		if (errorOrMessage instanceof Error) {
-			this.error = errorOrMessage as E
-		} else if (typeof errorOrMessage === "string") {
-			this.error = new Error(errorOrMessage) as E
-		} else {
-			this.error = new Error("Unknown Error") as E
-		}
+	constructor(error?: E) {
+		this.error = error as E
 	}
 
-	and<U, E2 extends Error>(_other: Result<U, E2>) {
+	and<U, F>(_other: Result<U, F>) {
 		return this
 	}
 
-	andThen<U, E2 extends Error>(_f: (value: never) => Result<U, E2>) {
+	andThen<U, F>(_f: (value: never) => Result<U, F>) {
 		return this
 	}
 
@@ -177,7 +168,7 @@ export class Err<E extends Error> implements ErrVariant<E>, ResultMethods<never,
 		return this
 	}
 
-	mapErr<E2 extends Error>(f: (error: E) => E2) {
+	mapErr<F>(f: (error: E) => F) {
 		return new Err(f(this.error))
 	}
 
@@ -189,16 +180,16 @@ export class Err<E extends Error> implements ErrVariant<E>, ResultMethods<never,
 		return defaultValue(this.error)
 	}
 
-	or<U, E2 extends Error>(other: Result<U, E2>) {
+	or<U, F>(other: Result<U, F>) {
 		return other
 	}
 
-	orElse<U, E2 extends Error>(f: (error: E) => Result<U, E2>) {
+	orElse<U, F>(f: (error: E) => Result<U, F>) {
 		return f(this.error)
 	}
 
 	unwrap(): never {
-		throw new UnwrapPanic(this.error)
+		throw new UnwrapPanic(`Cannot unwrap on an Err: ${this.error}`)
 	}
 
 	unwrapErr() {
