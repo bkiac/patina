@@ -1,15 +1,15 @@
 import {Panic, PropagationPanic, UnwrapPanic} from "./panic"
 
 export type OkVariant<T> = {
-	ok: true
-	value: T
-	error?: never
+	readonly ok: true
+	readonly value: T
+	readonly error?: never
 }
 
 export type ErrVariant<E> = {
-	ok: false
-	value?: never
-	error: E
+	readonly ok: false
+	readonly value?: never
+	readonly error: E
 }
 
 export type ResultVariants<T, E> = OkVariant<T> | ErrVariant<E>
