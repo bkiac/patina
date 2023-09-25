@@ -88,6 +88,12 @@ export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 		return (await this).mapOrElse(defaultValue, f)
 	}
 
+	or<U, F>(other: PromiseResult<U, F>) {
+		return new PromiseResult<T | U, F | E>(
+			this.then((result) => other.then((otherResult) => result.or(otherResult))),
+		)
+	}
+
 	async unwrap() {
 		return (await this).unwrap()
 	}

@@ -263,6 +263,32 @@ describe.concurrent("mapOrElse", () => {
 	})
 })
 
+describe.concurrent("or", () => {
+	it("returns the value when Ok or Err", () => {
+		const a = promiseOk(1)
+		const b = promiseErr("late error")
+		expect(a.or(b)).toEqual(a)
+	})
+
+	it("returns the early value when Ok or Ok", () => {
+		const a = promiseOk(0)
+		const b = promiseOk(1)
+		expect(a.or(b)).toEqual(a)
+	})
+
+	it("returns the late value when Err or Ok", () => {
+		const a = promiseErr("early error")
+		const b = promiseOk(1)
+		expect(a.or(b)).toEqual(b)
+	})
+
+	it("returns the late error when Err and Err", () => {
+		const a = promiseErr("early error")
+		const b = promiseErr("late error")
+		expect(a.or(b)).toEqual(b)
+	})
+})
+
 describe.concurrent("unwrap", () => {
 	it("returns the value for an Ok result", async () => {
 		const result = new PromiseResult(Promise.resolve(new Ok(42)))
