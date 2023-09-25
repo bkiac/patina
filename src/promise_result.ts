@@ -34,6 +34,12 @@ export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 		)
 	}
 
+	andThen<U, F>(f: (value: T) => Result<U, F>) {
+		return new PromiseResult<U, E | F>(
+			this.then((result) => result.andThen((value) => f(value))),
+		)
+	}
+
 	async expect(panic: Panic | string) {
 		return (await this).expect(panic)
 	}

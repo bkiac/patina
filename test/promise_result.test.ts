@@ -35,6 +35,18 @@ describe.concurrent("and", () => {
 	})
 })
 
+describe.concurrent("andThen", () => {
+	it("returns the mapped value for an Ok result", async () => {
+		const a = promiseOk(0)
+		await expect(a.andThen((value) => new Ok(value + 1))).resolves.toEqual(new Ok(1))
+	})
+
+	it("returns the result for an Err result", () => {
+		const a = promiseErr("error")
+		expect(a.andThen((value) => new Ok(value + 1))).toEqual(a)
+	})
+})
+
 describe.concurrent("expect", () => {
 	it("returns the value when called on an Ok result", async () => {
 		const result = new PromiseResult(Promise.resolve(new Ok(42)))
