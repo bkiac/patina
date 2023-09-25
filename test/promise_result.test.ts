@@ -289,6 +289,18 @@ describe.concurrent("or", () => {
 	})
 })
 
+describe.concurrent("orElse", () => {
+	it("returns the result for an Ok result", () => {
+		const a = promiseOk(1)
+		expect(a.orElse(() => new Ok(1))).toEqual(a)
+	})
+
+	it("returns the mapped value for an Err result", () => {
+		const a = promiseErr("error")
+		expect(a.orElse(() => new Ok(1))).toEqual(promiseOk(1))
+	})
+})
+
 describe.concurrent("unwrap", () => {
 	it("returns the value for an Ok result", async () => {
 		const result = new PromiseResult(Promise.resolve(new Ok(42)))

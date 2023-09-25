@@ -94,6 +94,12 @@ export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 		)
 	}
 
+	orElse<U, F>(f: (error: E) => Result<U, F>) {
+		return new PromiseResult<T | U, F | E>(
+			this.then((result) => result.orElse((error) => f(error))),
+		)
+	}
+
 	async unwrap() {
 		return (await this).unwrap()
 	}
