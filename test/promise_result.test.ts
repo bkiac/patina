@@ -1,6 +1,40 @@
 import {describe, it, expect} from "vitest"
 import {Err, Panic, PromiseResult, Ok, UnwrapPanic, PropagationPanic} from "../src"
 
+function promiseOk<T>(value: T) {
+	return new PromiseResult(Promise.resolve(new Ok<T>(value)))
+}
+
+function promiseErr<T>(error: T) {
+	return new PromiseResult(Promise.resolve(new Err<T>(error)))
+}
+
+describe.concurrent("and", () => {
+	it("returns the error when Ok and Err", async () => {
+		const a = promiseOk(1)
+		const b = promiseErr("late error")
+		expect(a.and(b)).toEqual(b)
+	})
+
+	it("returns the late value when Ok and Ok", async () => {
+		const a = promiseOk(1)
+		const b = promiseOk(2)
+		expect(a.and(b)).toEqual(b)
+	})
+
+	it("returns the error when Err and Ok", async () => {
+		const a = promiseErr("early error")
+		const b = promiseOk(1)
+		expect(a.and(b)).toEqual(a)
+	})
+
+	it("returns the early error when Err and Err", () => {
+		const a = promiseErr("early error")
+		const b = promiseErr("late error")
+		expect(a.and(b)).toEqual(a)
+	})
+})
+
 describe.concurrent("expect", () => {
 	it("returns the value when called on an Ok result", async () => {
 		const result = new PromiseResult(Promise.resolve(new Ok(42)))

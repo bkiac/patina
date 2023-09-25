@@ -28,6 +28,12 @@ export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 		)
 	}
 
+	and<U, F>(other: PromiseResult<U, F>) {
+		return new PromiseResult<U, E | F>(
+			this.then((result) => other.then((otherResult) => result.and(otherResult))),
+		)
+	}
+
 	async expect(panic: Panic | string) {
 		return (await this).expect(panic)
 	}
