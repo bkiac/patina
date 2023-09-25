@@ -1,6 +1,6 @@
 Similar libraries
 
--   [badrap](https://github.com/badrap/result)
+-   [@badrap/result](https://github.com/badrap/result)
 -   [effect](https://github.com/Effect-TS/effect)
 -   [neverthrow](https://github.com/supermacro/neverthrow)
 -   [option-t](https://github.com/option-t/option-t)
