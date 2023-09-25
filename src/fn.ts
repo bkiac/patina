@@ -1,8 +1,8 @@
 import type {ErrorType} from "./util"
-import {type Result, Err} from "./core"
+import {type Result, Err} from "./result"
 import type {ValueType} from "./util"
 import {Panic, InvalidErrorPanic, PropagationPanic} from "./panic"
-import {PromiseResult} from "./async"
+import {PromiseResult} from "./promise_result"
 
 function handlePropagationPanic(error: unknown) {
 	if (error instanceof PropagationPanic) {

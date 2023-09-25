@@ -1,12 +1,37 @@
 import {describe, expect, it} from "vitest"
-import {tryAsyncFn, tryFn, tryPromise} from "../src"
+import {InvalidErrorPanic, Panic, handleError, tryAsyncFn, tryFn, tryPromise} from "../src"
+
+describe.concurrent("handleError", () => {
+	it("returns an Error when given an Error", () => {
+		class TestError extends Error {}
+		const error = new TestError("Test error")
+		const err = handleError(error)
+		expect(err).to.be.instanceof(TestError)
+	})
+
+	it("throws a Panic when given a Panic", () => {
+		const msg = "Test panic"
+		const panic = new Panic(msg)
+		expect(() => handleError(panic)).to.throw(Panic, msg)
+	})
+
+	it("throws a Panic when given an unknown value", () => {
+		expect(() => handleError(0)).to.throw(InvalidErrorPanic)
+		expect(() => handleError("")).to.throw(InvalidErrorPanic)
+		expect(() => handleError(true)).to.throw(InvalidErrorPanic)
+		expect(() => handleError(undefined)).to.throw(InvalidErrorPanic)
+		expect(() => handleError(null)).to.throw(InvalidErrorPanic)
+		expect(() => handleError({})).to.throw(InvalidErrorPanic)
+		expect(() => handleError([])).to.throw(InvalidErrorPanic)
+	})
+})
 
 describe.concurrent("tryPromise", () => {
 	it("settles a Promise to an Ok result", async () => {
 		const promise = Promise.resolve(42)
 		const result = await tryPromise(promise)
 		expect(result.ok).toEqual(true)
-		expect(result.unwrapUnsafe()).toEqual(42)
+		expect(result.unwrap()).toEqual(42)
 	})
 
 	it("settles a rejected Promise to an Err result", async () => {
@@ -14,7 +39,7 @@ describe.concurrent("tryPromise", () => {
 		const promise = Promise.reject(error)
 		const result = await tryPromise(promise)
 		expect(result.ok).toEqual(false)
-		expect(result.unwrapErrUnsafe()).toEqual(error)
+		expect(result.unwrapErr()).toEqual(error)
 	})
 })
 
@@ -23,7 +48,7 @@ describe.concurrent("tryFn", () => {
 		const fn = () => 42
 		const result = tryFn(fn)
 		expect(result.ok).toEqual(true)
-		expect(result.unwrapUnsafe()).toEqual(42)
+		expect(result.unwrap()).toEqual(42)
 	})
 
 	it("wraps a throwing function call into an Err result", () => {
@@ -33,7 +58,7 @@ describe.concurrent("tryFn", () => {
 		}
 		const result = tryFn(fn)
 		expect(result.ok).toEqual(false)
-		expect(result.unwrapErrUnsafe()).toEqual(error)
+		expect(result.unwrapErr()).toEqual(error)
 	})
 })
 
@@ -42,7 +67,7 @@ describe.concurrent("tryAsyncFn", () => {
 		const fn = async () => Promise.resolve(42)
 		const result = await tryAsyncFn(fn)
 		expect(result.ok).toEqual(true)
-		expect(result.unwrapUnsafe()).toEqual(42)
+		expect(result.unwrap()).toEqual(42)
 	})
 
 	it("wraps a throwing async function call into an Err result", async () => {
@@ -52,6 +77,6 @@ describe.concurrent("tryAsyncFn", () => {
 		}
 		const result = await tryAsyncFn(fn)
 		expect(result.ok).toEqual(false)
-		expect(result.unwrapErrUnsafe()).toEqual(error)
+		expect(result.unwrapErr()).toEqual(error)
 	})
 })

@@ -5,22 +5,22 @@ describe.concurrent("fn", () => {
 	it("returns Ok result when provided function does not throw", () => {
 		const wrappedFn = fn(() => new Ok(42))
 		const result = wrappedFn()
-		expect(result.unwrapUnsafe()).toEqual(42)
+		expect(result.unwrap()).toEqual(42)
 	})
 
 	it("returns Err result when provided function returns Err", () => {
 		const wrappedFn = fn(() => new Err("rekt"))
 		const result = wrappedFn()
-		expect(result.unwrapErrUnsafe()).toEqual(new Error("rekt"))
+		expect(result.unwrapErr()).toEqual("rekt")
 	})
 
 	it("returns Err result when provided function throws PropagationPanic", () => {
 		const error = new Error("Original error")
-		const wrappedFn = fn((): Result<number> => {
+		const wrappedFn = fn((): Result<number, Error> => {
 			throw new PropagationPanic(error)
 		})
 		const result = wrappedFn()
-		expect(result.unwrapErrUnsafe()).toEqual(error)
+		expect(result.unwrapErr()).toEqual(error)
 	})
 
 	it("throws when provided function throws an error other than PropagationPanic", () => {
@@ -36,14 +36,14 @@ describe.concurrent("asyncFn", () => {
 	it("returns Ok result when provided async function does not throw", async () => {
 		const wrappedFn = asyncFn(async () => Promise.resolve(new Ok(42)))
 		const result = await wrappedFn()
-		expect(result.unwrapUnsafe()).toEqual(42)
+		expect(result.unwrap()).toEqual(42)
 	})
 
 	it("returns Err result when provided async function throws PropagationPanic", async () => {
 		const error = new Error("Original error")
 		const wrappedFn = asyncFn(async () => Promise.reject(new PropagationPanic(error)))
 		const result = await wrappedFn()
-		expect(result.unwrapErrUnsafe()).toEqual(error)
+		expect(result.unwrapErr()).toEqual(error)
 	})
 
 	it("throws when provided async function throws an error other than PropagationPanic", async () => {
