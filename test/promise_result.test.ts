@@ -361,6 +361,18 @@ describe.concurrent("unwrapOrElse", () => {
 	})
 })
 
+describe.concurrent("get", () => {
+	it("returns the value for an Ok result", async () => {
+		const result = promiseOk(42)
+		await expect(result.get()).resolves.toEqual(42)
+	})
+
+	it("returns the err for an Err result", async () => {
+		const result = promiseErr("error")
+		await expect(result.get()).resolves.toEqual("error")
+	})
+})
+
 describe.concurrent("match", () => {
 	it("calls the ok function for an Ok result", async () => {
 		const result = new PromiseResult(Promise.resolve(Ok(42)))
