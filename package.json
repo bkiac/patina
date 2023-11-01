@@ -3,7 +3,10 @@
 	"version": "0.3.0",
 	"type": "module",
 	"description": "",
-	"repository": "bkiac/ruts",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/bkiac/ruts.git"
+	},
 	"author": "bkiac <bkiac@pm.me>",
 	"license": "MIT",
 	"module": "./dist/index.js",
