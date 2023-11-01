@@ -63,13 +63,13 @@ describe.concurrent("expect", () => {
 	})
 
 	it("throws a Panic with the provided message when called on an Err result", () => {
-		const error = Error("Original error")
+		const error = new Error("Original error")
 		const result = Err(error)
 		expect(() => result.expect("Panic message")).to.throw(Panic, "Panic message")
 	})
 
 	it("throws a Panic with the provided Panic when called on an Err result", () => {
-		const error = Error("Original error")
+		const error = new Error("Original error")
 		const result = Err(error)
 		const panic = new Panic("custom panic")
 		expect(() => result.expect(panic)).to.throw(panic)
@@ -78,7 +78,7 @@ describe.concurrent("expect", () => {
 
 describe.concurrent("expectErr", () => {
 	it("returns the value when called on an Err result", () => {
-		const error = Error("Original error")
+		const error = new Error("Original error")
 		const err = Err(error)
 		expect(err.expectErr("panic message")).toEqual(error)
 	})
@@ -195,7 +195,7 @@ describe.concurrent("map", () => {
 	})
 
 	it("returns the original Err for an Err result", () => {
-		const error = Error("Test error")
+		const error = new Error("Test error")
 		const result = Err(error)
 		const result2 = result.map((value) => value * 2)
 		expect(result2).toEqual(result)
@@ -204,15 +204,15 @@ describe.concurrent("map", () => {
 
 describe.concurrent("mapErr", () => {
 	it("returns the mapped error for an Err result", () => {
-		const error = Error("Test error")
+		const error = new Error("Test error")
 		const result = Err(error)
-		const result2 = result.mapErr(() => Error("Error"))
-		expect(result2).toEqual(Err(Error("Error")))
+		const result2 = result.mapErr(() => new Error("Error"))
+		expect(result2).toEqual(Err(new Error("Error")))
 	})
 
 	it("returns the original Ok for an Err result", () => {
 		const result = Ok()
-		const result2 = result.mapErr(() => Error("Error"))
+		const result2 = result.mapErr(() => new Error("Error"))
 		expect(result2).toEqual(result)
 	})
 })
@@ -225,7 +225,7 @@ describe.concurrent("mapOr", () => {
 	})
 
 	it("returns the default value for an Err result", () => {
-		const error = Error("Test error")
+		const error = new Error("Test error")
 		const result = Err(error)
 		const value = result.mapOr(0, (value) => value * 2)
 		expect(value).toEqual(0)
@@ -243,7 +243,7 @@ describe.concurrent("mapOrElse", () => {
 	})
 
 	it("returns the default value from a function for an Err result", () => {
-		const result = Err(Error("Test error"))
+		const result = Err(new Error("Test error"))
 		const value = result.mapOrElse(
 			() => 0,
 			(value) => value * 2,
@@ -297,7 +297,7 @@ describe.concurrent("unwrap", () => {
 	})
 
 	it("throws a Panic for an Err result", () => {
-		const error = Error("Test error")
+		const error = new Error("Test error")
 		const result = Err(error)
 		expect(() => result.unwrap()).toThrow(UnwrapPanic)
 	})
@@ -305,7 +305,7 @@ describe.concurrent("unwrap", () => {
 
 describe.concurrent("unwrapErr", () => {
 	it("returns the error for an Err result", () => {
-		const error = Error("Test error")
+		const error = new Error("Test error")
 		const result = Err(error)
 		expect(result.unwrapErr()).toEqual(error)
 	})
@@ -323,7 +323,7 @@ describe.concurrent("unwrapOr", () => {
 	})
 
 	it("returns the default value for an Err result", () => {
-		const error = Error("Test error")
+		const error = new Error("Test error")
 		const result = Err(error)
 		expect(result.unwrapOr(42)).toEqual(42)
 	})
@@ -336,14 +336,14 @@ describe.concurrent("unwrapOrElse", () => {
 	})
 
 	it("returns the default value from a function for an Err result", () => {
-		const error = Error("Test error")
+		const error = new Error("Test error")
 		const result = Err(error)
 		const unwrapped = result.unwrapOrElse(() => 42)
 		expect(unwrapped).toEqual(42)
 	})
 
 	it("can panic", () => {
-		const error = Error("Test error")
+		const error = new Error("Test error")
 		expect(() =>
 			Err(error).unwrapOrElse((error) => {
 				throw new Panic(error)
@@ -375,7 +375,7 @@ describe.concurrent("match", () => {
 	})
 
 	it("calls the err function for an Err result", () => {
-		const error = Error("Test error")
+		const error = new Error("Test error")
 		const result = Err(error)
 		const output = result.match(
 			(value) => value * 2,

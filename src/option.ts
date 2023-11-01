@@ -24,8 +24,8 @@ export interface OptionMethods<T> {
 	isSome(): this is Some<T>
 	isSomeAnd(f: (value: T) => boolean): this is Some<T>
 	map<U>(f: (value: T) => U): Option<U>
-	mapOr<U>(defaultValue: U, f: (value: T) => U): U
-	mapOrElse<U>(defaultValue: () => U, f: (value: T) => U): U
+	mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B
+	mapOrElse<A, B>(defaultValue: () => A, f: (value: T) => B): A | B
 	or<U>(other: Option<U>): Option<T | U>
 	orElse<U>(f: () => Option<U>): Option<T | U>
 	unwrap(): T
@@ -85,11 +85,11 @@ export class SomeImpl<T> implements SomeVariant<T>, OptionMethods<T> {
 		return Some(f(this.value))
 	}
 
-	mapOr<U>(_defaultValue: U, f: (value: T) => U) {
+	mapOr<A, B>(_defaultValue: A, f: (value: T) => B) {
 		return f(this.value)
 	}
 
-	mapOrElse<U>(_defaultValue: () => U, f: (value: T) => U) {
+	mapOrElse<A, B>(_defaultValue: () => A, f: (value: T) => B) {
 		return f(this.value)
 	}
 
@@ -172,11 +172,11 @@ export class NoneImpl implements NoneVariant, OptionMethods<never> {
 		return None
 	}
 
-	mapOr<U>(defaultValue: U, _f: (value: never) => U) {
+	mapOr<A, B>(defaultValue: A, _f: (value: never) => B) {
 		return defaultValue
 	}
 
-	mapOrElse<U>(defaultValue: () => U, _f: (value: never) => U) {
+	mapOrElse<A, B>(defaultValue: () => A, _f: (value: never) => B) {
 		return defaultValue()
 	}
 
