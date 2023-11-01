@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest"
-import {Panic, PropagationPanic, UnwrapPanic, Ok, Err} from "../src"
+import {Panic, UnwrapPanic, Ok, Err} from "../src"
 
 describe.concurrent("ok", () => {
 	it("returns an Ok result", () => {
@@ -370,23 +370,5 @@ describe.concurrent("match", () => {
 			() => 0,
 		)
 		expect(output).toEqual(0)
-	})
-})
-
-describe.concurrent("tap", () => {
-	it("returns value for an Ok result", () => {
-		const result = new Ok(1)
-		expect(result.tap()).toEqual(1)
-	})
-
-	it("throws PropagationPanic for an Err result", () => {
-		const error = new Error("custom error")
-		const result = new Err(error)
-		expect(() => result.tap()).toThrow(PropagationPanic)
-		try {
-			result.tap()
-		} catch (err) {
-			expect((err as PropagationPanic<Error>).originalError).toEqual(error)
-		}
 	})
 })

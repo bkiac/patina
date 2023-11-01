@@ -1,4 +1,4 @@
-import {Panic, PropagationPanic, UnwrapPanic} from "./panic"
+import {Panic, UnwrapPanic} from "./panic"
 
 export type OkVariant<T> = {
 	readonly ok: true
@@ -36,7 +36,6 @@ export interface ResultMethods<T, E> {
 	unwrapOr<U>(defaultValue: U): T | U
 	unwrapOrElse<U>(defaultValue: (error: E) => U): T | U
 	match<A, B>(ok: (value: T) => A, err: (error: E) => B): A | B
-	tap(): T
 }
 
 export type Result<T, E> = ResultMethods<T, E> & ResultVariants<T, E>
@@ -139,10 +138,6 @@ export class Ok<T = undefined> implements OkVariant<T>, ResultMethods<T, never> 
 	match<A, B>(ok: (value: T) => A, _err: (error: never) => B) {
 		return ok(this.value)
 	}
-
-	tap() {
-		return this.value
-	}
 }
 
 export class Err<E = undefined> implements ErrVariant<E>, ResultMethods<never, E> {
@@ -242,9 +237,5 @@ export class Err<E = undefined> implements ErrVariant<E>, ResultMethods<never, E
 
 	match<A, B>(_ok: (value: never) => A, err: (error: E) => B) {
 		return err(this.error)
-	}
-
-	tap(): never {
-		throw new PropagationPanic(this.error)
 	}
 }

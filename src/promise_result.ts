@@ -119,8 +119,4 @@ export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 	async match<A, B>(ok: (value: T) => A, err: (error: E) => B) {
 		return (await this).match(ok, err)
 	}
-
-	async tap() {
-		return (await this).tap()
-	}
 }

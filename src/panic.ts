@@ -24,12 +24,6 @@ export class UnwrapPanic extends Panic {
 	}
 }
 
-export class PropagationPanic<E> extends Panic {
-	constructor(public originalError: E) {
-		super("Uncaught propagation error")
-	}
-}
-
 export class InvalidErrorPanic extends Panic {
 	constructor(public error: unknown) {
 		super("Invalid Error value")
