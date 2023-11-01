@@ -2,12 +2,14 @@ import {Panic, UnwrapPanic} from "./panic"
 
 export type OkVariant<T> = {
 	readonly ok: true
+	readonly err: false
 	readonly value: T
 	readonly error?: never
 }
 
 export type ErrVariant<E> = {
 	readonly ok: false
+	readonly err: true
 	readonly value?: never
 	readonly error: E
 }
@@ -40,8 +42,9 @@ export interface ResultMethods<T, E> {
 
 export type Result<T, E> = ResultMethods<T, E> & ResultVariants<T, E>
 
-class OkImpl<T = undefined> implements OkVariant<T>, ResultMethods<T, never> {
+export class OkImpl<T = undefined> implements OkVariant<T>, ResultMethods<T, never> {
 	readonly ok = true
+	readonly err = false
 	readonly value: T
 	readonly error?: never
 
@@ -147,8 +150,9 @@ export function Ok<T>(value?: T): Ok<T> {
 	return new OkImpl(value as T)
 }
 
-class ErrImpl<E = undefined> implements ErrVariant<E>, ResultMethods<never, E> {
+export class ErrImpl<E = undefined> implements ErrVariant<E>, ResultMethods<never, E> {
 	readonly ok = false
+	readonly err = true
 	readonly value?: never
 	readonly error: E
 
