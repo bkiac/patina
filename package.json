@@ -1,27 +1,27 @@
 {
 	"name": "ruts",
 	"version": "0.2.0",
+	"type": "module",
 	"description": "",
-	"license": "MIT",
 	"repository": "bkiac/ruts",
+	"author": "bkiac <bkiac@pm.me>",
+	"license": "MIT",
+	"module": "./dist/index.js",
+	"files": [
+		"dist"
+	],
 	"keywords": [
 		"result",
 		"error",
 		"typescript"
 	],
-	"author": "bkiac <bkiac@pm.me>",
-	"files": [
-		"dist"
-	],
-	"type": "module",
-	"module": "./dist/index.js",
 	"scripts": {
 		"build": "tsup",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
+		"prepublishOnly": "pnpm run build",
 		"test": "vitest",
-		"types": "tsc --noEmit",
-		"prepublishOnly": "pnpm run build"
+		"types": "tsc --noEmit"
 	},
 	"devDependencies": {
 		"husky": "^8.0.3",
@@ -31,5 +31,24 @@
 		"tsup": "^7.2.0",
 		"typescript": "^5.0.4",
 		"vitest": "^0.31.0"
+	},
+	"prettier": {
+		"plugins": [
+			"prettier-plugin-pkg"
+		],
+		"arrowParens": "always",
+		"bracketSameLine": false,
+		"bracketSpacing": false,
+		"endOfLine": "lf",
+		"htmlWhitespaceSensitivity": "css",
+		"jsxSingleQuote": false,
+		"printWidth": 100,
+		"proseWrap": "preserve",
+		"quoteProps": "as-needed",
+		"semi": false,
+		"singleQuote": false,
+		"tabWidth": 4,
+		"trailingComma": "all",
+		"useTabs": true
 	}
 }
