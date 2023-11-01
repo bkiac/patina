@@ -38,6 +38,7 @@ export interface ResultMethods<T, E> {
 	unwrapOr<U>(defaultValue: U): T | U
 	unwrapOrElse<U>(defaultValue: (error: E) => U): T | U
 
+	get(): T | E
 	match<A, B>(ok: (value: T) => A, err: (error: E) => B): A | B
 }
 
@@ -136,6 +137,10 @@ export class OkImpl<T = undefined> implements OkVariant<T>, ResultMethods<T, nev
 	}
 
 	unwrapOrElse<U>(_defaultValue: (error: never) => U) {
+		return this.value
+	}
+
+	get() {
 		return this.value
 	}
 
@@ -245,6 +250,10 @@ export class ErrImpl<E = undefined> implements ErrVariant<E>, ResultMethods<neve
 
 	unwrapOrElse<U>(defaultValue: (error: E) => U) {
 		return defaultValue(this.error)
+	}
+
+	get() {
+		return this.error
 	}
 
 	match<A, B>(_ok: (value: never) => A, err: (error: E) => B) {

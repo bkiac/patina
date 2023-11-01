@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest"
-import {Panic, UnwrapPanic, Ok, Err} from "../src"
+import {Panic, UnwrapPanic, Ok, Err, Result} from "../src"
 
 describe.concurrent("ok", () => {
 	it("returns an Ok result", () => {
@@ -349,6 +349,18 @@ describe.concurrent("unwrapOrElse", () => {
 				throw new Panic(error)
 			}),
 		).toThrow(Panic)
+	})
+})
+
+describe.concurrent("get", () => {
+	it("returns the value for an Ok result", () => {
+		const result = Ok(42) as Result<number, Error>
+		expect(result.get()).toEqual(42)
+	})
+
+	it("returns the err for an Err result", () => {
+		const result = Err(42) as Result<string, number>
+		expect(result.get()).toEqual(42)
 	})
 })
 
