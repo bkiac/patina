@@ -14,17 +14,17 @@ export function handleError(error: unknown) {
 
 export function tryFn<T>(fn: () => T): Result<T, Error> {
 	try {
-		return new Ok(fn())
+		return Ok(fn())
 	} catch (error) {
-		return new Err(handleError(error))
+		return Err(handleError(error))
 	}
 }
 
 export function tryPromise<T>(promise: Promise<T>): PromiseResult<T, Error> {
 	return new PromiseResult(
 		promise.then(
-			(value) => new Ok(value),
-			(error) => new Err(handleError(error)),
+			(value) => Ok(value),
+			(error) => Err(handleError(error)),
 		),
 	)
 }

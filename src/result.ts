@@ -40,7 +40,7 @@ export interface ResultMethods<T, E> {
 
 export type Result<T, E> = ResultMethods<T, E> & ResultVariants<T, E>
 
-export class Ok<T = undefined> implements OkVariant<T>, ResultMethods<T, never> {
+class OkImpl<T = undefined> implements OkVariant<T>, ResultMethods<T, never> {
 	readonly ok = true
 	readonly value: T
 	readonly error?: never
@@ -96,7 +96,7 @@ export class Ok<T = undefined> implements OkVariant<T>, ResultMethods<T, never> 
 	}
 
 	map<U>(f: (value: T) => U) {
-		return new Ok(f(this.value))
+		return Ok(f(this.value))
 	}
 
 	mapErr<F>(_f: (error: never) => F) {
@@ -140,7 +140,14 @@ export class Ok<T = undefined> implements OkVariant<T>, ResultMethods<T, never> 
 	}
 }
 
-export class Err<E = undefined> implements ErrVariant<E>, ResultMethods<never, E> {
+export type Ok<T = undefined> = OkImpl<T>
+export function Ok(): Ok
+export function Ok<T>(value: T): Ok<T>
+export function Ok<T>(value?: T): Ok<T> {
+	return new OkImpl(value as T)
+}
+
+class ErrImpl<E = undefined> implements ErrVariant<E>, ResultMethods<never, E> {
 	readonly ok = false
 	readonly value?: never
 	readonly error: E
@@ -200,7 +207,7 @@ export class Err<E = undefined> implements ErrVariant<E>, ResultMethods<never, E
 	}
 
 	mapErr<F>(f: (error: E) => F) {
-		return new Err(f(this.error))
+		return Err(f(this.error))
 	}
 
 	mapOr<U>(defaultValue: U, _f: (value: never) => U) {
@@ -238,4 +245,11 @@ export class Err<E = undefined> implements ErrVariant<E>, ResultMethods<never, E
 	match<A, B>(_ok: (value: never) => A, err: (error: E) => B) {
 		return err(this.error)
 	}
+}
+
+export type Err<E = undefined> = ErrImpl<E>
+export function Err(): ErrImpl
+export function Err<E>(error: E): Err<E>
+export function Err<E>(error?: E): Err<E> {
+	return new ErrImpl(error as E)
 }
