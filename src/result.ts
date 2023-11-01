@@ -29,8 +29,8 @@ export interface ResultMethods<T, E> {
 	isOkAnd(f: (value: T) => boolean): this is Ok<T>
 	map<U>(f: (value: T) => U): Result<U, E>
 	mapErr<F>(f: (error: E) => F): Result<T, F>
-	mapOr<U>(defaultValue: U, f: (value: T) => U): U
-	mapOrElse<U>(defaultValue: (error: E) => U, f: (value: T) => U): U
+	mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B
+	mapOrElse<A, B>(defaultValue: (error: E) => A, f: (value: T) => B): A | B
 	or<U, F>(other: Result<U, F>): Result<T | U, E | F>
 	orElse<U, F>(f: (error: E) => Result<U, F>): Result<T | U, E | F>
 	unwrap(): T
@@ -108,11 +108,11 @@ export class OkImpl<T = undefined> implements OkVariant<T>, ResultMethods<T, nev
 		return this
 	}
 
-	mapOr<U>(_defaultValue: U, f: (value: T) => U) {
+	mapOr<A, B>(_defaultValue: A, f: (value: T) => B) {
 		return f(this.value)
 	}
 
-	mapOrElse<U>(_defaultValue: (error: never) => U, f: (value: T) => U): U {
+	mapOrElse<A, B>(_defaultValue: (error: never) => A, f: (value: T) => B) {
 		return f(this.value)
 	}
 
@@ -220,11 +220,11 @@ export class ErrImpl<E = undefined> implements ErrVariant<E>, ResultMethods<neve
 		return Err(f(this.error))
 	}
 
-	mapOr<U>(defaultValue: U, _f: (value: never) => U) {
+	mapOr<A, B>(defaultValue: A, _f: (value: never) => B) {
 		return defaultValue
 	}
 
-	mapOrElse<U>(defaultValue: (error: E) => U, _f: (value: never) => U): U {
+	mapOrElse<A, B>(defaultValue: (error: E) => A, _f: (value: never) => B) {
 		return defaultValue(this.error)
 	}
 
