@@ -33,8 +33,8 @@ export interface OptionMethods<T> {
 	unwrapOrElse<U>(defaultValue: () => U): T | U
 	xor<U>(other: Option<U>): Option<T | U>
 
+	get(): T | null
 	match<A, B>(some: (value: T) => A, none: () => B): A | B
-	unwrapOrNull(): T | null
 }
 
 export type Option<T> = OptionMethods<T> & OptionVariants<T>
@@ -117,12 +117,12 @@ export class SomeImpl<T> implements SomeVariant<T>, OptionMethods<T> {
 		return other.isSome() ? None : this
 	}
 
-	match<A, B>(some: (value: T) => A, _none: () => B) {
-		return some(this.value)
+	get() {
+		return this.value
 	}
 
-	unwrapOrNull() {
-		return this.value
+	match<A, B>(some: (value: T) => A, _none: () => B) {
+		return some(this.value)
 	}
 }
 
@@ -204,12 +204,12 @@ export class NoneImpl implements NoneVariant, OptionMethods<never> {
 		return other
 	}
 
-	match<A, B>(_some: (value: never) => A, none: () => B) {
-		return none()
+	get() {
+		return null
 	}
 
-	unwrapOrNull() {
-		return null
+	match<A, B>(_some: (value: never) => A, none: () => B) {
+		return none()
 	}
 }
 
