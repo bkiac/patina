@@ -37,6 +37,7 @@ export interface ResultMethods<T, E> {
 	unwrapErr(): E
 	unwrapOr<U>(defaultValue: U): T | U
 	unwrapOrElse<U>(defaultValue: (error: E) => U): T | U
+
 	match<A, B>(ok: (value: T) => A, err: (error: E) => B): A | B
 }
 
@@ -143,7 +144,7 @@ export class OkImpl<T = undefined> implements OkVariant<T>, ResultMethods<T, nev
 	}
 }
 
-export type Ok<T = undefined> = OkImpl<T>
+export interface Ok<T = undefined> extends OkImpl<T> {}
 export function Ok(): Ok
 export function Ok<T>(value: T): Ok<T>
 export function Ok<T>(value?: T): Ok<T> {
@@ -251,7 +252,7 @@ export class ErrImpl<E = undefined> implements ErrVariant<E>, ResultMethods<neve
 	}
 }
 
-export type Err<E = undefined> = ErrImpl<E>
+export interface Err<E = undefined> extends ErrImpl<E> {}
 export function Err(): ErrImpl
 export function Err<E>(error: E): Err<E>
 export function Err<E>(error?: E): Err<E> {
