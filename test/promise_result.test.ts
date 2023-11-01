@@ -55,13 +55,13 @@ describe.concurrent("expect", () => {
 	})
 
 	it("throws a Panic with the provided message when called on an Err result", async () => {
-		const error = Error("Original error")
+		const error = new Error("Original error")
 		const result = new PromiseResult(Promise.resolve(Err(error)))
 		await expect(result.expect("Panic message")).rejects.toThrow(Panic)
 	})
 
 	it("throws a Panic with the provided Panic when called on an Err result", async () => {
-		const error = Error("Original error")
+		const error = new Error("Original error")
 		const result = new PromiseResult(Promise.resolve(Err(error)))
 		const panic = new Panic("Panic")
 		await expect(result.expect(panic)).rejects.toEqual(panic)
@@ -70,9 +70,9 @@ describe.concurrent("expect", () => {
 
 describe.concurrent("expectErr", () => {
 	it("returns the error when called on an Err result", async () => {
-		const result = new PromiseResult(Promise.resolve(Err(Error("Test error"))))
+		const result = new PromiseResult(Promise.resolve(Err(new Error("Test error"))))
 		const error = await result.expectErr("")
-		expect(error).toEqual(Error("Test error"))
+		expect(error).toEqual(new Error("Test error"))
 	})
 
 	it("throws a Panic with the provided message when called on an Ok result", async () => {
@@ -144,7 +144,7 @@ describe.concurrent("isErr", () => {
 	})
 
 	it("returns true for an Err result", async () => {
-		const result = new PromiseResult(Promise.resolve(Err(Error("Test error"))))
+		const result = new PromiseResult(Promise.resolve(Err(new Error("Test error"))))
 		await expect(result.isErr()).resolves.toEqual(true)
 	})
 })
@@ -156,12 +156,12 @@ describe.concurrent("isErrAnd", () => {
 	})
 
 	it("returns true for an Err result when the provided function returns true", async () => {
-		const result = new PromiseResult(Promise.resolve(Err(Error("Test error"))))
+		const result = new PromiseResult(Promise.resolve(Err(new Error("Test error"))))
 		await expect(result.isErrAnd(() => true)).resolves.toEqual(true)
 	})
 
 	it("returns false for an Err result when the provided function returns false", async () => {
-		const result = new PromiseResult(Promise.resolve(Err(Error("Test error"))))
+		const result = new PromiseResult(Promise.resolve(Err(new Error("Test error"))))
 		await expect(result.isErrAnd(() => false)).resolves.toEqual(false)
 	})
 })
@@ -173,7 +173,7 @@ describe.concurrent("isOk", () => {
 	})
 
 	it("returns false for an Err result", async () => {
-		const result = new PromiseResult(Promise.resolve(Err(Error("Test error"))))
+		const result = new PromiseResult(Promise.resolve(Err(new Error("Test error"))))
 		await expect(result.isOk()).resolves.toEqual(false)
 	})
 })
@@ -190,7 +190,7 @@ describe.concurrent("isOkAnd", () => {
 	})
 
 	it("returns false for an Err result", async () => {
-		const result = new PromiseResult(Promise.resolve(Err(Error("Test error"))))
+		const result = new PromiseResult(Promise.resolve(Err(new Error("Test error"))))
 		await expect(result.isOkAnd(() => true)).resolves.toEqual(false)
 	})
 })
@@ -203,7 +203,7 @@ describe.concurrent("map", () => {
 	})
 
 	it("returns the original Err for an Err result", async () => {
-		const error = Error("Test error")
+		const error = new Error("Test error")
 		const result = new PromiseResult<number, Error>(Promise.resolve(Err(error)))
 		const result2 = result.map((value) => value * 2)
 		const awaitedResult = await result
@@ -213,15 +213,15 @@ describe.concurrent("map", () => {
 
 describe.concurrent("mapErr", () => {
 	it("returns the mapped error for an Err result", async () => {
-		const error = Error("Test error")
+		const error = new Error("Test error")
 		const result = new PromiseResult(Promise.resolve(Err(error)))
-		const result2 = result.mapErr(() => Error("Error"))
-		await expect(result2).resolves.toEqual(Err(Error("Error")))
+		const result2 = result.mapErr(() => new Error("Error"))
+		await expect(result2).resolves.toEqual(Err(new Error("Error")))
 	})
 
 	it("returns the original Ok for an Err result", async () => {
 		const result = new PromiseResult(Promise.resolve(Ok()))
-		const result2 = result.mapErr(() => Error("Error"))
+		const result2 = result.mapErr(() => new Error("Error"))
 		await expect(result2).resolves.toEqual(Ok())
 	})
 })
@@ -234,7 +234,7 @@ describe.concurrent("mapOr", () => {
 	})
 
 	it("returns the default value for an Err result", async () => {
-		const error = Error("Test error")
+		const error = new Error("Test error")
 		const result = new PromiseResult<number, Error>(Promise.resolve(Err(error)))
 		const value = await result.mapOr(0, (value) => value * 2)
 		expect(value).toEqual(0)
@@ -252,7 +252,9 @@ describe.concurrent("mapOrElse", () => {
 	})
 
 	it("returns the default value from a function for an Err result", async () => {
-		const result = new PromiseResult<number, Error>(Promise.resolve(Err(Error("Test error"))))
+		const result = new PromiseResult<number, Error>(
+			Promise.resolve(Err(new Error("Test error"))),
+		)
 		const value = await result.mapOrElse(
 			() => 0,
 			(value) => value * 2,
@@ -306,7 +308,7 @@ describe.concurrent("unwrap", () => {
 	})
 
 	it("throws a Panic for an Err result", async () => {
-		const error = Error("Test error")
+		const error = new Error("Test error")
 		const result = new PromiseResult(Promise.resolve(Err(error)))
 		await expect(result.unwrap()).rejects.toThrow(UnwrapPanic)
 	})
@@ -314,7 +316,7 @@ describe.concurrent("unwrap", () => {
 
 describe.concurrent("unwrapErr", () => {
 	it("returns the error for an Err result", async () => {
-		const error = Error("Test error")
+		const error = new Error("Test error")
 		const result = new PromiseResult(Promise.resolve(Err(error)))
 		await expect(result.unwrapErr()).resolves.toEqual(error)
 	})
@@ -332,7 +334,7 @@ describe.concurrent("unwrapOr", () => {
 	})
 
 	it("returns the default value for an Err result", async () => {
-		const error = Error("Test error")
+		const error = new Error("Test error")
 		const result = new PromiseResult(Promise.resolve(Err(error)))
 		await expect(result.unwrapOr(42)).resolves.toEqual(42)
 	})
@@ -345,13 +347,13 @@ describe.concurrent("unwrapOrElse", () => {
 	})
 
 	it("returns the default value from a function for an Err result", async () => {
-		const error = Error("Test error")
+		const error = new Error("Test error")
 		const result = new PromiseResult(Promise.resolve(Err(error)))
 		await expect(result.unwrapOrElse(() => 42)).resolves.toEqual(42)
 	})
 
 	it("can panic", async () => {
-		const error = Error("Test error")
+		const error = new Error("Test error")
 		const result = new PromiseResult(Promise.resolve(Err(error)))
 		await expect(() =>
 			result.unwrapOrElse((error) => {
@@ -384,7 +386,7 @@ describe.concurrent("match", () => {
 	})
 
 	it("calls the err function for an Err result", async () => {
-		const error = Error("Test error")
+		const error = new Error("Test error")
 		const result = new PromiseResult<number, Error>(Promise.resolve(Err(error)))
 		const output = result.match(
 			(value) => value * 2,
