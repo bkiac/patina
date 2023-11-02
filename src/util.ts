@@ -12,6 +12,3 @@ export type ValueErrorType<T> = T extends
 	: never
 export type ValueType<T> = ValueErrorType<T>["value"]
 export type ErrorType<T> = ValueErrorType<T>["error"]
-
-export type Fn = (...args: any[]) => any
-export type AsyncFn = (...args: any[]) => Promise<any>

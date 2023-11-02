@@ -1,5 +1,5 @@
 import {describe, it, expect, vi} from "vitest"
-import {Err, Panic, PromiseResult, Ok, UnwrapPanic} from "../src"
+import {Panic, UnwrapPanic} from "../src"
 import {PromiseOption} from "../src/promise_option"
 import {None, Some} from "../src/option"
 
