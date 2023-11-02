@@ -3,7 +3,9 @@ import {type Result} from "./result"
 import type {ResultValueType} from "./util"
 import {PromiseResult} from "./promise_result"
 
-export function fn<T extends (...args: any[]) => Result<any, any>>(fn: T) {
+export type Fn = (...args: any[]) => Result<any, any>
+
+export function fn<T extends Fn>(fn: T) {
 	return function (...args) {
 		return fn(...args)
 	} as T
