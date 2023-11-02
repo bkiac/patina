@@ -90,13 +90,13 @@ export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 
 	or<U, F>(other: PromiseResult<U, F>) {
 		return new PromiseResult<T | U, F | E>(
-			this.then((result) => other.then((otherResult) => result.or(otherResult))),
+			this.then((thisResult) => other.then((otherResult) => thisResult.or(otherResult))),
 		)
 	}
 
 	orElse<U, F>(f: (error: E) => Result<U, F>) {
 		return new PromiseResult<T | U, F | E>(
-			this.then((result) => result.orElse((error) => f(error))),
+			this.then((thisResult) => thisResult.orElse((error) => f(error))),
 		)
 	}
 
