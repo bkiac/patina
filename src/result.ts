@@ -4,12 +4,12 @@ export type OkVariant<T> = {
 	readonly ok: true
 	readonly value: T
 	readonly err: false
-	readonly error: null
+	readonly error?: never
 }
 
 export type ErrVariant<E> = {
 	readonly ok: false
-	readonly value: null
+	readonly value?: never
 	readonly err: true
 	readonly error: E
 }
@@ -48,7 +48,7 @@ export class OkImpl<T> implements OkVariant<T>, ResultMethods<T, never> {
 	readonly ok = true
 	readonly value: T
 	readonly err = false
-	readonly error = null
+	readonly error?: never
 
 	constructor(value: T) {
 		this.value = value
@@ -156,7 +156,7 @@ export function Ok<T>(value?: T): Ok<T> {
 
 export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 	readonly ok = false
-	readonly value = null
+	readonly value?: never
 	readonly err = true
 	readonly error: E
 
