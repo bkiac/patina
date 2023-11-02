@@ -3,12 +3,14 @@ import {Panic, UnwrapPanic} from "./panic"
 export type OkVariant<T> = {
 	readonly ok: true
 	readonly value: T
+	readonly err: false
 	readonly error?: never
 }
 
 export type ErrVariant<E> = {
 	readonly ok: false
 	readonly value?: never
+	readonly err: true
 	readonly error: E
 }
 
@@ -27,28 +29,29 @@ export interface ResultMethods<T, E> {
 	isOkAnd(f: (value: T) => boolean): this is Ok<T>
 	map<U>(f: (value: T) => U): Result<U, E>
 	mapErr<F>(f: (error: E) => F): Result<T, F>
-	mapOr<U>(defaultValue: U, f: (value: T) => U): U
-	mapOrElse<U>(defaultValue: (error: E) => U, f: (value: T) => U): U
+	mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B
+	mapOrElse<A, B>(defaultValue: (error: E) => A, f: (value: T) => B): A | B
 	or<U, F>(other: Result<U, F>): Result<T | U, E | F>
 	orElse<U, F>(f: (error: E) => Result<U, F>): Result<T | U, E | F>
 	unwrap(): T
 	unwrapErr(): E
 	unwrapOr<U>(defaultValue: U): T | U
 	unwrapOrElse<U>(defaultValue: (error: E) => U): T | U
+
+	get(): T | E
 	match<A, B>(ok: (value: T) => A, err: (error: E) => B): A | B
 }
 
-export type Result<T, E> = ResultMethods<T, E> & ResultVariants<T, E>
+export type Result<T, E> = ResultVariants<T, E> & ResultMethods<T, E>
 
-export class Ok<T = undefined> implements OkVariant<T>, ResultMethods<T, never> {
+export class OkImpl<T> implements OkVariant<T>, ResultMethods<T, never> {
 	readonly ok = true
 	readonly value: T
+	readonly err = false
 	readonly error?: never
 
-	constructor()
-	constructor(value: T)
-	constructor(value?: T) {
-		this.value = value as T
+	constructor(value: T) {
+		this.value = value
 	}
 
 	and<U, F>(other: Result<U, F>) {
@@ -96,18 +99,18 @@ export class Ok<T = undefined> implements OkVariant<T>, ResultMethods<T, never> 
 	}
 
 	map<U>(f: (value: T) => U) {
-		return new Ok(f(this.value))
+		return Ok(f(this.value))
 	}
 
 	mapErr<F>(_f: (error: never) => F) {
 		return this
 	}
 
-	mapOr<U>(_defaultValue: U, f: (value: T) => U) {
+	mapOr<A, B>(_defaultValue: A, f: (value: T) => B) {
 		return f(this.value)
 	}
 
-	mapOrElse<U>(_defaultValue: (error: never) => U, f: (value: T) => U): U {
+	mapOrElse<A, B>(_defaultValue: (error: never) => A, f: (value: T) => B) {
 		return f(this.value)
 	}
 
@@ -135,20 +138,30 @@ export class Ok<T = undefined> implements OkVariant<T>, ResultMethods<T, never> 
 		return this.value
 	}
 
+	get() {
+		return this.value
+	}
+
 	match<A, B>(ok: (value: T) => A, _err: (error: never) => B) {
 		return ok(this.value)
 	}
 }
 
-export class Err<E = undefined> implements ErrVariant<E>, ResultMethods<never, E> {
+export interface Ok<T = null> extends OkImpl<T> {}
+export function Ok(): Ok
+export function Ok<T>(value: T): Ok<T>
+export function Ok<T>(value?: T): Ok<T> {
+	return new OkImpl(value ? value : null) as Ok<T>
+}
+
+export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 	readonly ok = false
 	readonly value?: never
+	readonly err = true
 	readonly error: E
 
-	constructor()
-	constructor(error: E)
-	constructor(error?: E) {
-		this.error = error as E
+	constructor(error: E) {
+		this.error = error
 	}
 
 	and<U, F>(_other: Result<U, F>) {
@@ -200,14 +213,14 @@ export class Err<E = undefined> implements ErrVariant<E>, ResultMethods<never, E
 	}
 
 	mapErr<F>(f: (error: E) => F) {
-		return new Err(f(this.error))
+		return Err(f(this.error))
 	}
 
-	mapOr<U>(defaultValue: U, _f: (value: never) => U) {
+	mapOr<A, B>(defaultValue: A, _f: (value: never) => B) {
 		return defaultValue
 	}
 
-	mapOrElse<U>(defaultValue: (error: E) => U, _f: (value: never) => U): U {
+	mapOrElse<A, B>(defaultValue: (error: E) => A, _f: (value: never) => B) {
 		return defaultValue(this.error)
 	}
 
@@ -235,7 +248,18 @@ export class Err<E = undefined> implements ErrVariant<E>, ResultMethods<never, E
 		return defaultValue(this.error)
 	}
 
+	get() {
+		return this.error
+	}
+
 	match<A, B>(_ok: (value: never) => A, err: (error: E) => B) {
 		return err(this.error)
 	}
+}
+
+export interface Err<E = null> extends ErrImpl<E> {}
+export function Err(): Err
+export function Err<E>(error: E): Err<E>
+export function Err<E>(error?: E): Err<E> {
+	return new ErrImpl(error ? error : null) as Err<E>
 }

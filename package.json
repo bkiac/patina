@@ -36,6 +36,9 @@
 		"typescript": "^5.0.4",
 		"vitest": "^0.31.0"
 	},
+	"lint-staged": {
+		"*.{ts,yaml,json,md}": "prettier --write"
+	},
 	"prettier": {
 		"plugins": [
 			"prettier-plugin-pkg"
