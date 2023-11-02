@@ -1,21 +1,5 @@
 import {Panic, UnwrapPanic} from "./panic"
 
-export type OkVariant<T> = {
-	readonly ok: true
-	readonly value: T
-	readonly err: false
-	readonly error?: never
-}
-
-export type ErrVariant<E> = {
-	readonly ok: false
-	readonly value?: never
-	readonly err: true
-	readonly error: E
-}
-
-export type ResultVariants<T, E> = OkVariant<T> | ErrVariant<E>
-
 export interface ResultMethods<T, E> {
 	and<U, F>(other: Result<U, F>): Result<U, E | F>
 	andThen<U, F>(f: (value: T) => Result<U, F>): Result<U, E | F>
@@ -42,9 +26,7 @@ export interface ResultMethods<T, E> {
 	match<A, B>(ok: (value: T) => A, err: (error: E) => B): A | B
 }
 
-export type Result<T, E> = ResultVariants<T, E> & ResultMethods<T, E>
-
-export class OkImpl<T> implements OkVariant<T>, ResultMethods<T, never> {
+export class OkImpl<T> implements ResultMethods<T, never> {
 	readonly ok = true
 	readonly value: T
 	readonly err = false
@@ -154,7 +136,7 @@ export function Ok<T>(value?: T): Ok<T> {
 	return new OkImpl(value ? value : null) as Ok<T>
 }
 
-export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
+export class ErrImpl<E> implements ResultMethods<never, E> {
 	readonly ok = false
 	readonly value?: never
 	readonly err = true
@@ -263,3 +245,5 @@ export function Err<E>(error: E): Err<E>
 export function Err<E>(error?: E): Err<E> {
 	return new ErrImpl(error ? error : null) as Err<E>
 }
+
+export type Result<T, E> = Ok<T> | Err<E>

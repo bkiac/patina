@@ -1,19 +1,5 @@
 import {Panic, UnwrapPanic} from "./panic"
 
-export type SomeVariant<T> = {
-	readonly some: true
-	readonly none: false
-	readonly value: T
-}
-
-export type NoneVariant = {
-	readonly some: false
-	readonly none: true
-	readonly value: null
-}
-
-export type OptionVariants<T> = SomeVariant<T> | NoneVariant
-
 export interface OptionMethods<T> {
 	and<U>(other: Option<U>): Option<U>
 	andThen<U>(f: (value: T) => Option<U>): Option<U>
@@ -37,9 +23,7 @@ export interface OptionMethods<T> {
 	match<A, B>(some: (value: T) => A, none: () => B): A | B
 }
 
-export type Option<T> = OptionVariants<T> & OptionMethods<T>
-
-export class SomeImpl<T> implements SomeVariant<T>, OptionMethods<T> {
+export class SomeImpl<T> implements OptionMethods<T> {
 	readonly some = true
 	readonly none = false
 	readonly value: T
@@ -131,7 +115,7 @@ export function Some<T>(value: T): Some<T> {
 	return new SomeImpl(value)
 }
 
-export class NoneImpl implements NoneVariant, OptionMethods<never> {
+export class NoneImpl implements OptionMethods<never> {
 	readonly some = false
 	readonly none = true
 	readonly value = null
@@ -215,3 +199,5 @@ export class NoneImpl implements NoneVariant, OptionMethods<never> {
 
 export interface None extends NoneImpl {}
 export const None: None = Object.freeze(new NoneImpl())
+
+export type Option<T> = Some<T> | None

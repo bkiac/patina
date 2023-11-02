@@ -8,7 +8,7 @@ function promiseSome<T>(value: T) {
 }
 
 function promiseNone() {
-	return new PromiseOption(Promise.resolve(None))
+	return new PromiseOption<any>(Promise.resolve(None))
 }
 
 describe.concurrent("and", () => {

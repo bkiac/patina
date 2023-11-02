@@ -1,12 +1,12 @@
 import {describe, it, expect} from "vitest"
 import {Err, Panic, PromiseResult, Ok, UnwrapPanic} from "../src"
 
-function promiseOk<T>(value: T) {
-	return new PromiseResult(Promise.resolve(Ok<T>(value)))
+function promiseOk<T, E = any>(value: T) {
+	return new PromiseResult<T, E>(Promise.resolve(Ok<T>(value)))
 }
 
-function promiseErr<T>(error: T) {
-	return new PromiseResult(Promise.resolve(Err<T>(error)))
+function promiseErr<E, T = any>(error: E) {
+	return new PromiseResult<T, E>(Promise.resolve(Err<E>(error)))
 }
 
 describe.concurrent("and", () => {
