@@ -148,10 +148,10 @@ export class OkImpl<T> implements OkVariant<T>, ResultMethods<T, never> {
 }
 
 export interface Ok<T = null> extends OkImpl<T> {}
-export function Ok(): Ok<null>
+export function Ok(): Ok
 export function Ok<T>(value: T): Ok<T>
 export function Ok<T>(value?: T): Ok<T> {
-	return new OkImpl(value as T)
+	return new OkImpl(value ? value : null) as Ok<T>
 }
 
 export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
@@ -258,8 +258,8 @@ export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 }
 
 export interface Err<E = null> extends ErrImpl<E> {}
-export function Err(): ErrImpl<null>
+export function Err(): Err
 export function Err<E>(error: E): Err<E>
 export function Err<E>(error?: E): Err<E> {
-	return new ErrImpl(error as E)
+	return new ErrImpl(error ? error : null) as Err<E>
 }
