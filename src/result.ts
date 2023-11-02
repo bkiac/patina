@@ -24,6 +24,9 @@ export interface ResultMethods<T, E> {
 
 	get(): T | E
 	match<A, B>(ok: (value: T) => A, err: (error: E) => B): A | B
+
+	toString(): `Ok(${string})` | `Err(${string})`
+	toJSON(): {meta: "Result"; value: T; error?: never} | {meta: "Result"; value?: never; error: E}
 }
 
 export class OkImpl<T> implements ResultMethods<T, never> {
@@ -126,6 +129,17 @@ export class OkImpl<T> implements ResultMethods<T, never> {
 
 	match<A, B>(ok: (value: T) => A, _err: (error: never) => B) {
 		return ok(this.value)
+	}
+
+	toString() {
+		return `Ok(${this.value})` as const
+	}
+
+	toJSON() {
+		return {
+			meta: "Result",
+			value: this.value,
+		} as const
 	}
 }
 
@@ -236,6 +250,17 @@ export class ErrImpl<E> implements ResultMethods<never, E> {
 
 	match<A, B>(_ok: (value: never) => A, err: (error: E) => B) {
 		return err(this.error)
+	}
+
+	toString() {
+		return `Err(${this.error})` as const
+	}
+
+	toJSON() {
+		return {
+			meta: "Result",
+			error: this.error,
+		} as const
 	}
 }
 
