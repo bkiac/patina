@@ -1,28 +1,28 @@
 import {describe, expect, it} from "vitest"
-import {InvalidErrorPanic, Panic, handleError, tryAsyncFn, tryFn, tryPromise} from "../src"
+import {InvalidErrorPanic, Panic, defaultErrorHandler, tryAsyncFn, tryFn, tryPromise} from "../src"
 
 describe.concurrent("handleError", () => {
 	it("returns an Error when given an Error", () => {
 		class TestError extends Error {}
 		const error = new TestError("Test error")
-		const err = handleError(error)
+		const err = defaultErrorHandler(error)
 		expect(err).to.be.instanceof(TestError)
 	})
 
 	it("throws a Panic when given a Panic", () => {
 		const msg = "Test panic"
 		const panic = new Panic(msg)
-		expect(() => handleError(panic)).to.throw(Panic, msg)
+		expect(() => defaultErrorHandler(panic)).to.throw(Panic, msg)
 	})
 
 	it("throws a Panic when given an unknown value", () => {
-		expect(() => handleError(0)).to.throw(InvalidErrorPanic)
-		expect(() => handleError("")).to.throw(InvalidErrorPanic)
-		expect(() => handleError(true)).to.throw(InvalidErrorPanic)
-		expect(() => handleError(undefined)).to.throw(InvalidErrorPanic)
-		expect(() => handleError(null)).to.throw(InvalidErrorPanic)
-		expect(() => handleError({})).to.throw(InvalidErrorPanic)
-		expect(() => handleError([])).to.throw(InvalidErrorPanic)
+		expect(() => defaultErrorHandler(0)).to.throw(InvalidErrorPanic)
+		expect(() => defaultErrorHandler("")).to.throw(InvalidErrorPanic)
+		expect(() => defaultErrorHandler(true)).to.throw(InvalidErrorPanic)
+		expect(() => defaultErrorHandler(undefined)).to.throw(InvalidErrorPanic)
+		expect(() => defaultErrorHandler(null)).to.throw(InvalidErrorPanic)
+		expect(() => defaultErrorHandler({})).to.throw(InvalidErrorPanic)
+		expect(() => defaultErrorHandler([])).to.throw(InvalidErrorPanic)
 	})
 })
 

@@ -1,15 +1,24 @@
-abstract class ResultError extends Error {
+import {InvalidErrorPanic, Panic} from "./panic"
+
+// TODO: Capture original error if possible
+export abstract class ResultError extends Error {
 	abstract readonly tag: string
 }
 
-class StdError extends ResultError {
-	readonly tag = "std"
+export class StdError extends ResultError {
+	static readonly tag = "std"
+	readonly tag = StdError.tag
 }
 
-class IoError extends ResultError {
-	readonly tag = "io"
-}
+// TODO: Maybe arg should be StdError, and don't let consumer override panics?
+export type ErrorHandler<E extends ResultError = StdError> = (error: unknown) => E
 
-class HttpError extends ResultError {
-	readonly tag = "http"
+export function defaultErrorHandler(error: unknown): StdError {
+	if (error instanceof Panic) {
+		throw error
+	}
+	if (error instanceof Error) {
+		return new StdError()
+	}
+	throw new InvalidErrorPanic(error)
 }

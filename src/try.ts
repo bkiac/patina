@@ -1,26 +1,42 @@
 import {PromiseResult} from "./promise_result"
 import {Ok, type Result, Err} from "./result"
-import {InvalidErrorPanic, Panic} from "./panic"
+import {ErrorHandler, ResultError, StdError, defaultErrorHandler} from "./result_error"
 
-export function handleError(error: unknown) {
-	if (error instanceof Panic) {
-		throw error
+// Couldn't figure out how to overload these functions without a TypeScript error and making
+// the error handler required if the error template param is defined.
+
+export function tryFn<T>(f: () => T): Result<T, StdError> {
+	try {
+		return Ok(f())
+	} catch (error) {
+		return Err(defaultErrorHandler(error))
 	}
-	if (error instanceof Error) {
-		return error
-	}
-	throw new InvalidErrorPanic(error)
 }
 
-export function tryFn<T>(fn: () => T): Result<T, Error> {
+export function tryFnWith<T, E extends ResultError>(
+	f: () => T,
+	handleError: ErrorHandler<E>,
+): Result<T, E> {
 	try {
-		return Ok(fn())
+		return Ok(f())
 	} catch (error) {
 		return Err(handleError(error))
 	}
 }
 
-export function tryPromise<T>(promise: Promise<T>): PromiseResult<T, Error> {
+export function tryPromise<T>(promise: Promise<T>): PromiseResult<T, StdError> {
+	return new PromiseResult(
+		promise.then(
+			(value) => Ok(value),
+			(error) => Err(defaultErrorHandler(error)),
+		),
+	)
+}
+
+export function tryPromiseWith<T, E extends ResultError>(
+	promise: Promise<T>,
+	handleError: ErrorHandler<E>,
+): PromiseResult<T, E> {
 	return new PromiseResult(
 		promise.then(
 			(value) => Ok(value),
@@ -29,6 +45,13 @@ export function tryPromise<T>(promise: Promise<T>): PromiseResult<T, Error> {
 	)
 }
 
-export function tryAsyncFn<T>(fn: () => Promise<T>): PromiseResult<T, Error> {
-	return tryPromise(fn())
+export function tryAsyncFn<T>(f: () => Promise<T>): PromiseResult<T, StdError> {
+	return tryPromise(f())
+}
+
+export function tryAsyncFnWith<T, E extends ResultError>(
+	f: () => Promise<T>,
+	handleError: ErrorHandler<E>,
+): PromiseResult<T, E> {
+	return tryPromiseWith(f(), handleError)
 }
