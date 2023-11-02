@@ -2,15 +2,15 @@ import {Panic, UnwrapPanic} from "./panic"
 
 export type OkVariant<T> = {
 	readonly ok: true
-	readonly err: false
 	readonly value: T
-	readonly error?: never
+	readonly err: false
+	readonly error: null
 }
 
 export type ErrVariant<E> = {
 	readonly ok: false
+	readonly value: null
 	readonly err: true
-	readonly value?: never
 	readonly error: E
 }
 
@@ -44,16 +44,14 @@ export interface ResultMethods<T, E> {
 
 export type Result<T, E> = ResultMethods<T, E> & ResultVariants<T, E>
 
-export class OkImpl<T = undefined> implements OkVariant<T>, ResultMethods<T, never> {
+export class OkImpl<T> implements OkVariant<T>, ResultMethods<T, never> {
 	readonly ok = true
-	readonly err = false
 	readonly value: T
-	readonly error?: never
+	readonly err = false
+	readonly error = null
 
-	constructor()
-	constructor(value: T)
-	constructor(value?: T) {
-		this.value = value as T
+	constructor(value: T) {
+		this.value = value
 	}
 
 	and<U, F>(other: Result<U, F>) {
@@ -149,23 +147,21 @@ export class OkImpl<T = undefined> implements OkVariant<T>, ResultMethods<T, nev
 	}
 }
 
-export interface Ok<T = undefined> extends OkImpl<T> {}
-export function Ok(): Ok
+export interface Ok<T = null> extends OkImpl<T> {}
+export function Ok(): Ok<null>
 export function Ok<T>(value: T): Ok<T>
 export function Ok<T>(value?: T): Ok<T> {
 	return new OkImpl(value as T)
 }
 
-export class ErrImpl<E = undefined> implements ErrVariant<E>, ResultMethods<never, E> {
+export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 	readonly ok = false
+	readonly value = null
 	readonly err = true
-	readonly value?: never
 	readonly error: E
 
-	constructor()
-	constructor(error: E)
-	constructor(error?: E) {
-		this.error = error as E
+	constructor(error: E) {
+		this.error = error
 	}
 
 	and<U, F>(_other: Result<U, F>) {
@@ -261,8 +257,8 @@ export class ErrImpl<E = undefined> implements ErrVariant<E>, ResultMethods<neve
 	}
 }
 
-export interface Err<E = undefined> extends ErrImpl<E> {}
-export function Err(): ErrImpl
+export interface Err<E = null> extends ErrImpl<E> {}
+export function Err(): ErrImpl<null>
 export function Err<E>(error: E): Err<E>
 export function Err<E>(error?: E): Err<E> {
 	return new ErrImpl(error as E)
