@@ -19,7 +19,7 @@ export interface OptionMethods<T> {
 	unwrapOrElse<U>(defaultValue: () => U): T | U
 	xor<U>(other: Option<U>): Option<T | U>
 
-	get(): T | null
+	into(): T | null
 	match<A, B>(some: (value: T) => A, none: () => B): A | B
 
 	toString(): `Some(${string})` | "None"
@@ -105,7 +105,7 @@ export class SomeImpl<T> implements OptionMethods<T> {
 		return other.isSome() ? None : this
 	}
 
-	get() {
+	into() {
 		return this.value
 	}
 
@@ -124,12 +124,14 @@ export class SomeImpl<T> implements OptionMethods<T> {
 	toJSON() {
 		return {meta: "Some", data: this.value} as const
 	}
+
+	static from<T>(value: T): Some<T> {
+		return new SomeImpl(value)
+	}
 }
 
 export interface Some<T> extends SomeImpl<T> {}
-export function Some<T>(value: T): Some<T> {
-	return new SomeImpl(value)
-}
+export const Some = SomeImpl.from
 
 export class NoneImpl implements OptionMethods<never> {
 	readonly some = false
@@ -204,7 +206,7 @@ export class NoneImpl implements OptionMethods<never> {
 		return other
 	}
 
-	get() {
+	into() {
 		return null
 	}
 
@@ -226,6 +228,6 @@ export class NoneImpl implements OptionMethods<never> {
 }
 
 export interface None extends NoneImpl {}
-export const None: None = Object.freeze(new NoneImpl())
+export const None = new NoneImpl()
 
 export type Option<T> = Some<T> | None

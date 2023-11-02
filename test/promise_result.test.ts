@@ -363,15 +363,15 @@ describe.concurrent("unwrapOrElse", () => {
 	})
 })
 
-describe.concurrent("get", () => {
+describe.concurrent("into", () => {
 	it("returns the value for an Ok result", async () => {
 		const result = promiseOk(42)
-		await expect(result.get()).resolves.toEqual(42)
+		await expect(result.into()).resolves.toEqual(42)
 	})
 
 	it("returns the err for an Err result", async () => {
 		const result = promiseErr("error")
-		await expect(result.get()).resolves.toEqual("error")
+		await expect(result.into()).resolves.toEqual("error")
 	})
 })
 

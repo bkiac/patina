@@ -22,7 +22,7 @@ export interface ResultMethods<T, E> {
 	unwrapOr<U>(defaultValue: U): T | U
 	unwrapOrElse<U>(defaultValue: (error: E) => U): T | U
 
-	get(): T | E
+	into(): T | E
 	match<A, B>(ok: (value: T) => A, err: (error: E) => B): A | B
 
 	toString(): `Ok(${string})` | `Err(${string})`
@@ -124,7 +124,7 @@ export class OkImpl<T> implements ResultMethods<T, never> {
 		return this.value
 	}
 
-	get() {
+	into() {
 		return this.value
 	}
 
@@ -143,14 +143,16 @@ export class OkImpl<T> implements ResultMethods<T, never> {
 	toJSON() {
 		return {meta: "Ok", data: this.value} as const
 	}
+
+	static from(): Ok
+	static from<T>(value: T): Ok<T>
+	static from<T>(value?: T): Ok<T> {
+		return new OkImpl(value ? value : null) as Ok<T>
+	}
 }
 
 export interface Ok<T = null> extends OkImpl<T> {}
-export function Ok(): Ok
-export function Ok<T>(value: T): Ok<T>
-export function Ok<T>(value?: T): Ok<T> {
-	return new OkImpl(value ? value : null) as Ok<T>
-}
+export const Ok = OkImpl.from
 
 export class ErrImpl<E> implements ResultMethods<never, E> {
 	readonly ok = false
@@ -246,7 +248,7 @@ export class ErrImpl<E> implements ResultMethods<never, E> {
 		return defaultValue(this.error)
 	}
 
-	get() {
+	into() {
 		return this.error
 	}
 
@@ -265,13 +267,15 @@ export class ErrImpl<E> implements ResultMethods<never, E> {
 	toJSON() {
 		return {meta: "Err", data: this.error} as const
 	}
+
+	static from(): Err
+	static from<E>(error: E): Err<E>
+	static from<E>(error?: E): Err<E> {
+		return new ErrImpl(error ? error : null) as Err<E>
+	}
 }
 
 export interface Err<E = null> extends ErrImpl<E> {}
-export function Err(): Err
-export function Err<E>(error: E): Err<E>
-export function Err<E>(error?: E): Err<E> {
-	return new ErrImpl(error ? error : null) as Err<E>
-}
+export const Err = ErrImpl.from
 
 export type Result<T, E> = Ok<T> | Err<E>
