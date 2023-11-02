@@ -23,6 +23,7 @@ export interface OptionMethods<T> {
 	match<A, B>(some: (value: T) => A, none: () => B): A | B
 
 	toString(): `Some(${string})` | "None"
+	toObject(): {some: true; value: T} | {some: false; value: null}
 	toJSON(): {meta: "Some"; data: T} | {meta: "None"}
 }
 
@@ -114,6 +115,10 @@ export class SomeImpl<T> implements OptionMethods<T> {
 
 	toString() {
 		return `Some(${this.value})` as const
+	}
+
+	toObject() {
+		return {some: true, value: this.value} as const
 	}
 
 	toJSON() {
@@ -209,6 +214,10 @@ export class NoneImpl implements OptionMethods<never> {
 
 	toString() {
 		return "None" as const
+	}
+
+	toObject() {
+		return {some: false, value: null} as const
 	}
 
 	toJSON() {
