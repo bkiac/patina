@@ -42,7 +42,7 @@ export interface ResultMethods<T, E> {
 	match<A, B>(ok: (value: T) => A, err: (error: E) => B): A | B
 }
 
-export type Result<T, E> = ResultMethods<T, E> & ResultVariants<T, E>
+export type Result<T, E> = ResultVariants<T, E> & ResultMethods<T, E>
 
 export class OkImpl<T> implements OkVariant<T>, ResultMethods<T, never> {
 	readonly ok = true

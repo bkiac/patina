@@ -37,7 +37,7 @@ export interface OptionMethods<T> {
 	match<A, B>(some: (value: T) => A, none: () => B): A | B
 }
 
-export type Option<T> = OptionMethods<T> & OptionVariants<T>
+export type Option<T> = OptionVariants<T> & OptionMethods<T>
 
 export class SomeImpl<T> implements SomeVariant<T>, OptionMethods<T> {
 	readonly some = true
