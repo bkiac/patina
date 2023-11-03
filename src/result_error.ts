@@ -1,11 +1,10 @@
 import {InvalidErrorPanic, Panic} from "./panic"
 
 export abstract class ResultError implements Error {
-	abstract readonly tag: string
+	abstract readonly name: string
 
-	readonly name = "ResultError" as const
 	readonly message: string
-	readonly origin?: Error
+	readonly origin?: Readonly<Error>
 	private readonly _stack?: string
 
 	constructor(messageOrError: string | Error = "") {
@@ -24,7 +23,7 @@ export abstract class ResultError implements Error {
 	}
 
 	get stack() {
-		return ResultError.updateStack(this.tag, this._stack)
+		return ResultError.updateStack(this.name, this.origin?.name, this._stack)
 	}
 
 	/**
@@ -35,14 +34,14 @@ export abstract class ResultError implements Error {
 	 *
 	 * See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/stack
 	 */
-	private static updateStack(tag: string, stack?: string) {
-		return stack?.replace(/^Error/, tag)
+	private static updateStack(name: string, originName = "Error", stack?: string) {
+		const r = new RegExp(`^${originName}`)
+		return stack?.replace(r, originName !== "Error" ? `${name} from ${originName}` : name)
 	}
 }
 
 export class StdError extends ResultError {
-	static readonly tag = "StdError"
-	readonly tag = StdError.tag
+	readonly name = "StdError"
 }
 
 export type ErrorHandler<E extends ResultError = StdError> = (error: StdError) => E

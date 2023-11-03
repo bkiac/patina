@@ -8,8 +8,7 @@ describe.concurrent("ResultError and StdError", () => {
 		expect(error).toBeInstanceOf(ResultError)
 		expect(error).toBeInstanceOf(StdError)
 
-		expect(error.name).toEqual("ResultError")
-		expect(error.tag).toEqual(StdError.tag)
+		expect(error.name).toEqual("StdError")
 
 		expect(error.message).toEqual("")
 		expect(error.stack).toContain("StdError: ")
@@ -22,28 +21,31 @@ describe.concurrent("ResultError and StdError", () => {
 		expect(error).toBeInstanceOf(ResultError)
 		expect(error).toBeInstanceOf(StdError)
 
-		expect(error.name).toEqual("ResultError")
-		expect(error.tag).toEqual(StdError.tag)
+		expect(error.name).toEqual("StdError")
 
 		expect(error.message).toEqual(msg)
 		expect(error.stack).toContain(`StdError: ${msg}`)
 	})
 
 	it("returns instance with error", () => {
-		const origin = new Error("msg")
-		const error = new StdError(origin)
+		let origin = new Error("msg")
+		let error = new StdError(origin)
 
 		expect(error).toBeInstanceOf(ResultError)
 		expect(error).toBeInstanceOf(StdError)
 
-		expect(error.name).toEqual("ResultError")
-		expect(error.tag).toEqual(StdError.tag)
+		expect(error.name).toEqual("StdError")
 
 		expect(error.origin).toEqual(origin)
 		expect(error.message).toEqual(origin.message)
 		// @ts-expect-error
 		expect(error._stack).toEqual(origin.stack)
 		expect(error.stack).toContain(`StdError: ${origin.message}`)
+
+		origin = new Error("msg")
+		origin.name = "MyError"
+		error = new StdError(origin)
+		expect(error.stack).toContain(`StdError from MyError: ${origin.message}`)
 	})
 })
 
