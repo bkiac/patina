@@ -22,21 +22,21 @@ export abstract class ResultError implements Error {
 		}
 	}
 
+	// Tries to replace the stack trace to include the subclass error name.
+	// May not work in every environment, since `stack` property is implementation-dependent and isn't standardized,
+	// meaning different JavaScript engines might produce different stack traces.
+	// See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/stack
 	get stack() {
-		return ResultError.updateStack(this.name, this.origin?.name, this._stack)
+		const r = new RegExp(`^${this.originName}`)
+		return this._stack?.replace(r, this.expandedName)
 	}
 
-	/**
-	 * Tries to update the stack trace to include the subclass error name.
-	 *
-	 * May not work in every environment, since `stack` property is implementation-dependent and isn't standardized,
-	 * meaning different JavaScript engines might produce different stack traces.
-	 *
-	 * See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/stack
-	 */
-	private static updateStack(name: string, originName = "Error", stack?: string) {
-		const r = new RegExp(`^${originName}`)
-		return stack?.replace(r, originName !== "Error" ? `${name} from ${originName}` : name)
+	get expandedName() {
+		return this.originName !== "Error" ? `${this.name} from ${this.originName}` : this.name
+	}
+
+	get originName() {
+		return this.origin?.name ?? "Error"
 	}
 }
 
