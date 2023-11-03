@@ -35,7 +35,7 @@
 		"tsup": "^7.2.0",
 		"tsx": "^3.14.0",
 		"typescript": "^5.0.4",
-		"vitest": "^0.31.0"
+		"vitest": "^0.34.6"
 	},
 	"lint-staged": {
 		"*.{ts,yaml,json,md}": "prettier --write"
