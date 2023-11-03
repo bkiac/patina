@@ -228,6 +228,6 @@ export class NoneImpl implements OptionMethods<never> {
 }
 
 export interface None extends NoneImpl {}
-export const None = new NoneImpl()
+export const None: None = new NoneImpl()
 
 export type Option<T> = Some<T> | None
