@@ -1,5 +1,5 @@
-import type {Option} from "./option"
-import {Panic} from "./panic"
+import type {Panic} from "../error/panic"
+import type {Option} from "./interface"
 
 export class PromiseOption<T> implements PromiseLike<Option<T>> {
 	constructor(readonly promise: Promise<Option<T>> | PromiseLike<Option<T>>) {}
@@ -102,8 +102,8 @@ export class PromiseOption<T> implements PromiseLike<Option<T>> {
 		)
 	}
 
-	async get() {
-		return (await this).get()
+	async into() {
+		return (await this).into()
 	}
 
 	async match<A, B>(some: (value: T) => A, none: () => B) {

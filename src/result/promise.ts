@@ -1,5 +1,5 @@
-import type {Result} from "./result"
-import {type Panic} from "./panic"
+import type {Result} from "./interface"
+import type {Panic} from "../error/panic"
 
 export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 	constructor(readonly promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>>) {}
@@ -116,8 +116,8 @@ export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 		return (await this).unwrapOrElse(defaultValue)
 	}
 
-	async get() {
-		return (await this).get()
+	async into() {
+		return (await this).into()
 	}
 
 	async match<A, B>(ok: (value: T) => A, err: (error: E) => B) {

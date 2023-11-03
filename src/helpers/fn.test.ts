@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest"
-import {asyncFn, fn, Ok, Err} from "../src"
+import {asyncFn, fn, Ok, Err} from ".."
 
 describe.concurrent("fn", () => {
 	it("returns Ok result when provided function does not throw", () => {

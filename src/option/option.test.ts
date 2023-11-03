@@ -1,6 +1,5 @@
 import {describe, expect, it, vi} from "vitest"
-import {None, Some} from "../src/option"
-import {Panic, UnwrapPanic} from "../src"
+import {Panic, UnwrapPanic, None, Some} from ".."
 
 it("returns a Some option", () => {
 	const option = Some(42)
@@ -13,7 +12,6 @@ it("returns a None option", () => {
 	const option = None
 	expect(option.some).toEqual(false)
 	expect(option.none).toEqual(true)
-	expect(option.value).toEqual(null)
 })
 
 describe.concurrent("and", () => {
@@ -287,15 +285,15 @@ describe.concurrent("xor", () => {
 	})
 })
 
-describe.concurrent("get", () => {
+describe.concurrent("into", () => {
 	it("returns the value when called on a Some option", () => {
 		const option = Some(42)
-		expect(option.get()).toEqual(42)
+		expect(option.into()).toEqual(42)
 	})
 
 	it("throws when called on a None option", () => {
 		const option = None
-		expect(option.get()).toEqual(null)
+		expect(option.into()).toEqual(null)
 	})
 })
 

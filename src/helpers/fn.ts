@@ -1,6 +1,6 @@
-import type {ResultValueType, ResultErrorType} from "./util"
-import {type Result} from "./result"
-import {PromiseResult} from "./promise_result"
+import type {ResultValueType, ResultErrorType} from "../util"
+import type {Result} from "../result/interface"
+import {PromiseResult} from "../result/promise"
 
 export function fn<T extends (...args: any[]) => Result<any, any>>(
 	f: T,
