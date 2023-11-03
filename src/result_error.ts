@@ -6,6 +6,7 @@ export abstract class ResultError implements Error {
 	readonly name = "ResultError" as const
 	readonly message: string
 	readonly origin?: Error
+	readonly ownStack?: string // TODO: This seems weird to have two stacks
 
 	constructor(messageOrError: string | Error = "") {
 		if (messageOrError instanceof Error) {
@@ -14,15 +15,15 @@ export abstract class ResultError implements Error {
 		} else {
 			this.message = messageOrError
 		}
+		this.ownStack = new Error(this.message).stack
 	}
 
-	// TODO: How to get own stack?
 	get stack() {
 		// Try to update the stack trace to include the subclass error name.
 		// May not work in every environment, since `stack` property is implementation-dependent and isn't standardized,
 		// meaning different JavaScript engines might produce different stack traces.
 		// See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/stack
-		return this.origin?.stack?.replace(/^Error/, this.tag)
+		return (this.origin?.stack ?? this.ownStack)?.replace(/^Error/, this.tag)
 	}
 }
 
