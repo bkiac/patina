@@ -1,5 +1,6 @@
 import {inspectSymbol} from "../util"
 import {InvalidErrorPanic, Panic} from "./panic"
+import {getName, getOriginName, replaceStack} from "./util"
 
 export abstract class ResultError implements Error {
 	abstract readonly tag: string
@@ -22,20 +23,15 @@ export abstract class ResultError implements Error {
 		if (!this._stack) {
 			this._stack = new Error(this.message).stack
 		}
-		this.originName = this.origin?.name ?? "Error"
+		this.originName = getOriginName(this.origin)
 	}
 
 	get name() {
-		return this.originName !== "Error" ? `${this.tag} from ${this.originName}` : this.tag
+		return getName(this.tag, this.originName)
 	}
 
-	// Tries to replace the stack trace to include the subclass error name.
-	// May not work in every environment, since `stack` property is implementation-dependent and isn't standardized,
-	// meaning different JavaScript engines might produce different stack traces.
-	// See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/stack
 	get stack() {
-		const r = new RegExp(`^${this.originName}`)
-		return this._stack?.replace(r, this.name)
+		return replaceStack(this.name, this.originName, this._stack)
 	}
 
 	toString() {

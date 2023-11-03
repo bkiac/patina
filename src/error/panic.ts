@@ -1,4 +1,5 @@
 import {inspectSymbol} from "../util"
+import {getName, replaceStack} from "./util"
 
 export class Panic extends Error {
 	readonly origin?: Error
@@ -13,13 +14,12 @@ export class Panic extends Error {
 			super(messageOrError)
 		}
 		this.originName = this.origin?.name ?? "Error"
-		this.name = this.originName !== "Error" ? `Panic from ${this.originName}` : "Panic"
+		this.name = getName("Panic", this.originName)
 		this._stack = this.stack // Save a copy of the stack trace before it gets overridden.
 	}
 
 	override get stack() {
-		const r = new RegExp(`^${this.originName}`)
-		return this._stack?.replace(r, this.name)
+		return replaceStack(this.name, this.originName, this._stack)
 	}
 
 	[inspectSymbol]() {
