@@ -21,4 +21,10 @@ describe.concurrent("asyncFn", () => {
 		const result = await wrappedFn()
 		expect(result.unwrap()).toEqual(42)
 	})
+
+	it("returns Err result when provided async function returns Err", async () => {
+		const wrappedFn = asyncFn(async () => Promise.resolve(Err("rekt")))
+		const result = await wrappedFn()
+		expect(result.unwrapErr()).toEqual("rekt")
+	})
 })

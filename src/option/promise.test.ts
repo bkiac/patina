@@ -2,7 +2,7 @@ import {describe, it, expect, vi} from "vitest"
 import {Panic, UnwrapPanic, PromiseOption, Some, None} from ".."
 
 function promiseSome<T>(value: T) {
-	return new PromiseOption(Promise.resolve(Some<T>(value)))
+	return new PromiseOption<T>(Promise.resolve(Some<T>(value)))
 }
 
 function promiseNone() {

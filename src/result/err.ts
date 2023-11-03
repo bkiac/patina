@@ -1,11 +1,10 @@
 import {Panic, UnwrapPanic} from "../error/panic"
 import {inspectSymbol} from "../util"
-import type {Result, ResultMethods} from "./interface"
+import type {ErrVariant, Result, ResultMethods} from "./interface"
 import type {Ok} from "./ok"
 
-export class ErrImpl<E> implements ResultMethods<never, E> {
+export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 	readonly ok = false
-	readonly value?: never
 	readonly err = true
 	readonly error: E
 

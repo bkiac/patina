@@ -1,13 +1,12 @@
 import {Panic, UnwrapPanic} from "../error/panic"
 import {inspectSymbol} from "../util"
 import type {Err} from "./err"
-import type {Result, ResultMethods} from "./interface"
+import type {OkVariant, Result, ResultMethods} from "./interface"
 
-export class OkImpl<T> implements ResultMethods<T, never> {
+export class OkImpl<T> implements OkVariant<T>, ResultMethods<T, never> {
 	readonly ok = true
-	readonly value: T
 	readonly err = false
-	readonly error?: never
+	readonly value: T
 
 	constructor(value: T) {
 		this.value = value

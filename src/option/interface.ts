@@ -31,4 +31,17 @@ export interface OptionMethods<T> {
 	toJSON(): {meta: "Some"; data: T} | {meta: "None"}
 }
 
-export type Option<T> = Some<T> | None
+export interface SomeVariant<T> {
+	readonly some: true
+	readonly none: false
+	readonly value: T
+}
+
+export interface NoneVariant {
+	readonly some: false
+	readonly none: true
+}
+
+export type OptionVariants<T> = SomeVariant<T> | NoneVariant
+
+export type Option<T> = OptionVariants<T> & OptionMethods<T>
