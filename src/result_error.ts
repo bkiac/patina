@@ -1,3 +1,4 @@
+import {inspectSymbol} from "./util"
 import {InvalidErrorPanic, Panic} from "./panic"
 
 export abstract class ResultError implements Error {
@@ -37,6 +38,14 @@ export abstract class ResultError implements Error {
 
 	get originName() {
 		return this.origin?.name ?? "Error"
+	}
+
+	toString() {
+		return `${this.expandedName}: ${this.message}`
+	}
+
+	[inspectSymbol]() {
+		return this.stack
 	}
 }
 

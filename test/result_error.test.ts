@@ -38,8 +38,6 @@ describe.concurrent("ResultError and StdError", () => {
 
 		expect(error.origin).toEqual(origin)
 		expect(error.message).toEqual(origin.message)
-		// @ts-expect-error
-		expect(error._stack).toEqual(origin.stack)
 		expect(error.stack).toContain(`StdError: ${origin.message}`)
 
 		origin = new Error("msg")

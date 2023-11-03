@@ -1,3 +1,4 @@
+import {inspectSymbol} from "./util"
 import {Panic, UnwrapPanic} from "./panic"
 
 export interface ResultMethods<T, E> {
@@ -26,6 +27,7 @@ export interface ResultMethods<T, E> {
 	match<A, B>(ok: (value: T) => A, err: (error: E) => B): A | B
 
 	toString(): `Ok(${string})` | `Err(${string})`
+	[inspectSymbol](): ReturnType<ResultMethods<T, E>["toString"]>
 	toObject(): {ok: true; value: T} | {ok: false; error: E}
 	toJSON(): {meta: "Ok"; data: T} | {meta: "Err"; data: E}
 }
@@ -134,6 +136,10 @@ export class OkImpl<T> implements ResultMethods<T, never> {
 
 	toString() {
 		return `Ok(${this.value})` as const
+	}
+
+	[inspectSymbol]() {
+		return this.toString()
 	}
 
 	toObject() {
@@ -258,6 +264,10 @@ export class ErrImpl<E> implements ResultMethods<never, E> {
 
 	toString() {
 		return `Err(${this.error})` as const
+	}
+
+	[inspectSymbol]() {
+		return this.toString()
 	}
 
 	toObject() {

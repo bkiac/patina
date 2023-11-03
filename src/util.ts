@@ -3,6 +3,8 @@ import {Option} from "./option"
 import type {PromiseResult} from "./promise_result"
 import type {Result} from "./result"
 
+export const inspectSymbol = Symbol.for("nodejs.util.inspect.custom")
+
 export type ResultValueErrorType<T> = T extends
 	| Result<infer V, infer E>
 	| PromiseResult<infer V, infer E>

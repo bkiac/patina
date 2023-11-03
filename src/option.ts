@@ -1,4 +1,5 @@
 import {Panic, UnwrapPanic} from "./panic"
+import {inspectSymbol} from "./util"
 
 export interface OptionMethods<T> {
 	and<U>(other: Option<U>): Option<U>
@@ -23,6 +24,7 @@ export interface OptionMethods<T> {
 	match<A, B>(some: (value: T) => A, none: () => B): A | B
 
 	toString(): `Some(${string})` | "None"
+	[inspectSymbol](): ReturnType<OptionMethods<T>["toString"]>
 	toObject(): {some: true; value: T} | {some: false; value: null}
 	toJSON(): {meta: "Some"; data: T} | {meta: "None"}
 }
@@ -115,6 +117,10 @@ export class SomeImpl<T> implements OptionMethods<T> {
 
 	toString() {
 		return `Some(${this.value})` as const
+	}
+
+	[inspectSymbol]() {
+		return this.toString()
 	}
 
 	toObject() {
@@ -215,6 +221,10 @@ export class NoneImpl implements OptionMethods<never> {
 
 	toString() {
 		return "None" as const
+	}
+
+	[inspectSymbol]() {
+		return this.toString()
 	}
 
 	toObject() {
