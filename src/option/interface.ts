@@ -1,4 +1,4 @@
-import type {Panic} from "../error"
+import type {Panic} from "../error/panic"
 import type {inspectSymbol} from "../util"
 import type {None} from "./none"
 import type {Some} from "./some"

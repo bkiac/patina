@@ -1,5 +1,7 @@
-import type {PromiseOption, Option} from "./option"
-import type {PromiseResult, Result} from "./result"
+import type {Option} from "./option/interface"
+import type {PromiseOption} from "./option/promise"
+import type {Result} from "./result/interface"
+import type {PromiseResult} from "./result/promise"
 
 export const inspectSymbol = Symbol.for("nodejs.util.inspect.custom")
 

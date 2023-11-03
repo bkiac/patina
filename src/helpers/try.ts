@@ -1,5 +1,8 @@
-import {Err, Ok, PromiseResult, type Result} from "../result"
-import {type ErrorHandler, type ResultError, type StdError, toStdError} from "../error"
+import {type ErrorHandler, type ResultError, type StdError, toStdError} from "../error/result_error"
+import {Err} from "../result/err"
+import type {Result} from "../result/interface"
+import {Ok} from "../result/ok"
+import {PromiseResult} from "../result/promise"
 
 // Couldn't figure out how to overload these functions without a TypeScript error and making
 // the error handler required if the error template param is defined.

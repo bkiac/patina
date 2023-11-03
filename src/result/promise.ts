@@ -1,5 +1,5 @@
 import type {Result} from "./interface"
-import type {Panic} from "../error"
+import type {Panic} from "../error/panic"
 
 export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 	constructor(readonly promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>>) {}

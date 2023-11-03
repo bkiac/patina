@@ -1,4 +1,4 @@
-import {Panic, UnwrapPanic} from "../error"
+import {Panic, UnwrapPanic} from "../error/panic"
 import {inspectSymbol} from "../util"
 import type {Result, ResultMethods} from "./interface"
 import type {Ok} from "./ok"
