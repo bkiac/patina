@@ -1,5 +1,5 @@
 import {Panic} from "../error/panic"
-import {type ErrorHandler, type ResultError, type StdError, toStdError} from "../error/result_error"
+import {type ErrorHandler, type ResultError, StdError, toStdError} from "../error/result_error"
 import {Err} from "../result/err"
 import type {Result} from "../result/interface"
 import {Ok} from "../result/ok"
@@ -35,7 +35,7 @@ export function tryFnWith<T, E extends ResultError>(
 }
 
 export function tryPromise<T>(promise: Promise<T>): PromiseResult<T, StdError> {
-	return new PromiseResult(
+	return new PromiseResult<T, StdError>(
 		promise.then(
 			(value) => Ok(value),
 			(error: unknown) => Err(toStdError(error)),
