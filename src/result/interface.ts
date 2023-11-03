@@ -34,13 +34,13 @@ export interface ResultMethods<T, E> {
 	toJSON(): {meta: "Ok"; data: T} | {meta: "Err"; data: E}
 }
 
-export type OkVariant<T> = {
+export interface OkVariant<T> {
 	readonly ok: true
 	readonly err: false
 	readonly value: T
 }
 
-export type ErrVariant<E> = {
+export interface ErrVariant<E> {
 	readonly ok: false
 	readonly err: true
 	readonly error: E
