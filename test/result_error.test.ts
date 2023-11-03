@@ -1,31 +1,49 @@
 import {describe, expect, it} from "vitest"
 import {InvalidErrorPanic, Panic, ResultError, toStdError, StdError} from "../src"
 
-describe.concurrent("ResultError", () => {
-	it("returns instance", () => {
+describe.concurrent("ResultError and StdError", () => {
+	it("returns instance with no args", () => {
 		const error = new StdError()
+
 		expect(error).toBeInstanceOf(ResultError)
 		expect(error).toBeInstanceOf(StdError)
+
 		expect(error.name).toEqual("ResultError")
 		expect(error.tag).toEqual(StdError.tag)
+
+		expect(error.message).toEqual("")
+		expect(error.stack).toContain("StdError: ")
 	})
 
-	it("returns message", () => {
-		const error = new StdError("Test error")
-		expect(error.message).toEqual("Test error")
+	it("returns instance with message", () => {
+		const msg = "msg"
+		const error = new StdError(msg)
+
+		expect(error).toBeInstanceOf(ResultError)
+		expect(error).toBeInstanceOf(StdError)
+
+		expect(error.name).toEqual("ResultError")
+		expect(error.tag).toEqual(StdError.tag)
+
+		expect(error.message).toEqual(msg)
+		expect(error.stack).toContain(`StdError: ${msg}`)
 	})
 
-	it("returns the origin", () => {
-		const origin = new Error("Origin error")
+	it("returns instance with error", () => {
+		const origin = new Error("msg")
 		const error = new StdError(origin)
-		expect(error.stack).toContain("StdError: Origin error")
-		expect(error.origin).toEqual(origin)
-	})
 
-	it("returns stack", () => {
-		const error = new StdError("Test error")
-		expect(error.stack).toBeDefined()
-		expect(error.stack).toContain("StdError: Test error")
+		expect(error).toBeInstanceOf(ResultError)
+		expect(error).toBeInstanceOf(StdError)
+
+		expect(error.name).toEqual("ResultError")
+		expect(error.tag).toEqual(StdError.tag)
+
+		expect(error.origin).toEqual(origin)
+		expect(error.message).toEqual(origin.message)
+		// @ts-expect-error
+		expect(error._stack).toEqual(origin.stack)
+		expect(error.stack).toContain(`StdError: ${origin.message}`)
 	})
 })
 

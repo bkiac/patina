@@ -6,24 +6,37 @@ export abstract class ResultError implements Error {
 	readonly name = "ResultError" as const
 	readonly message: string
 	readonly origin?: Error
-	readonly ownStack?: string // TODO: This seems weird to have two stacks
+	private readonly _stack?: string
 
 	constructor(messageOrError: string | Error = "") {
 		if (messageOrError instanceof Error) {
 			this.message = messageOrError.message
 			this.origin = messageOrError
+			if (this.origin.stack) {
+				this._stack = this.origin.stack
+			}
 		} else {
 			this.message = messageOrError
 		}
-		this.ownStack = new Error(this.message).stack
+		if (!this._stack) {
+			this._stack = new Error(this.message).stack
+		}
 	}
 
 	get stack() {
-		// Try to update the stack trace to include the subclass error name.
-		// May not work in every environment, since `stack` property is implementation-dependent and isn't standardized,
-		// meaning different JavaScript engines might produce different stack traces.
-		// See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/stack
-		return (this.origin?.stack ?? this.ownStack)?.replace(/^Error/, this.tag)
+		return ResultError.updateStack(this.tag, this._stack)
+	}
+
+	/**
+	 * Tries to update the stack trace to include the subclass error name.
+	 *
+	 * May not work in every environment, since `stack` property is implementation-dependent and isn't standardized,
+	 * meaning different JavaScript engines might produce different stack traces.
+	 *
+	 * See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/stack
+	 */
+	private static updateStack(tag: string, stack?: string) {
+		return stack?.replace(/^Error/, tag)
 	}
 }
 
