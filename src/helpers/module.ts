@@ -14,9 +14,9 @@ export class ResultModule<E extends ResultError> {
 
 	tryFnWith<T, F extends ResultError>(
 		f: () => T,
-		handleError: ResultModuleErrorHandler<E, F>,
+		h: ResultModuleErrorHandler<E, F>,
 	): Result<T, F> {
-		return tryFnWith(f, (error) => handleError(this.handleError(error)))
+		return tryFnWith(f, (error) => h(this.handleError(error)))
 	}
 
 	tryPromise<T>(promise: Promise<T>): PromiseResult<T, E> {
@@ -25,9 +25,9 @@ export class ResultModule<E extends ResultError> {
 
 	tryPromiseWith<T, F extends ResultError>(
 		promise: Promise<T>,
-		handleError: ResultModuleErrorHandler<E, F>,
+		h: ResultModuleErrorHandler<E, F>,
 	): PromiseResult<T, F> {
-		return tryPromiseWith(promise, (error) => handleError(this.handleError(error)))
+		return tryPromiseWith(promise, (error) => h(this.handleError(error)))
 	}
 
 	tryAsyncFn<T>(f: () => Promise<T>): PromiseResult<T, E> {
@@ -36,9 +36,9 @@ export class ResultModule<E extends ResultError> {
 
 	tryAsyncFnWith<T, F extends ResultError>(
 		f: () => Promise<T>,
-		handleError: ResultModuleErrorHandler<E, F>,
+		h: ResultModuleErrorHandler<E, F>,
 	): PromiseResult<T, F> {
-		return tryAsyncFnWith(f, (error) => handleError(this.handleError(error)))
+		return tryAsyncFnWith(f, (error) => h(this.handleError(error)))
 	}
 
 	static with<E extends ResultError>(handleError: ErrorHandler<E>): ResultModule<E> {
