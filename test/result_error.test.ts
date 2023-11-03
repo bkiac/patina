@@ -2,32 +2,30 @@ import {describe, expect, it} from "vitest"
 import {InvalidErrorPanic, Panic, ResultError, toStdError, StdError} from "../src"
 
 describe.concurrent("ResultError", () => {
-	class CustomError extends ResultError {
-		static readonly tag = "CustomError"
-		readonly name = CustomError.tag
-	}
-
-	it("returns name", () => {
-		const error = new CustomError()
-		expect(error.name).toEqual(CustomError.tag)
+	it("returns instance", () => {
+		const error = new StdError()
+		expect(error).toBeInstanceOf(ResultError)
+		expect(error).toBeInstanceOf(StdError)
+		expect(error.name).toEqual("ResultError")
+		expect(error.tag).toEqual(StdError.tag)
 	})
 
 	it("returns message", () => {
-		const error = new CustomError("Test error")
+		const error = new StdError("Test error")
 		expect(error.message).toEqual("Test error")
-	})
-
-	it("returns stack", () => {
-		const error = new CustomError("Test error")
-		expect(error.stack).toContain("CustomError: Test error")
 	})
 
 	it("returns the origin", () => {
 		const origin = new Error("Origin error")
-		const error = new CustomError(origin)
-		expect(error.stack).toContain("CustomError: Origin error")
-		expect(error.stack).toContain("Origin error")
+		const error = new StdError(origin)
+		expect(error.stack).toContain("StdError: Origin error")
 		expect(error.origin).toEqual(origin)
+	})
+
+	it("returns stack", () => {
+		const error = new StdError("Test error")
+		expect(error.stack).toBeDefined()
+		expect(error.stack).toContain("StdError: Test error")
 	})
 })
 
@@ -36,7 +34,6 @@ describe.concurrent("toStdError", () => {
 		class TestError extends Error {}
 		const error = new TestError("Test error")
 		const stdError = toStdError(error)
-		expect(stdError.name).toEqual("StdError")
 		expect(stdError).toBeInstanceOf(StdError)
 		expect(stdError.origin).toEqual(error)
 	})
