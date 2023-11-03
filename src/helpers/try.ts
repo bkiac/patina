@@ -1,8 +1,16 @@
+import {Panic} from "../error/panic"
 import {type ErrorHandler, type ResultError, type StdError, toStdError} from "../error/result_error"
 import {Err} from "../result/err"
 import type {Result} from "../result/interface"
 import {Ok} from "../result/ok"
 import {PromiseResult} from "../result/promise"
+
+function handlePanic(error: unknown) {
+	if (error instanceof Panic) {
+		throw error
+	}
+	return error
+}
 
 // Couldn't figure out how to overload these functions without a TypeScript error and making
 // the error handler required if the error template param is defined.
@@ -22,7 +30,7 @@ export function tryFnWith<T, E extends ResultError>(
 	try {
 		return Ok(f())
 	} catch (error) {
-		return Err(handleError(toStdError(error)))
+		return Err(handleError(handlePanic(error)))
 	}
 }
 
@@ -42,7 +50,7 @@ export function tryPromiseWith<T, E extends ResultError>(
 	return new PromiseResult<T, E>(
 		promise.then(
 			(value) => Ok(value),
-			(error: unknown) => Err(handleError(toStdError(error))),
+			(error: unknown) => Err(handleError(handlePanic(error))),
 		),
 	)
 }

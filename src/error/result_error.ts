@@ -47,7 +47,7 @@ export class StdError extends ResultError {
 	readonly tag = "StdError"
 }
 
-export type ErrorHandler<E extends ResultError = StdError> = (error: StdError) => E
+export type ErrorHandler<E extends ResultError = StdError> = (error: unknown) => E
 
 export function toStdError(error: unknown): StdError {
 	if (error instanceof Panic) {
