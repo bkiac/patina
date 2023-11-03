@@ -5,6 +5,9 @@ import type {PromiseResult} from "../result/promise"
 
 export type ResultModuleErrorHandler<E extends ResultError, F extends ResultError> = (error: E) => F
 
+type Fn = (...args: any[]) => any
+type AsyncFn = (...args: any[]) => Promise<any>
+
 export class ResultModule<E extends ResultError> {
 	private constructor(private readonly handleError: ErrorHandler<E>) {}
 
@@ -39,6 +42,25 @@ export class ResultModule<E extends ResultError> {
 		h: ResultModuleErrorHandler<E, F>,
 	): PromiseResult<T, F> {
 		return tryAsyncFnWith(f, (error) => h(this.handleError(error)))
+	}
+
+	guard<T extends Fn>(f: T) {
+		return (...args: Parameters<T>) => this.tryFn(() => f(...args))
+	}
+
+	guardWith<T extends Fn, F extends ResultError>(f: T, h: ResultModuleErrorHandler<E, F>) {
+		return (...args: Parameters<T>) => this.tryFnWith(() => f(...args), h)
+	}
+
+	guardAsync<T extends AsyncFn>(f: T) {
+		return (...args: Parameters<T>) => this.tryAsyncFn(() => f(...args))
+	}
+
+	guardAsyncWith<T extends AsyncFn, F extends ResultError>(
+		f: T,
+		h: ResultModuleErrorHandler<E, F>,
+	) {
+		return (...args: Parameters<T>) => this.tryAsyncFnWith(() => f(...args), h)
 	}
 
 	static with<E extends ResultError>(handleError: ErrorHandler<E>): ResultModule<E> {
