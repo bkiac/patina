@@ -10,7 +10,7 @@ import {
 } from "../src"
 
 class MyError extends ResultError {
-	readonly name = "MyError"
+	readonly tag = "MyError"
 }
 
 describe.concurrent("tryPromise", () => {

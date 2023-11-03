@@ -8,7 +8,7 @@ describe.concurrent("ResultError and StdError", () => {
 		expect(error).toBeInstanceOf(ResultError)
 		expect(error).toBeInstanceOf(StdError)
 
-		expect(error.name).toEqual("StdError")
+		expect(error.tag).toEqual("StdError")
 
 		expect(error.message).toEqual("")
 		expect(error.stack).toContain("StdError: ")
@@ -21,7 +21,7 @@ describe.concurrent("ResultError and StdError", () => {
 		expect(error).toBeInstanceOf(ResultError)
 		expect(error).toBeInstanceOf(StdError)
 
-		expect(error.name).toEqual("StdError")
+		expect(error.tag).toEqual("StdError")
 
 		expect(error.message).toEqual(msg)
 		expect(error.stack).toContain(`StdError: ${msg}`)
@@ -34,7 +34,7 @@ describe.concurrent("ResultError and StdError", () => {
 		expect(error).toBeInstanceOf(ResultError)
 		expect(error).toBeInstanceOf(StdError)
 
-		expect(error.name).toEqual("StdError")
+		expect(error.tag).toEqual("StdError")
 
 		expect(error.origin).toEqual(origin)
 		expect(error.message).toEqual(origin.message)
