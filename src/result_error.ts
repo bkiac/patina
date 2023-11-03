@@ -10,10 +10,9 @@ export class StdError extends ResultError {
 	readonly tag = StdError.tag
 }
 
-// TODO: Maybe arg should be StdError, and don't let consumer override panics?
-export type ErrorHandler<E extends ResultError = StdError> = (error: unknown) => E
+export type ErrorHandler<E extends ResultError = StdError> = (error: StdError) => E
 
-export function defaultErrorHandler(error: unknown): StdError {
+export function toStdError(error: unknown): StdError {
 	if (error instanceof Panic) {
 		throw error
 	}
