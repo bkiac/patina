@@ -49,5 +49,3 @@ export type ErrVariant<E> = {
 export type ResultVariants<T, E> = OkVariant<T> | ErrVariant<E>
 
 export type Result<T, E> = ResultVariants<T, E> & ResultMethods<T, E>
-
-const wtf = {} as Result<string, string>
