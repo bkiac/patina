@@ -1,49 +1,52 @@
-/** Extends Error, used for unrecoverable errors. */
-export class Panic extends Error {
-	private static defaultName = "Panic"
+import {inspectSymbol} from "../util"
 
-	constructor(messageOrError: string | Error) {
+export class Panic extends Error {
+	readonly origin?: Error
+	private readonly originName: string
+	private readonly _stack?: string
+
+	constructor(messageOrError?: string | Error) {
 		if (messageOrError instanceof Error) {
-			const error = messageOrError
-			super(error.message)
-			this.name = `${Panic.defaultName}: ${error.name}`
-			if (error.stack) {
-				this.stack = error.stack
-			}
+			super(messageOrError.message)
+			this.origin = messageOrError
 		} else {
-			const message = messageOrError
-			super(message)
-			this.name = Panic.defaultName
+			super(messageOrError)
 		}
+		this.originName = this.origin?.name ?? "Error"
+		this.name = this.originName !== "Error" ? `Panic from ${this.originName}` : "Panic"
+		this._stack = this.stack // Save a copy of the stack trace before it gets overridden.
+	}
+
+	override get stack() {
+		const r = new RegExp(`^${this.originName}`)
+		return this._stack?.replace(r, this.name)
+	}
+
+	[inspectSymbol]() {
+		return this.stack
 	}
 }
 
 export class UnwrapPanic extends Panic {
-	constructor(messageOrError: string | Error) {
-		super(messageOrError)
+	constructor(msg: string) {
+		super(msg)
 	}
 }
 
 export class InvalidErrorPanic extends Panic {
-	constructor(public error: unknown) {
-		super("Invalid Error value")
+	constructor(value: unknown) {
+		super(`Invalid error: "${value}"`)
 	}
 }
 
 export class TodoPanic extends Panic {
-	constructor(message = "Todo") {
-		super(message)
-	}
+	override message = "Todo"
 }
 
 export class UnreachablePanic extends Panic {
-	constructor(message = "Unreachable") {
-		super(message)
-	}
+	override message = "Unreachable"
 }
 
 export class UnimplementedPanic extends Panic {
-	constructor(message = "Unimplemented") {
-		super(message)
-	}
+	override message = "Unimplemented"
 }

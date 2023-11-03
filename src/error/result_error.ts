@@ -6,6 +6,7 @@ export abstract class ResultError implements Error {
 
 	readonly message: string
 	readonly origin?: Readonly<Error>
+	private readonly originName: string
 	private readonly _stack?: string
 
 	constructor(messageOrError: string | Error = "") {
@@ -21,14 +22,11 @@ export abstract class ResultError implements Error {
 		if (!this._stack) {
 			this._stack = new Error(this.message).stack
 		}
+		this.originName = this.origin?.name ?? "Error"
 	}
 
 	get name() {
 		return this.originName !== "Error" ? `${this.tag} from ${this.originName}` : this.tag
-	}
-
-	private get originName() {
-		return this.origin?.name ?? "Error"
 	}
 
 	// Tries to replace the stack trace to include the subclass error name.
