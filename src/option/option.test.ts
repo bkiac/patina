@@ -1,6 +1,5 @@
 import {describe, expect, it, vi} from "vitest"
-import {None, Some} from "../src/option"
-import {Panic, UnwrapPanic} from "../src"
+import {Panic, UnwrapPanic, None, Some} from ".."
 
 it("returns a Some option", () => {
 	const option = Some(42)

@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest"
-import {Panic, UnwrapPanic, Ok, Err, Result} from "../src"
+import {Panic, UnwrapPanic, Ok, Err, Result} from ".."
 
 describe.concurrent("ok", () => {
 	it("returns an Ok result", () => {

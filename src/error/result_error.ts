@@ -1,4 +1,4 @@
-import {inspectSymbol} from "./util"
+import {inspectSymbol} from "../util"
 import {InvalidErrorPanic, Panic} from "./panic"
 
 export abstract class ResultError implements Error {

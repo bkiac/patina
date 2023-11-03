@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest"
-import {InvalidErrorPanic, Panic, ResultError, toStdError, StdError} from "../src"
+import {InvalidErrorPanic, Panic, ResultError, toStdError, StdError} from ".."
 
 describe.concurrent("ResultError and StdError", () => {
 	it("returns instance with no args", () => {

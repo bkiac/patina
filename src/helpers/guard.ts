@@ -1,4 +1,4 @@
-import {ErrorHandler, ResultError} from "./result_error"
+import type {ErrorHandler, ResultError} from "../error"
 import {tryAsyncFn, tryAsyncFnWith, tryFn, tryFnWith} from "./try"
 
 type Fn = (...args: any[]) => any
