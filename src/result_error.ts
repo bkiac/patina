@@ -37,7 +37,7 @@ export function toStdError(error: unknown): StdError {
 		throw error
 	}
 	if (error instanceof Error) {
-		return new StdError()
+		return new StdError(error)
 	}
 	throw new InvalidErrorPanic(error)
 }
