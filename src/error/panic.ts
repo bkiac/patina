@@ -1,5 +1,5 @@
 import {inspectSymbol} from "../util"
-import {getName, replaceStack} from "./util"
+import {getName, getOriginName, replaceStack} from "./util"
 
 export class Panic extends Error {
 	readonly origin?: Error
@@ -13,7 +13,7 @@ export class Panic extends Error {
 		} else {
 			super(messageOrError)
 		}
-		this.originName = this.origin?.name ?? "Error"
+		this.originName = getOriginName(this.origin)
 		this.name = getName("Panic", this.originName)
 		this._stack = this.stack // Save a copy of the stack trace before it gets overridden.
 	}
