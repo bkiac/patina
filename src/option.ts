@@ -136,7 +136,6 @@ export const Some = SomeImpl.from
 export class NoneImpl implements OptionMethods<never> {
 	readonly some = false
 	readonly none = true
-	readonly value = null
 
 	and<U>(_other: Option<U>) {
 		return None

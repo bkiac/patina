@@ -13,7 +13,6 @@ it("returns a None option", () => {
 	const option = None
 	expect(option.some).toEqual(false)
 	expect(option.none).toEqual(true)
-	expect(option.value).toEqual(null)
 })
 
 describe.concurrent("and", () => {
