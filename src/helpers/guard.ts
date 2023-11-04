@@ -10,23 +10,20 @@ export function guard<T extends Fn>(f: T) {
 	}
 }
 
-export function guardWith<T extends Fn, E extends ResultError>(f: T, handleError: ErrorHandler<E>) {
+export function guardWith<T extends Fn, E extends ResultError>(f: T, h: ErrorHandler<E>) {
 	return function (...args: Parameters<T>) {
-		return tryFnWith<ReturnType<T>, E>(() => f(...args), handleError)
+		return tryFnWith<ReturnType<T>, E>(() => f(...args), h)
 	}
 }
 
-export function guardAsync<T extends AsyncFn>(fn: T) {
+export function guardAsync<T extends AsyncFn>(f: T) {
 	return function (...args: Parameters<T>) {
-		return tryAsyncFn<Awaited<ReturnType<T>>>(() => fn(...args))
+		return tryAsyncFn<Awaited<ReturnType<T>>>(() => f(...args))
 	}
 }
 
-export function guardAsyncWith<T extends AsyncFn, E extends ResultError>(
-	fn: T,
-	handleError: ErrorHandler<E>,
-) {
+export function guardAsyncWith<T extends AsyncFn, E extends ResultError>(f: T, h: ErrorHandler<E>) {
 	return function (...args: Parameters<T>) {
-		return tryAsyncFnWith<Awaited<ReturnType<T>>, E>(() => fn(...args), handleError)
+		return tryAsyncFnWith<Awaited<ReturnType<T>>, E>(() => f(...args), h)
 	}
 }
