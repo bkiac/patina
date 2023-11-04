@@ -2,8 +2,8 @@ export * from "./error/panic"
 export * from "./error/result_error"
 
 export * from "./helpers/fn"
+export * from "./helpers/group"
 export * from "./helpers/guard"
-export * from "./helpers/module"
 export * from "./helpers/try"
 
 export * from "./option/interface"

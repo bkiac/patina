@@ -1,12 +1,11 @@
 import {test, expect, vi} from "vitest"
-import {ResultModule, module} from "./module"
+import {ResultGroup, createGroup} from "./group"
 import {ResultError} from ".."
 
 test("constructor", () => {
 	const handleError = vi.fn()
-	const result = module(handleError)
-
-	expect(result).toBeInstanceOf(ResultModule)
+	const result = createGroup(handleError)
+	expect(result).toBeInstanceOf(ResultGroup)
 	// @ts-expect-error
 	expect(result.handleError).toBe(handleError)
 })
@@ -19,7 +18,7 @@ class BarError extends ResultError {
 	readonly tag = "bar"
 }
 
-const m = module(() => new FooError())
+const m = createGroup(() => new FooError())
 
 test("tryFn", () => {
 	const result = m.tryFn(() => {

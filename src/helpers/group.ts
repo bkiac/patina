@@ -3,12 +3,12 @@ import type {ErrorHandler, ResultError} from "../error/result_error"
 import type {Result} from "../result/interface"
 import type {PromiseResult} from "../result/promise"
 
-export type ResultModuleErrorHandler<E extends ResultError, F extends ResultError> = (error: E) => F
+export type ResultGroupErrorHandler<E extends ResultError, F extends ResultError> = (error: E) => F
 
 type Fn = (...args: any[]) => any
 type AsyncFn = (...args: any[]) => Promise<any>
 
-export class ResultModule<E extends ResultError> {
+export class ResultGroup<E extends ResultError> {
 	private constructor(private readonly handleError: ErrorHandler<E>) {}
 
 	tryFn<T>(f: () => T): Result<T, E> {
@@ -17,7 +17,7 @@ export class ResultModule<E extends ResultError> {
 
 	tryFnWith<T, F extends ResultError>(
 		f: () => T,
-		h: ResultModuleErrorHandler<E, F>,
+		h: ResultGroupErrorHandler<E, F>,
 	): Result<T, F> {
 		return tryFnWith(f, (error) => h(this.handleError(error)))
 	}
@@ -28,7 +28,7 @@ export class ResultModule<E extends ResultError> {
 
 	tryPromiseWith<T, F extends ResultError>(
 		promise: Promise<T>,
-		h: ResultModuleErrorHandler<E, F>,
+		h: ResultGroupErrorHandler<E, F>,
 	): PromiseResult<T, F> {
 		return tryPromiseWith(promise, (error) => h(this.handleError(error)))
 	}
@@ -39,7 +39,7 @@ export class ResultModule<E extends ResultError> {
 
 	tryAsyncFnWith<T, F extends ResultError>(
 		f: () => Promise<T>,
-		h: ResultModuleErrorHandler<E, F>,
+		h: ResultGroupErrorHandler<E, F>,
 	): PromiseResult<T, F> {
 		return tryAsyncFnWith(f, (error) => h(this.handleError(error)))
 	}
@@ -48,7 +48,7 @@ export class ResultModule<E extends ResultError> {
 		return (...args: Parameters<T>) => this.tryFn(() => f(...args))
 	}
 
-	guardWith<T extends Fn, F extends ResultError>(f: T, h: ResultModuleErrorHandler<E, F>) {
+	guardWith<T extends Fn, F extends ResultError>(f: T, h: ResultGroupErrorHandler<E, F>) {
 		return (...args: Parameters<T>) => this.tryFnWith(() => f(...args), h)
 	}
 
@@ -58,16 +58,16 @@ export class ResultModule<E extends ResultError> {
 
 	guardAsyncWith<T extends AsyncFn, F extends ResultError>(
 		f: T,
-		h: ResultModuleErrorHandler<E, F>,
+		h: ResultGroupErrorHandler<E, F>,
 	) {
 		return (...args: Parameters<T>) => this.tryAsyncFnWith(() => f(...args), h)
 	}
 
-	static with<E extends ResultError>(handleError: ErrorHandler<E>): ResultModule<E> {
-		return new ResultModule(handleError)
+	static with<E extends ResultError>(handleError: ErrorHandler<E>): ResultGroup<E> {
+		return new ResultGroup(handleError)
 	}
 }
 
-export function module<E extends ResultError>(handleError: ErrorHandler<E>): ResultModule<E> {
-	return ResultModule.with(handleError)
+export function createGroup<E extends ResultError>(handleError: ErrorHandler<E>): ResultGroup<E> {
+	return ResultGroup.with(handleError)
 }
