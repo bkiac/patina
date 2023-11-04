@@ -1,7 +1,5 @@
 import type {Panic} from "../error/panic"
 import type {inspectSymbol} from "../util"
-import type {None} from "./none"
-import type {Some} from "./some"
 
 export interface OptionMethods<T> {
 	and<U>(other: Option<U>): Option<U>
@@ -9,9 +7,6 @@ export interface OptionMethods<T> {
 	expect(panic: string | Panic): T
 	filter(f: (value: T) => boolean): Option<T>
 	inspect(f: (value: T) => void): Option<T>
-	isNone(): this is None
-	isSome(): this is Some<T>
-	isSomeAnd(f: (value: T) => boolean): this is Some<T>
 	map<U>(f: (value: T) => U): Option<U>
 	mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B
 	mapOrElse<A, B>(defaultValue: () => A, f: (value: T) => B): A | B

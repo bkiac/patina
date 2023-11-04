@@ -1,7 +1,6 @@
 import {Panic, UnwrapPanic} from "../error/panic"
 import {inspectSymbol} from "../util"
 import type {OptionMethods, Option, NoneVariant} from "./interface"
-import type {Some} from "./some"
 
 export class NoneImpl implements NoneVariant, OptionMethods<never> {
 	readonly some = false
@@ -25,18 +24,6 @@ export class NoneImpl implements NoneVariant, OptionMethods<never> {
 
 	inspect(_f: (value: never) => void) {
 		return this
-	}
-
-	isNone(): this is None {
-		return true
-	}
-
-	isSome(): this is Some<never> {
-		return false
-	}
-
-	isSomeAnd(_f: (value: never) => boolean): this is Some<never> {
-		return false
 	}
 
 	map<U>(_f: (value: never) => U) {

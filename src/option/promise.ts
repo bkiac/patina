@@ -50,18 +50,6 @@ export class PromiseOption<T> implements PromiseLike<Option<T>> {
 		return new PromiseOption<T>(this.then((option) => option.inspect(f)))
 	}
 
-	async isNone() {
-		return (await this).isNone()
-	}
-
-	async isSome() {
-		return (await this).isSome()
-	}
-
-	async isSomeAnd(f: (value: T) => boolean) {
-		return (await this).isSomeAnd(f)
-	}
-
 	async map<U>(f: (value: T) => U) {
 		return (await this).map(f)
 	}

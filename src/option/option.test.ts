@@ -98,47 +98,6 @@ describe.concurrent("inspect", () => {
 	})
 })
 
-describe.concurrent("isNone", () => {
-	it("returns false for a Some option", () => {
-		const option = Some(42)
-		expect(option.isNone()).toEqual(false)
-	})
-
-	it("returns true for a None option", () => {
-		const option = None
-		expect(option.isNone()).toEqual(true)
-	})
-})
-
-describe.concurrent("isSome", () => {
-	it("returns true for a Some option", () => {
-		const option = Some(42)
-		expect(option.isSome()).toEqual(true)
-	})
-
-	it("returns false for a None option", () => {
-		const option = None
-		expect(option.isSome()).toEqual(false)
-	})
-})
-
-describe.concurrent("isSomeAnd", () => {
-	it("returns true for a Some option when the predicate returns true", () => {
-		const option = Some(42)
-		expect(option.isSomeAnd((value) => value === 42)).toEqual(true)
-	})
-
-	it("returns false for a Some option when the predicate returns false", () => {
-		const option = Some(42)
-		expect(option.isSomeAnd((value) => value !== 42)).toEqual(false)
-	})
-
-	it("returns false for a None option", () => {
-		const option = None
-		expect(option.isSomeAnd((value) => value === 42)).toEqual(false)
-	})
-})
-
 describe.concurrent("map", () => {
 	it("returns the mapped value for a Some option", () => {
 		const option = Some(42)

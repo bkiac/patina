@@ -90,47 +90,6 @@ describe.concurrent("inspect", () => {
 	})
 })
 
-describe.concurrent("isNone", () => {
-	it("returns false when called on a Some option", async () => {
-		const option = promiseSome(42)
-		await expect(option.isNone()).resolves.toEqual(false)
-	})
-
-	it("returns true when called on a None option", async () => {
-		const option = promiseNone()
-		await expect(option.isNone()).resolves.toEqual(true)
-	})
-})
-
-describe.concurrent("isSome", () => {
-	it("returns true when called on a Some option", async () => {
-		const option = promiseSome(42)
-		await expect(option.isSome()).resolves.toEqual(true)
-	})
-
-	it("returns false when called on a None option", async () => {
-		const option = promiseNone()
-		await expect(option.isSome()).resolves.toEqual(false)
-	})
-})
-
-describe.concurrent("isSomeAnd", () => {
-	it("returns true when called on a Some option and the predicate returns true", async () => {
-		const option = promiseSome(42)
-		await expect(option.isSomeAnd((value) => value === 42)).resolves.toEqual(true)
-	})
-
-	it("returns false when called on a Some option and the predicate returns false", async () => {
-		const option = promiseSome(42)
-		await expect(option.isSomeAnd((value) => value !== 42)).resolves.toEqual(false)
-	})
-
-	it("returns false when called on a None option", async () => {
-		const option = promiseNone()
-		await expect(option.isSomeAnd((value) => value === 42)).resolves.toEqual(false)
-	})
-})
-
 describe.concurrent("map", () => {
 	it("returns the mapped value for a Some option", async () => {
 		const option = promiseSome(42)
