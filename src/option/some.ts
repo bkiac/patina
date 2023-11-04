@@ -66,7 +66,7 @@ export class SomeImpl<T> implements SomeVariant<T>, OptionMethods<T> {
 	}
 
 	xor<U>(other: Option<U>) {
-		return other.some ? other : this
+		return other.some ? None : this
 	}
 
 	into() {
