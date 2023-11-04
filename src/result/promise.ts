@@ -56,22 +56,6 @@ export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 		return new PromiseResult<T, E>(this.then((result) => result.inspectErr(f)))
 	}
 
-	async isErr(): Promise<boolean> {
-		return (await this).isErr()
-	}
-
-	async isErrAnd(f: (error: E) => boolean): Promise<boolean> {
-		return (await this).isErrAnd(f)
-	}
-
-	async isOk(): Promise<boolean> {
-		return (await this).isOk()
-	}
-
-	async isOkAnd(f: (value: T) => boolean): Promise<boolean> {
-		return (await this).isOkAnd(f)
-	}
-
 	map<U>(f: (value: T) => U): PromiseResult<U, E> {
 		return new PromiseResult(this.then((result) => result.map(f)))
 	}

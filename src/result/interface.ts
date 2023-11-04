@@ -1,7 +1,5 @@
 import type {Panic} from "../error/panic"
 import type {inspectSymbol} from "../util"
-import type {Err} from "./err"
-import type {Ok} from "./ok"
 
 export interface ResultMethods<T, E> {
 	and<U, F>(other: Result<U, F>): Result<U, E | F>
@@ -10,10 +8,6 @@ export interface ResultMethods<T, E> {
 	expectErr(panic: string | Panic): E
 	inspect(f: (value: T) => void): Result<T, E>
 	inspectErr(f: (error: E) => void): Result<T, E>
-	isErr(): this is Err<E>
-	isErrAnd(f: (error: E) => boolean): this is Err<E>
-	isOk(): this is Ok<T>
-	isOkAnd(f: (value: T) => boolean): this is Ok<T>
 	map<U>(f: (value: T) => U): Result<U, E>
 	mapErr<F>(f: (error: E) => F): Result<T, F>
 	mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B

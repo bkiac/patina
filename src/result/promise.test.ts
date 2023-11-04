@@ -137,64 +137,6 @@ describe.concurrent("inspectErr", async () => {
 	})
 })
 
-describe.concurrent("isErr", () => {
-	it("returns false for an Ok result", async () => {
-		const result = new PromiseResult(Promise.resolve(Ok()))
-		await expect(result.isErr()).resolves.toEqual(false)
-	})
-
-	it("returns true for an Err result", async () => {
-		const result = new PromiseResult(Promise.resolve(Err(new Error("Test error"))))
-		await expect(result.isErr()).resolves.toEqual(true)
-	})
-})
-
-describe.concurrent("isErrAnd", () => {
-	it("returns false for an Ok result", async () => {
-		const result = new PromiseResult(Promise.resolve(Ok()))
-		await expect(result.isErrAnd(() => true)).resolves.toEqual(false)
-	})
-
-	it("returns true for an Err result when the provided function returns true", async () => {
-		const result = new PromiseResult(Promise.resolve(Err(new Error("Test error"))))
-		await expect(result.isErrAnd(() => true)).resolves.toEqual(true)
-	})
-
-	it("returns false for an Err result when the provided function returns false", async () => {
-		const result = new PromiseResult(Promise.resolve(Err(new Error("Test error"))))
-		await expect(result.isErrAnd(() => false)).resolves.toEqual(false)
-	})
-})
-
-describe.concurrent("isOk", () => {
-	it("returns true for an Ok result", async () => {
-		const result = new PromiseResult(Promise.resolve(Ok()))
-		await expect(result.isOk()).resolves.toEqual(true)
-	})
-
-	it("returns false for an Err result", async () => {
-		const result = new PromiseResult(Promise.resolve(Err(new Error("Test error"))))
-		await expect(result.isOk()).resolves.toEqual(false)
-	})
-})
-
-describe.concurrent("isOkAnd", () => {
-	it("returns true for an Ok result when the provided function returns true", async () => {
-		const result = new PromiseResult(Promise.resolve(Ok()))
-		await expect(result.isOkAnd(() => true)).resolves.toEqual(true)
-	})
-
-	it("returns false for an Ok result when the provided function returns false", async () => {
-		const result = new PromiseResult(Promise.resolve(Ok()))
-		await expect(result.isOkAnd(() => false)).resolves.toEqual(false)
-	})
-
-	it("returns false for an Err result", async () => {
-		const result = new PromiseResult(Promise.resolve(Err(new Error("Test error"))))
-		await expect(result.isOkAnd(() => true)).resolves.toEqual(false)
-	})
-})
-
 describe.concurrent("map", () => {
 	it("returns the mapped value for an Ok result", async () => {
 		const result = new PromiseResult(Promise.resolve(Ok(42)))
