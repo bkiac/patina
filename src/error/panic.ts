@@ -38,15 +38,3 @@ export class InvalidErrorPanic extends Panic {
 		super(`Invalid error: "${value}"`)
 	}
 }
-
-export class TodoPanic extends Panic {
-	override message = "Todo"
-}
-
-export class UnreachablePanic extends Panic {
-	override message = "Unreachable"
-}
-
-export class UnimplementedPanic extends Panic {
-	override message = "Unimplemented"
-}

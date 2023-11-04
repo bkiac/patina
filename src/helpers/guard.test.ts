@@ -1,5 +1,5 @@
 import {expect, it, describe} from "vitest"
-import {ResultError, guard, guardAsync, guardAsyncWith, guardWith} from ".."
+import {ResultError, guard, guardAsync, guardAsyncWith, guardWith} from "../internal"
 
 class MyError extends ResultError {
 	readonly tag = "MyError"

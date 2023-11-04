@@ -7,7 +7,7 @@ import {
 	tryFnWith,
 	tryPromise,
 	tryPromiseWith,
-} from ".."
+} from "../internal"
 
 class MyError extends ResultError {
 	readonly tag = "MyError"

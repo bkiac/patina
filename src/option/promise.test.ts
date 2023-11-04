@@ -1,5 +1,5 @@
 import {describe, it, expect, vi} from "vitest"
-import {Panic, UnwrapPanic, PromiseOption, Some, None} from ".."
+import {Panic, UnwrapPanic, PromiseOption, Some, None} from "../internal"
 
 function promiseSome<T>(value: T) {
 	return new PromiseOption<T>(Promise.resolve(Some<T>(value)))
