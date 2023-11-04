@@ -1,7 +1,6 @@
 import {Panic, UnwrapPanic} from "../error/panic"
 import {inspectSymbol} from "../util"
 import type {ErrVariant, Result, ResultMethods} from "./interface"
-import type {Ok} from "./ok"
 
 export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 	readonly ok = false
@@ -38,22 +37,6 @@ export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 	inspectErr(f: (error: E) => void) {
 		f(this.error)
 		return this
-	}
-
-	isErr(): this is Err<E> {
-		return true
-	}
-
-	isErrAnd(f: (error: E) => boolean): this is Err<E> {
-		return f(this.error)
-	}
-
-	isOk(): this is Ok<never> {
-		return false
-	}
-
-	isOkAnd(_f: (value: never) => boolean): this is Ok<never> {
-		return false
 	}
 
 	map<U>(_f: (value: never) => U) {

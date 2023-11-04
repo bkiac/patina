@@ -33,18 +33,6 @@ export class SomeImpl<T> implements SomeVariant<T>, OptionMethods<T> {
 		return this
 	}
 
-	isNone(): this is None {
-		return false
-	}
-
-	isSome(): this is Some<T> {
-		return true
-	}
-
-	isSomeAnd(f: (value: T) => boolean): this is Some<T> {
-		return f(this.value)
-	}
-
 	map<U>(f: (value: T) => U) {
 		return Some(f(this.value))
 	}
@@ -78,7 +66,7 @@ export class SomeImpl<T> implements SomeVariant<T>, OptionMethods<T> {
 	}
 
 	xor<U>(other: Option<U>) {
-		return other.isSome() ? None : this
+		return other.some ? None : this
 	}
 
 	into() {
