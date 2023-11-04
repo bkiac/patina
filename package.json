@@ -9,10 +9,14 @@
 	},
 	"author": "bkiac <bkiac@pm.me>",
 	"license": "MIT",
-	"module": "./dist/index.js",
-	"types": "./dist/index.d.ts",
+	"module": "./lib/index.js",
+	"exports": {
+		".": "./lib/index.js",
+		"./internal": "./lib/internal.js"
+	},
+	"types": "./lib/index.d.ts",
 	"files": [
-		"dist"
+		"lib"
 	],
 	"keywords": [
 		"typescript",
