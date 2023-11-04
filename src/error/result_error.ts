@@ -35,7 +35,7 @@ export abstract class ResultError implements Error {
 	}
 
 	toString() {
-		return `${this.name}: ${this.message}`
+		return `${this.name}${this.message ? `: ${this.message}` : ""}`
 	}
 
 	[inspectSymbol]() {
