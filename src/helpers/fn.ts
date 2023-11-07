@@ -13,7 +13,11 @@ export function fn<T extends (...args: any[]) => Result<any, any>>(
 	return f
 }
 
-export function asyncFn<T extends (...args: any[]) => Promise<Result<any, any>>>(f: T) {
+export function asyncFn<
+	T extends
+		| ((...args: any[]) => PromiseResult<any, any>)
+		| ((...args: any[]) => Promise<Result<any, any>>),
+>(f: T) {
 	return function (...args: Parameters<T>) {
 		return new PromiseResult<AsyncResultValueType<T>, AsyncResultErrorType<T>>(f(...args))
 	}

@@ -2,7 +2,9 @@ import type {Result} from "./interface"
 import type {Panic} from "../error/panic"
 
 export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
-	constructor(readonly promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>>) {}
+	constructor(
+		readonly promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>> | PromiseResult<T, E>,
+	) {}
 
 	then<A, B>(
 		successCallback?: (res: Result<T, E>) => A | PromiseLike<A>,
@@ -12,7 +14,7 @@ export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 	}
 
 	catch<B>(rejectionCallback?: (reason: unknown) => B | PromiseLike<B>): PromiseLike<B> {
-		return this.promise.then(null, rejectionCallback)
+		return this.promise.then(undefined, rejectionCallback)
 	}
 
 	finally(callback: () => void): PromiseLike<Result<T, E>> {
