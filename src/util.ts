@@ -1,5 +1,7 @@
+import type {PromiseResult} from "./result/promise"
 import type {Err} from "./result/err"
 import type {Ok} from "./result/ok"
+import type {Result} from "./result/interface"
 
 export const inspectSymbol = Symbol.for("nodejs.util.inspect.custom")
 
@@ -13,6 +15,10 @@ export type ResultErrorType<T> = ResultValueErrorType<T>["error"]
 export type AsyncResultValueErrorType<T> = T extends (
 	...args: any[]
 ) => Promise<Ok<infer V> | Err<infer E>>
+	? {value: V; error: E}
+	: T extends
+			| ((...args: any[]) => PromiseResult<infer V, infer E>)
+			| ((...args: any[]) => Promise<Result<infer V, infer E>>)
 	? {value: V; error: E}
 	: never
 
