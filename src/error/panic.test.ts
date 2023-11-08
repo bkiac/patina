@@ -1,14 +1,16 @@
 import {expect, it} from "vitest"
 import {Panic} from "./panic"
 
-it("returns an instance without args", () => {
+it("returns an instance without params", () => {
 	const panic = new Panic()
 
 	expect(panic).toBeInstanceOf(Error)
 	expect(panic).toBeInstanceOf(Panic)
 
+	expect(panic.name).toEqual("Panic")
 	expect(panic.message).toEqual("")
-	expect(panic.stack).toContain("Panic: ")
+	expect(panic.stack).toMatch("Panic()")
+	expect(panic.origin).toBeUndefined()
 })
 
 it("returns an instance with message", () => {
@@ -18,21 +20,27 @@ it("returns an instance with message", () => {
 	expect(panic).toBeInstanceOf(Error)
 	expect(panic).toBeInstanceOf(Panic)
 
+	expect(panic.name).toEqual("Panic")
 	expect(panic.message).toEqual(msg)
-	expect(panic.stack).toContain(`Panic: ${msg}`)
+	expect(panic.stack).toMatch(`Panic(${msg})`)
+	expect(panic.origin).toBeUndefined()
 })
 
 it("returns an instance with error", () => {
-	let origin = new Error("msg")
-	let panic = new Panic(origin)
+	const panicMsg = "panic message"
+	const errorMsg = "error message"
+	let origin = new Error(errorMsg)
+	let panic = new Panic(panicMsg, origin)
+
 	expect(panic).toBeInstanceOf(Error)
 	expect(panic).toBeInstanceOf(Panic)
 
+	expect(panic.name).toEqual("Panic")
+	expect(panic.message).toEqual(panicMsg)
+	expect(panic.stack).toMatch(`Panic(${panicMsg}) from Error(${errorMsg})`)
 	expect(panic.origin).toEqual(origin)
-	expect(panic.message).toEqual(origin.message)
-	expect(panic.stack).toContain(`Panic: ${origin.message}`)
 
 	origin.name = "MyError"
-	panic = new Panic(origin)
-	expect(panic.stack).toContain(`Panic from MyError: ${origin.message}`)
+	panic = new Panic(panicMsg, origin)
+	expect(panic.stack).toMatch(`Panic(${panicMsg}) from ${origin.name}(${errorMsg})`)
 })
