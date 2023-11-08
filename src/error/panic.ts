@@ -19,7 +19,7 @@ function formatPanicString(panicName: string, panicMessage?: string, origin?: un
 
 export class Panic extends Error {
 	readonly origin?: unknown
-	override readonly name = "Panic"
+	override readonly name: string = "Panic"
 
 	constructor(message?: string, origin?: unknown) {
 		super(message)
