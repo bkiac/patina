@@ -1,10 +1,9 @@
-import type {Panic} from "../error/panic"
 import type {inspectSymbol} from "../util"
 
 export interface OptionMethods<T> {
 	and<U>(other: Option<U>): Option<U>
 	andThen<U>(f: (value: T) => Option<U>): Option<U>
-	expect(panic: string | Panic): T
+	expect(panic: string): T
 	filter(f: (value: T) => boolean): Option<T>
 	inspect(f: (value: T) => void): Option<T>
 	map<U>(f: (value: T) => U): Option<U>

@@ -19,15 +19,12 @@ export class OkImpl<T> implements OkVariant<T>, ResultMethods<T, never> {
 		return f(this.value)
 	}
 
-	expect(_panic: string | Panic) {
+	expect(_panic: string) {
 		return this.value
 	}
 
-	expectErr(panic: string | Panic): never {
-		if (panic instanceof Panic) {
-			throw panic
-		}
-		throw new Panic(panic)
+	expectErr(panic: string): never {
+		throw new Panic(panic, this)
 	}
 
 	inspect(f: (value: T) => void) {
@@ -68,7 +65,7 @@ export class OkImpl<T> implements OkVariant<T>, ResultMethods<T, never> {
 	}
 
 	unwrapErr(): never {
-		throw new UnwrapPanic("Cannot unwrapErr on an Ok")
+		throw new UnwrapPanic(`called "unwrapErr()" on ${this.toString()}`)
 	}
 
 	unwrapOr<U>(_defaultValue: U) {
