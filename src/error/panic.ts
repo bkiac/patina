@@ -1,25 +1,34 @@
 import {inspectSymbol} from "../util"
-import {getName, getOriginName, replaceStack} from "./util"
+
+function formatErrorString(name: string, message = "") {
+	return name + `(${message})`
+}
+
+function formatPanicString(panicName: string, panicMessage?: string, origin?: unknown) {
+	let str = formatErrorString(panicName, panicMessage)
+	if (origin) {
+		str += " from "
+		if (origin instanceof Error) {
+			str += formatErrorString(origin.name, origin.message)
+		} else {
+			str += String(origin)
+		}
+	}
+	return str
+}
 
 export class Panic extends Error {
-	readonly origin?: Error
-	private readonly originName: string
-	private readonly _stack?: string
+	readonly origin?: unknown
+	override readonly name = "Panic"
 
-	constructor(messageOrError?: string | Error) {
-		if (messageOrError instanceof Error) {
-			super(messageOrError.message)
-			this.origin = messageOrError
-		} else {
-			super(messageOrError)
-		}
-		this.originName = getOriginName(this.origin)
-		this.name = getName("Panic", this.originName)
-		this._stack = this.stack // Save a copy of the stack trace before it gets overridden.
+	constructor(message?: string, origin?: unknown) {
+		super(message)
+		this.origin = origin
+		this.stack = this.stack?.replace(/^(.*?\n)/, this.toString() + "\n")
 	}
 
-	override get stack() {
-		return replaceStack(this.name, this.originName, this._stack)
+	override toString() {
+		return formatPanicString(this.name, this.message, this.origin)
 	}
 
 	[inspectSymbol]() {
@@ -30,11 +39,5 @@ export class Panic extends Error {
 export class UnwrapPanic extends Panic {
 	constructor(msg: string) {
 		super(msg)
-	}
-}
-
-export class InvalidErrorPanic extends Panic {
-	constructor(value: unknown) {
-		super(`Invalid error: "${value}"`)
 	}
 }

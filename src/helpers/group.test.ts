@@ -12,23 +12,31 @@ test("constructor", () => {
 
 class FooError extends ResultError {
 	readonly tag = "foo"
+
+	constructor() {
+		super(new Error())
+	}
 }
 
 class BarError extends ResultError {
 	readonly tag = "bar"
+
+	constructor() {
+		super(new Error())
+	}
 }
 
-const m = createGroup(() => new FooError())
+const g = createGroup(() => new FooError())
 
 test("tryFn", () => {
-	const result = m.tryFn(() => {
+	const result = g.tryFn(() => {
 		throw new Error("error")
 	})
 	expect(result.unwrapErr()).toBeInstanceOf(FooError)
 })
 
 test("tryFnWith", () => {
-	const result = m.tryFnWith(
+	const result = g.tryFnWith(
 		() => {
 			throw new Error("error")
 		},
@@ -38,24 +46,24 @@ test("tryFnWith", () => {
 })
 
 test("tryPromise", async () => {
-	const result = m.tryPromise(Promise.reject(new Error("error")))
+	const result = g.tryPromise(Promise.reject(new Error("error")))
 	await expect(result.unwrapErr()).resolves.toBeInstanceOf(FooError)
 })
 
 test("tryPromiseWith", async () => {
-	const result = m.tryPromiseWith(Promise.reject(new Error("error")), () => new BarError())
+	const result = g.tryPromiseWith(Promise.reject(new Error("error")), () => new BarError())
 	await expect(result.unwrapErr()).resolves.toBeInstanceOf(BarError)
 })
 
 test("tryAsyncFn", async () => {
-	const result = m.tryAsyncFn(async () => {
+	const result = g.tryAsyncFn(async () => {
 		throw new Error("error")
 	})
 	await expect(result.unwrapErr()).resolves.toBeInstanceOf(FooError)
 })
 
 test("tryAsyncFnWith", async () => {
-	const result = m.tryAsyncFnWith(
+	const result = g.tryAsyncFnWith(
 		async () => {
 			throw new Error("error")
 		},
@@ -65,14 +73,14 @@ test("tryAsyncFnWith", async () => {
 })
 
 test("guard", () => {
-	const f = m.guard(() => {
+	const f = g.guard(() => {
 		throw new Error("error")
 	})
 	expect(f().unwrapErr()).toBeInstanceOf(FooError)
 })
 
 test("guardWith", () => {
-	const f = m.guardWith(
+	const f = g.guardWith(
 		() => {
 			throw new Error("error")
 		},
@@ -82,14 +90,14 @@ test("guardWith", () => {
 })
 
 test("guardAsync", async () => {
-	const f = m.guardAsync(async () => {
+	const f = g.guardAsync(async () => {
 		throw new Error("error")
 	})
 	await expect(f().unwrapErr()).resolves.toBeInstanceOf(FooError)
 })
 
 test("guardAsyncWith", async () => {
-	const f = m.guardAsyncWith(
+	const f = g.guardAsyncWith(
 		async () => {
 			throw new Error("error")
 		},

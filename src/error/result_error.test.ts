@@ -1,9 +1,17 @@
 import {describe, expect, it} from "vitest"
-import {InvalidErrorPanic, Panic, ResultError, toStdError, StdError} from "../internal"
+import {ResultError, StdError} from "../internal"
 
-describe.concurrent("ResultError and StdError", () => {
+describe.concurrent("ResultError", () => {
+	class MyResultError extends ResultError {
+		readonly tag = "MyResultError"
+
+		constructor() {
+			super(new Error())
+		}
+	}
+
 	it("returns instance with no args", () => {
-		const error = new StdError()
+		const error = new MyResultError()
 
 		expect(error).toBeInstanceOf(ResultError)
 		expect(error).toBeInstanceOf(StdError)
@@ -47,28 +55,23 @@ describe.concurrent("ResultError and StdError", () => {
 	})
 })
 
-describe.concurrent("toStdError", () => {
-	it("returns an StdError when given an Error", () => {
-		class TestError extends Error {}
-		const error = new TestError("Test error")
-		const stdError = toStdError(error)
+describe.concurrent("StdError", () => {
+	it("creates an instance when given an Error", () => {
+		const error = new Error("Test error")
+		const stdError = new StdError(error)
 		expect(stdError).toBeInstanceOf(StdError)
 		expect(stdError.origin).toEqual(error)
+		expect(stdError.originRaw).toEqual(error)
 	})
 
-	it("throws a Panic when given a Panic", () => {
-		const msg = "Test panic"
-		const panic = new Panic(msg)
-		expect(() => toStdError(panic)).toThrow(panic)
-	})
-
-	it("throws a Panic when given an unknown value", () => {
-		expect(() => toStdError(0)).toThrow(InvalidErrorPanic)
-		expect(() => toStdError("")).toThrow(InvalidErrorPanic)
-		expect(() => toStdError(true)).toThrow(InvalidErrorPanic)
-		expect(() => toStdError(undefined)).toThrow(InvalidErrorPanic)
-		expect(() => toStdError(null)).toThrow(InvalidErrorPanic)
-		expect(() => toStdError({})).toThrow(InvalidErrorPanic)
-		expect(() => toStdError([])).toThrow(InvalidErrorPanic)
+	it("creates an instance when given an unknown value", () => {
+		const values = [1, "str", true, undefined, null, {}, [], new Date()] as const
+		for (const value of values) {
+			const stdError = new StdError(value)
+			expect(stdError).toBeInstanceOf(StdError)
+			expect(stdError.origin).toBeInstanceOf(Error)
+			expect(stdError.origin.message).toContain("Unexpected error type")
+			expect(stdError.originRaw).toEqual(value)
+		}
 	})
 })

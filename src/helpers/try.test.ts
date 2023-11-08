@@ -33,7 +33,7 @@ describe.concurrent("tryPromise", () => {
 describe.concurrent("tryPromiseWith", () => {
 	it("settles a Promise to an Ok result", async () => {
 		const promise = Promise.resolve(42)
-		const result = await tryPromiseWith(promise, () => new MyError())
+		const result = await tryPromiseWith(promise, () => new MyError(new Error()))
 		expect(result.ok).toEqual(true)
 		expect(result.unwrap()).toEqual(42)
 	})
@@ -41,7 +41,7 @@ describe.concurrent("tryPromiseWith", () => {
 	it("settles a rejected Promise to an Err result", async () => {
 		const error = new Error("Test error")
 		const promise = Promise.reject(error)
-		const myError = new MyError()
+		const myError = new MyError(new Error())
 		const result = await tryPromiseWith(promise, () => myError)
 		expect(result.ok).toEqual(false)
 		expect(result.unwrapErr()).toEqual(myError)
@@ -70,7 +70,7 @@ describe.concurrent("tryFn", () => {
 describe.concurrent("tryFnWith", () => {
 	it("wraps a function call into a Result object", () => {
 		const fn = () => 42
-		const result = tryFnWith(fn, () => new MyError())
+		const result = tryFnWith(fn, () => new MyError(new Error()))
 		expect(result.ok).toEqual(true)
 		expect(result.unwrap()).toEqual(42)
 	})
@@ -80,7 +80,7 @@ describe.concurrent("tryFnWith", () => {
 		const fn = () => {
 			throw error
 		}
-		const myError = new MyError()
+		const myError = new MyError(new Error())
 		const result = tryFnWith(fn, () => myError)
 		expect(result.ok).toEqual(false)
 		expect(result.unwrapErr()).toEqual(myError)
@@ -109,7 +109,7 @@ describe.concurrent("tryAsyncFn", () => {
 describe.concurrent("tryAsyncFnWith", () => {
 	it("wraps an async function call into a Result object", async () => {
 		const fn = async () => Promise.resolve(42)
-		const result = await tryAsyncFnWith(fn, () => new MyError())
+		const result = await tryAsyncFnWith(fn, () => new MyError(new Error()))
 		expect(result.ok).toEqual(true)
 		expect(result.unwrap()).toEqual(42)
 	})
@@ -119,7 +119,7 @@ describe.concurrent("tryAsyncFnWith", () => {
 		const fn = async (): Promise<number> => {
 			throw error
 		}
-		const myError = new MyError()
+		const myError = new MyError(new Error())
 		const result = await tryAsyncFnWith(fn, () => myError)
 		expect(result.ok).toEqual(false)
 		expect(result.unwrapErr()).toEqual(myError)

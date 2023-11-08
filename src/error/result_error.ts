@@ -1,37 +1,23 @@
 import {inspectSymbol} from "../util"
-import {InvalidErrorPanic, Panic} from "./panic"
-import {getName, getOriginName, replaceStack} from "./util"
+import {replaceName, replaceStack} from "./util"
 
-export abstract class ResultError implements Error {
+export abstract class ResultError<T extends Error = Error> implements Error {
 	abstract readonly tag: string
 
 	readonly message: string
-	readonly origin?: Readonly<Error>
-	private readonly originName: string
-	private readonly _stack?: string
+	readonly origin: T
 
-	constructor(messageOrError: string | Error = "") {
-		if (messageOrError instanceof Error) {
-			this.message = messageOrError.message
-			this.origin = messageOrError
-			if (this.origin.stack) {
-				this._stack = this.origin.stack
-			}
-		} else {
-			this.message = messageOrError
-		}
-		if (!this._stack) {
-			this._stack = new Error(this.message).stack
-		}
-		this.originName = getOriginName(this.origin)
+	constructor(origin: T) {
+		this.message = origin.message
+		this.origin = origin
 	}
 
 	get name() {
-		return getName(this.tag, this.originName)
+		return replaceName(this.tag, this.origin.name)
 	}
 
 	get stack() {
-		return replaceStack(this.name, this.originName, this._stack)
+		return replaceStack(this.name, this.origin.name, this.origin.stack)
 	}
 
 	toString() {
@@ -43,18 +29,18 @@ export abstract class ResultError implements Error {
 	}
 }
 
-export class StdError extends ResultError {
+export class StdError<T = unknown> extends ResultError {
 	readonly tag = "StdError"
+	readonly originRaw: T
+
+	constructor(origin: T) {
+		const error =
+			origin instanceof Error
+				? origin
+				: new Error(`Unexpected error type: "${String(origin)}"`)
+		super(error)
+		this.originRaw = origin
+	}
 }
 
-export type ErrorHandler<E extends ResultError = StdError> = (error: unknown) => E
-
-export function toStdError(error: unknown): StdError {
-	if (error instanceof Panic) {
-		throw error
-	}
-	if (error instanceof Error) {
-		return new StdError(error)
-	}
-	throw new InvalidErrorPanic(error)
-}
+export type ErrorHandler<E> = (error: unknown) => E
