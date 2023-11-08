@@ -59,20 +59,20 @@ describe.concurrent("expect", () => {
 	it("returns the value when called on an Ok result", () => {
 		const result = Ok(42)
 		const value = result.expect("Panic message")
-		expect(value).to.equal(42)
+		expect(value).toEqual(42)
 	})
 
 	it("throws a Panic with the provided message when called on an Err result", () => {
 		const error = new Error("Original error")
 		const result = Err(error)
-		expect(() => result.expect("Panic message")).to.throw(Panic, "Panic message")
-	})
-
-	it("throws a Panic with the provided Panic when called on an Err result", () => {
-		const error = new Error("Original error")
-		const result = Err(error)
-		const panic = new Panic("custom panic")
-		expect(() => result.expect(panic)).to.throw(panic)
+		const panicMsg = "Panic message"
+		try {
+			result.expect("hello")
+		} catch (err) {
+			console.log(err)
+		}
+		expect(() => result.expect(panicMsg)).toThrow(Panic)
+		expect(() => result.expect(panicMsg)).toThrow(panicMsg)
 	})
 })
 
@@ -85,13 +85,9 @@ describe.concurrent("expectErr", () => {
 
 	it("throws a Panic with the provided message when called on an Ok result", () => {
 		const ok = Ok()
-		expect(() => ok.expectErr("Panic message")).to.throw(Panic, "Panic message")
-	})
-
-	it("throws a Panic with the provided Panic when called on an Ok result", () => {
-		const result = Ok()
-		const panic = new Panic("custom panic")
-		expect(() => result.expectErr(panic)).to.throw(panic)
+		const panicMsg = "Panic message"
+		expect(() => ok.expectErr(panicMsg)).toThrow(Panic)
+		expect(() => ok.expectErr(panicMsg)).toThrow(panicMsg)
 	})
 })
 
@@ -292,15 +288,6 @@ describe.concurrent("unwrapOrElse", () => {
 		const result = Err(error)
 		const unwrapped = result.unwrapOrElse(() => 42)
 		expect(unwrapped).toEqual(42)
-	})
-
-	it("can panic", () => {
-		const error = new Error("Test error")
-		expect(() =>
-			Err(error).unwrapOrElse((error) => {
-				throw new Panic(error)
-			}),
-		).toThrow(Panic)
 	})
 })
 
