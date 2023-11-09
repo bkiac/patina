@@ -1,9 +1,5 @@
 import {inspectSymbol} from "../util"
 
-// function formatErrorString(name: string, message = "") {
-// 	return name + (message ? ": " + message : "")
-// }
-
 export class Panic extends Error {
 	readonly origin?: unknown
 	override readonly name: string = "Panic"

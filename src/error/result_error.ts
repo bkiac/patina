@@ -1,44 +1,58 @@
 import {inspectSymbol} from "../util"
-import {replaceName, replaceStack} from "./util"
+import {formatErrorString} from "./util"
 
-export abstract class ResultError<T extends Error = Error> implements Error {
+export abstract class ResultError<T extends Error | null = null> implements Error {
 	abstract readonly tag: string
 
 	readonly message: string
-	readonly origin: T
+	readonly stack?: string
+	readonly origin: T | null
 
-	constructor(origin: T) {
-		this.message = origin.message
-		this.origin = origin
+	constructor(message?: string, origin?: T) {
+		this.message = message ?? ""
+		this.origin = origin ?? null
+
+		if (Error.captureStackTrace) {
+			Error.captureStackTrace(this, this.constructor)
+		} else {
+			this.stack = new Error().stack
+		}
 	}
 
 	get name() {
-		return replaceName(this.tag, this.origin.name)
-	}
-
-	get stack() {
-		return replaceStack(this.name, this.origin.name, this.origin.stack)
+		return this.tag
 	}
 
 	toString() {
-		return `${this.name}${this.message ? `: ${this.message}` : ""}`
+		let str = formatErrorString(this.name, this.message)
+		if (this.origin) {
+			str += `\nCaused by: ${this.origin.toString()}`
+		}
+		return str
 	}
 
 	[inspectSymbol]() {
-		return this.stack
+		let str = this.stack
+		if (this.origin) {
+			str += `\nCaused by: ${this.origin.stack}`
+		}
+		return str
 	}
 }
 
-export class StdError<T = unknown> extends ResultError {
+export class StdError<T = unknown> extends ResultError<Error> {
 	readonly tag = "StdError"
+
+	override readonly origin: Error
 	readonly originRaw: T
 
-	constructor(origin: T) {
-		const error =
+	constructor(origin: T, message?: string) {
+		const o =
 			origin instanceof Error
 				? origin
-				: new Error(`Unexpected error type: "${String(origin)}"`)
-		super(error)
+				: new TypeError(`Unexpected error type: "${String(origin)}"`)
+		super(message)
+		this.origin = o
 		this.originRaw = origin
 	}
 }

@@ -12,6 +12,6 @@ export function replaceStack(name: string, originName: string, stack?: string) {
 	return stack?.replace(r, name)
 }
 
-export function replaceName(name: string, originName?: string) {
-	return originName ? `${name} from ${originName}` : name
+export function formatErrorString(name: string, message = "") {
+	return name + (message ? ": " + message : "")
 }
