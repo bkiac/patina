@@ -22,5 +22,5 @@
 
 		"checkJs": true
 	},
-	"exclude": ["node_modules", "lib", "*.ignored.ts"]
+	"exclude": ["node_modules", "lib", "*.ignore.ts"]
 }
