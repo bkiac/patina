@@ -1,21 +1,8 @@
 import {inspectSymbol} from "../util"
 
-function formatErrorString(name: string, message = "") {
-	return name + `(${message})`
-}
-
-function formatPanicString(panicName: string, panicMessage?: string, origin?: unknown) {
-	let str = formatErrorString(panicName, panicMessage)
-	if (origin) {
-		str += " from "
-		if (origin instanceof Error) {
-			str += formatErrorString(origin.name, origin.message)
-		} else {
-			str += String(origin)
-		}
-	}
-	return str
-}
+// function formatErrorString(name: string, message = "") {
+// 	return name + (message ? ": " + message : "")
+// }
 
 export class Panic extends Error {
 	readonly origin?: unknown
@@ -24,15 +11,32 @@ export class Panic extends Error {
 	constructor(message?: string, origin?: unknown) {
 		super(message)
 		this.origin = origin
-		this.stack = this.stack?.replace(/^(.*?\n)/, this.toString() + "\n")
 	}
 
-	override toString() {
-		return formatPanicString(this.name, this.message, this.origin)
-	}
+	// override toString() {
+	// 	let str = formatErrorString(this.name, this.message)
+	// 	if (this.origin !== undefined) {
+	// 		str += ", caused by "
+	// 		if (this.origin instanceof Error) {
+	// 			str += formatErrorString(this.origin.name, this.origin.message)
+	// 		} else {
+	// 			str += String(this.origin)
+	// 		}
+	// 	}
+	// 	return str
+	// }
 
 	[inspectSymbol]() {
-		return this.stack
+		let str = this.stack
+		if (this.origin !== undefined) {
+			str += "\nCaused by: "
+			if (this.origin instanceof Error && this.origin.stack) {
+				str += this.origin.stack
+			} else {
+				str += String(this.origin)
+			}
+		}
+		return str
 	}
 }
 
