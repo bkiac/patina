@@ -12,18 +12,10 @@ test("constructor", () => {
 
 class FooError extends ResultError {
 	readonly tag = "foo"
-
-	constructor() {
-		super(new Error())
-	}
 }
 
 class BarError extends ResultError {
 	readonly tag = "bar"
-
-	constructor() {
-		super(new Error())
-	}
 }
 
 const g = createGroup(() => new FooError())

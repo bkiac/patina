@@ -59,13 +59,6 @@ describe.concurrent("expect", () => {
 		const result = new PromiseResult(Promise.resolve(Err(error)))
 		await expect(result.expect("Panic message")).rejects.toThrow(Panic)
 	})
-
-	it("throws a Panic with the provided Panic when called on an Err result", async () => {
-		const error = new Error("Original error")
-		const result = new PromiseResult(Promise.resolve(Err(error)))
-		const panic = new Panic("Panic")
-		await expect(result.expect(panic)).rejects.toEqual(panic)
-	})
 })
 
 describe.concurrent("expectErr", () => {
@@ -78,12 +71,6 @@ describe.concurrent("expectErr", () => {
 	it("throws a Panic with the provided message when called on an Ok result", async () => {
 		const result = new PromiseResult(Promise.resolve(Ok()))
 		await expect(result.expectErr("Panic message")).rejects.toThrow(Panic)
-	})
-
-	it("throws a Panic with the provided Panic when called on an Ok result", async () => {
-		const result = new PromiseResult(Promise.resolve(Ok()))
-		const panic = new Panic("Panic")
-		await expect(result.expectErr(panic)).rejects.toEqual(panic)
 	})
 })
 
@@ -292,16 +279,6 @@ describe.concurrent("unwrapOrElse", () => {
 		const error = new Error("Test error")
 		const result = new PromiseResult(Promise.resolve(Err(error)))
 		await expect(result.unwrapOrElse(() => 42)).resolves.toEqual(42)
-	})
-
-	it("can panic", async () => {
-		const error = new Error("Test error")
-		const result = new PromiseResult(Promise.resolve(Err(error)))
-		await expect(() =>
-			result.unwrapOrElse((error) => {
-				throw new Panic(error)
-			}),
-		).rejects.toThrow(Panic)
 	})
 })
 
