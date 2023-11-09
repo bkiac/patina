@@ -1,5 +1,4 @@
 import type {Result} from "./interface"
-import type {Panic} from "../error/panic"
 
 export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 	constructor(
@@ -42,11 +41,11 @@ export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 		)
 	}
 
-	async expect(panic: Panic | string) {
+	async expect(panic: string) {
 		return (await this).expect(panic)
 	}
 
-	async expectErr(panic: Panic | string) {
+	async expectErr(panic: string) {
 		return (await this).expectErr(panic)
 	}
 

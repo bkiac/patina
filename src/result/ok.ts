@@ -24,7 +24,7 @@ export class OkImpl<T> implements OkVariant<T>, ResultMethods<T, never> {
 	}
 
 	expectErr(panic: string): never {
-		throw new Panic(panic, this)
+		throw new Panic(panic, this.value)
 	}
 
 	inspect(f: (value: T) => void) {

@@ -20,7 +20,7 @@ export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 	}
 
 	expect(panic: string): never {
-		throw new Panic(panic, this)
+		throw new Panic(panic, this.error)
 	}
 
 	expectErr(_panic: string) {
