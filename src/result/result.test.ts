@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest"
-import {Panic, UnwrapPanic, Ok, Err, Result} from "../internal"
+import {Panic, UnwrapPanic, Ok, Err} from "../internal"
 
 const testErr = new Error("hello")
 
@@ -15,7 +15,7 @@ describe.concurrent("err", () => {
 	it("returns an Err result", () => {
 		const result = Err("error")
 		expect(result.ok).toEqual(false)
-		expect(result.error).toEqual("error")
+		expect(result.value).toEqual("error")
 	})
 })
 
@@ -290,18 +290,6 @@ describe.concurrent("unwrapOrElse", () => {
 		const result = Err(error)
 		const unwrapped = result.unwrapOrElse(() => 42)
 		expect(unwrapped).toEqual(42)
-	})
-})
-
-describe.concurrent("into", () => {
-	it("returns the value for an Ok result", () => {
-		const result = Ok(42) as Result<number, Error>
-		expect(result.into()).toEqual(42)
-	})
-
-	it("returns the err for an Err result", () => {
-		const result = Err(42) as Result<string, number>
-		expect(result.into()).toEqual(42)
 	})
 })
 

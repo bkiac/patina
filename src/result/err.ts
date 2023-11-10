@@ -5,10 +5,10 @@ import type {ErrVariant, Result, ResultMethods} from "./interface"
 export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 	readonly ok = false
 	readonly err = true
-	readonly error: E
+	readonly value: E
 
 	constructor(error: E) {
-		this.error = error
+		this.value = error
 	}
 
 	and<U, F>(_other: Result<U, F>) {
@@ -20,11 +20,11 @@ export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 	}
 
 	expect(panic: string): never {
-		throw new Panic(panic, this.error)
+		throw new Panic(panic, this.value)
 	}
 
 	expectErr(_panic: string) {
-		return this.error
+		return this.value
 	}
 
 	inspect(_f: (value: never) => void) {
@@ -32,7 +32,7 @@ export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 	}
 
 	inspectErr(f: (error: E) => void) {
-		f(this.error)
+		f(this.value)
 		return this
 	}
 
@@ -41,7 +41,7 @@ export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 	}
 
 	mapErr<F>(f: (error: E) => F) {
-		return Err(f(this.error))
+		return Err(f(this.value))
 	}
 
 	mapOr<A, B>(defaultValue: A, _f: (value: never) => B) {
@@ -49,7 +49,7 @@ export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 	}
 
 	mapOrElse<A, B>(defaultValue: (error: E) => A, _f: (value: never) => B) {
-		return defaultValue(this.error)
+		return defaultValue(this.value)
 	}
 
 	or<U, F>(other: Result<U, F>) {
@@ -57,7 +57,7 @@ export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 	}
 
 	orElse<U, F>(f: (error: E) => Result<U, F>) {
-		return f(this.error)
+		return f(this.value)
 	}
 
 	unwrap(): never {
@@ -65,7 +65,7 @@ export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 	}
 
 	unwrapErr() {
-		return this.error
+		return this.value
 	}
 
 	unwrapOr<U>(defaultValue: U) {
@@ -73,19 +73,19 @@ export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 	}
 
 	unwrapOrElse<U>(defaultValue: (error: E) => U) {
-		return defaultValue(this.error)
+		return defaultValue(this.value)
 	}
 
-	into() {
-		return this.error
+	get() {
+		return this.value
 	}
 
 	match<A, B>(_ok: (value: never) => A, err: (error: E) => B) {
-		return err(this.error)
+		return err(this.value)
 	}
 
 	toString() {
-		return `Err(${this.error})` as const
+		return `Err(${this.value})` as const
 	}
 
 	[inspectSymbol]() {
@@ -93,19 +93,17 @@ export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 	}
 
 	toObject() {
-		return {ok: false, error: this.error} as const
+		return {ok: false, value: this.value} as const
 	}
 
 	toJSON() {
-		return {meta: "Err", data: this.error} as const
-	}
-
-	static from(): Err
-	static from<E>(error: E): Err<E>
-	static from<E>(error?: E): Err<E> {
-		return new ErrImpl(error ? error : null) as Err<E>
+		return {meta: "Err", value: this.value} as const
 	}
 }
 
 export interface Err<E = null> extends ErrImpl<E> {}
-export const Err = ErrImpl.from
+export function Err(): Err
+export function Err<E>(value: E): Err<E>
+export function Err<E>(value?: E): Err<E> {
+	return new ErrImpl(value ? value : null) as Err<E>
+}

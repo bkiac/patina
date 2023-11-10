@@ -68,7 +68,7 @@ export class SomeImpl<T> implements SomeVariant<T>, OptionMethods<T> {
 		return other.some ? None : this
 	}
 
-	into() {
+	get() {
 		return this.value
 	}
 
@@ -89,13 +89,11 @@ export class SomeImpl<T> implements SomeVariant<T>, OptionMethods<T> {
 	}
 
 	toJSON() {
-		return {meta: "Some", data: this.value} as const
-	}
-
-	static from<T>(value: T): Some<T> {
-		return new SomeImpl(value)
+		return {meta: "Some", value: this.value} as const
 	}
 }
 
 export interface Some<T> extends SomeImpl<T> {}
-export const Some = SomeImpl.from
+export function Some<T>(value: T): Some<T> {
+	return new SomeImpl(value)
+}

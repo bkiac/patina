@@ -233,18 +233,6 @@ describe.concurrent("xor", () => {
 	})
 })
 
-describe.concurrent("into", () => {
-	it("returns the value when called on a Some option", async () => {
-		const option = promiseSome(42)
-		await expect(option.into()).resolves.toEqual(42)
-	})
-
-	it("returns null when called on a None option", async () => {
-		const option = promiseNone()
-		await expect(option.into()).resolves.toEqual(null)
-	})
-})
-
 describe.concurrent("match", () => {
 	it("returns the mapped value for a Some option", async () => {
 		const option = promiseSome(42)

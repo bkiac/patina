@@ -76,7 +76,7 @@ export class OkImpl<T> implements OkVariant<T>, ResultMethods<T, never> {
 		return this.value
 	}
 
-	into() {
+	get() {
 		return this.value
 	}
 
@@ -97,15 +97,13 @@ export class OkImpl<T> implements OkVariant<T>, ResultMethods<T, never> {
 	}
 
 	toJSON() {
-		return {meta: "Ok", data: this.value} as const
-	}
-
-	static from(): Ok
-	static from<T>(value: T): Ok<T>
-	static from<T>(value?: T): Ok<T> {
-		return new OkImpl(value ? value : null) as Ok<T>
+		return {meta: "Ok", value: this.value} as const
 	}
 }
 
 export interface Ok<T = null> extends OkImpl<T> {}
-export const Ok = OkImpl.from
+export function Ok(): Ok
+export function Ok<T>(value: T): Ok<T>
+export function Ok<T>(value?: T): Ok<T> {
+	return new OkImpl(value ? value : null) as Ok<T>
+}

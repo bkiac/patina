@@ -5,6 +5,7 @@ import type {OptionMethods, Option, NoneVariant} from "./interface"
 export class NoneImpl implements NoneVariant, OptionMethods<never> {
 	readonly some = false
 	readonly none = true
+	readonly value = null
 
 	and<U>(_other: Option<U>) {
 		return None
@@ -62,7 +63,7 @@ export class NoneImpl implements NoneVariant, OptionMethods<never> {
 		return other
 	}
 
-	into() {
+	get() {
 		return null
 	}
 
@@ -83,7 +84,7 @@ export class NoneImpl implements NoneVariant, OptionMethods<never> {
 	}
 
 	toJSON() {
-		return {meta: "None"} as const
+		return {meta: "None", value: null} as const
 	}
 }
 

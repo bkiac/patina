@@ -89,10 +89,6 @@ export class PromiseOption<T> implements PromiseLike<Option<T>> {
 		)
 	}
 
-	async into() {
-		return (await this).into()
-	}
-
 	async match<A, B>(some: (value: T) => A, none: () => B) {
 		return (await this).match(some, none)
 	}

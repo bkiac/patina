@@ -16,13 +16,12 @@ export interface OptionMethods<T> {
 	unwrapOrElse<U>(defaultValue: () => U): T | U
 	xor<U>(other: Option<U>): Option<T | U>
 
-	into(): T | null
 	match<A, B>(some: (value: T) => A, none: () => B): A | B
 
 	toString(): `Some(${string})` | "None"
 	[inspectSymbol](): ReturnType<OptionMethods<T>["toString"]>
 	toObject(): {some: true; value: T} | {some: false; value: null}
-	toJSON(): {meta: "Some"; data: T} | {meta: "None"}
+	toJSON(): {meta: "Some"; value: T} | {meta: "None"; value: null}
 }
 
 export interface SomeVariant<T> {
@@ -34,6 +33,7 @@ export interface SomeVariant<T> {
 export interface NoneVariant {
 	readonly some: false
 	readonly none: true
+	readonly value: null
 }
 
 export type OptionVariants<T> = SomeVariant<T> | NoneVariant

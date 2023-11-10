@@ -101,10 +101,6 @@ export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 		return (await this).unwrapOrElse(defaultValue)
 	}
 
-	async into() {
-		return (await this).into()
-	}
-
 	async match<A, B>(ok: (value: T) => A, err: (error: E) => B) {
 		return (await this).match(ok, err)
 	}

@@ -247,12 +247,12 @@ describe.concurrent("xor", () => {
 describe.concurrent("into", () => {
 	it("returns the value when called on a Some option", () => {
 		const option = Some(42)
-		expect(option.into()).toEqual(42)
+		expect(option.get()).toEqual(42)
 	})
 
 	it("throws when called on a None option", () => {
 		const option = None
-		expect(option.into()).toEqual(null)
+		expect(option.get()).toEqual(null)
 	})
 })
 

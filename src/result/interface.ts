@@ -18,13 +18,12 @@ export interface ResultMethods<T, E> {
 	unwrapOr<U>(defaultValue: U): T | U
 	unwrapOrElse<U>(defaultValue: (error: E) => U): T | U
 
-	into(): T | E
 	match<A, B>(ok: (value: T) => A, err: (error: E) => B): A | B
 
 	toString(): `Ok(${string})` | `Err(${string})`
 	[inspectSymbol](): ReturnType<ResultMethods<T, E>["toString"]>
-	toObject(): {ok: true; value: T} | {ok: false; error: E}
-	toJSON(): {meta: "Ok"; data: T} | {meta: "Err"; data: E}
+	toObject(): {ok: true; value: T} | {ok: false; value: E}
+	toJSON(): {meta: "Ok"; value: T} | {meta: "Err"; value: E}
 }
 
 export interface OkVariant<T> {
@@ -36,7 +35,7 @@ export interface OkVariant<T> {
 export interface ErrVariant<E> {
 	readonly ok: false
 	readonly err: true
-	readonly error: E
+	readonly value: E
 }
 
 export type ResultVariants<T, E> = OkVariant<T> | ErrVariant<E>
