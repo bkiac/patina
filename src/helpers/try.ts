@@ -1,5 +1,5 @@
 import {Panic} from "../error/panic"
-import {type ErrorHandler, type ResultError, StdError, toStdError} from "../error/result_error"
+import {type ErrorHandler, StdError} from "../error/result_error"
 import {Err} from "../result/err"
 import type {Result} from "../result/interface"
 import {Ok} from "../result/ok"
@@ -19,14 +19,11 @@ export function tryFn<T>(f: () => T): Result<T, StdError> {
 	try {
 		return Ok(f())
 	} catch (error) {
-		return Err(toStdError(error))
+		return Err(new StdError(error))
 	}
 }
 
-export function tryFnWith<T, E extends ResultError>(
-	f: () => T,
-	handleError: ErrorHandler<E>,
-): Result<T, E> {
+export function tryFnWith<T, E>(f: () => T, handleError: ErrorHandler<E>): Result<T, E> {
 	try {
 		return Ok(f())
 	} catch (error) {
@@ -38,12 +35,12 @@ export function tryPromise<T>(promise: Promise<T>): PromiseResult<T, StdError> {
 	return new PromiseResult<T, StdError>(
 		promise.then(
 			(value) => Ok(value),
-			(error: unknown) => Err(toStdError(error)),
+			(error: unknown) => Err(new StdError(error)),
 		),
 	)
 }
 
-export function tryPromiseWith<T, E extends ResultError>(
+export function tryPromiseWith<T, E>(
 	promise: Promise<T>,
 	handleError: ErrorHandler<E>,
 ): PromiseResult<T, E> {
@@ -59,7 +56,7 @@ export function tryAsyncFn<T>(f: () => Promise<T>): PromiseResult<T, StdError> {
 	return tryPromise(f())
 }
 
-export function tryAsyncFnWith<T, E extends ResultError>(
+export function tryAsyncFnWith<T, E>(
 	f: () => Promise<T>,
 	handleError: ErrorHandler<E>,
 ): PromiseResult<T, E> {

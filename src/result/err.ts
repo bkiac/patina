@@ -19,14 +19,11 @@ export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 		return this
 	}
 
-	expect(panic: string | Panic): never {
-		if (panic instanceof Panic) {
-			throw panic
-		}
-		throw new Panic(panic)
+	expect(panic: string): never {
+		throw new Panic(panic, this.error)
 	}
 
-	expectErr(_panic: string | Panic) {
+	expectErr(_panic: string) {
 		return this.error
 	}
 
@@ -64,7 +61,7 @@ export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 	}
 
 	unwrap(): never {
-		throw new UnwrapPanic(`Cannot unwrap on an Err: ${this.error}`)
+		throw new UnwrapPanic(`called "unwrap()" on ${this.toString()}`)
 	}
 
 	unwrapErr() {

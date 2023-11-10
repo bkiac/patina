@@ -1,74 +1,108 @@
-import {describe, expect, it} from "vitest"
-import {InvalidErrorPanic, Panic, ResultError, toStdError, StdError} from "../internal"
+import {describe, expect, it, test} from "vitest"
+import {ResultError, StdError, inspectSymbol} from "../internal"
 
-describe.concurrent("ResultError and StdError", () => {
-	it("returns instance with no args", () => {
-		const error = new StdError()
+describe.concurrent("ResultError", () => {
+	class MyResultError extends ResultError<Error> {
+		static _tag = "MyResultError" as const
+		readonly tag = MyResultError._tag
 
-		expect(error).toBeInstanceOf(ResultError)
-		expect(error).toBeInstanceOf(StdError)
+		constructor(message?: string, origin?: Error) {
+			super(message, origin)
+		}
+	}
 
-		expect(error.tag).toEqual("StdError")
+	describe("returns instance", () => {
+		test("without params", () => {
+			const error = new MyResultError()
 
-		expect(error.message).toEqual("")
-		expect(error.stack).toContain("StdError: ")
-	})
+			expect(error).toBeInstanceOf(ResultError)
+			expect(error).toBeInstanceOf(MyResultError)
 
-	it("returns instance with message", () => {
-		const msg = "msg"
-		const error = new StdError(msg)
+			expect(error.tag).toEqual(MyResultError._tag)
+			expect(error.name).toEqual(error.tag)
+			expect(error.stack).toBeDefined()
 
-		expect(error).toBeInstanceOf(ResultError)
-		expect(error).toBeInstanceOf(StdError)
+			expect(error.message).toEqual("")
+			expect(error.origin).toBeNull()
+			expect(error.toString()).toEqual(error.name)
+			expect(error[inspectSymbol]()).toEqual(error.stack)
+		})
 
-		expect(error.tag).toEqual("StdError")
+		test("with message", () => {
+			const msg = "msg"
+			const error = new MyResultError(msg)
 
-		expect(error.message).toEqual(msg)
-		expect(error.stack).toContain(`StdError: ${msg}`)
-	})
+			expect(error).toBeInstanceOf(ResultError)
+			expect(error).toBeInstanceOf(MyResultError)
 
-	it("returns instance with error", () => {
-		let origin = new Error("msg")
-		let error = new StdError(origin)
+			expect(error.tag).toEqual(MyResultError._tag)
+			expect(error.name).toEqual(error.tag)
+			expect(error.stack).toBeDefined()
 
-		expect(error).toBeInstanceOf(ResultError)
-		expect(error).toBeInstanceOf(StdError)
+			expect(error.message).toEqual(msg)
+			expect(error.origin).toBeNull()
+			expect(error.toString()).toEqual(`${error.name}: ${error.message}`)
+			expect(error[inspectSymbol]()).toEqual(error.stack)
+		})
 
-		expect(error.tag).toEqual("StdError")
+		test("with origin", () => {
+			let origin = new Error("msg")
+			let error = new MyResultError("", origin)
 
-		expect(error.origin).toEqual(origin)
-		expect(error.message).toEqual(origin.message)
-		expect(error.stack).toContain(`StdError: ${origin.message}`)
+			expect(error).toBeInstanceOf(ResultError)
+			expect(error).toBeInstanceOf(MyResultError)
 
-		origin = new Error("msg")
-		origin.name = "MyError"
-		error = new StdError(origin)
-		expect(error.stack).toContain(`StdError from MyError: ${origin.message}`)
+			expect(error.tag).toEqual(MyResultError._tag)
+			expect(error.name).toEqual(error.tag)
+			expect(error.stack).toBeDefined()
+
+			expect(error.message).toEqual("")
+			expect(error.origin).toEqual(origin)
+			expect(error.toString()).toEqual(
+				`${error.name}\nCaused by: ${error.origin?.toString()}`,
+			)
+			expect(error[inspectSymbol]()).toEqual(error.stack + `\nCaused by: ${origin.stack}`)
+		})
+
+		test("with message and origin", () => {
+			const msg = "panic message"
+			let origin = new Error("error message")
+			let error = new MyResultError(msg, origin)
+
+			expect(error).toBeInstanceOf(ResultError)
+			expect(error).toBeInstanceOf(MyResultError)
+
+			expect(error.tag).toEqual(MyResultError._tag)
+			expect(error.name).toEqual(error.tag)
+			expect(error.stack).toBeDefined()
+
+			expect(error.message).toEqual(msg)
+			expect(error.origin).toEqual(origin)
+			expect(error.toString()).toEqual(
+				`${error.name}: ${error.message}\nCaused by: ${error.origin?.toString()}`,
+			)
+			expect(error[inspectSymbol]()).toEqual(error.stack + `\nCaused by: ${origin.stack}`)
+		})
 	})
 })
 
-describe.concurrent("toStdError", () => {
-	it("returns an StdError when given an Error", () => {
-		class TestError extends Error {}
-		const error = new TestError("Test error")
-		const stdError = toStdError(error)
+describe.concurrent("StdError", () => {
+	it("creates an instance when given an Error", () => {
+		const error = new Error("Test error")
+		const stdError = new StdError(error)
 		expect(stdError).toBeInstanceOf(StdError)
 		expect(stdError.origin).toEqual(error)
+		expect(stdError.originRaw).toEqual(error)
 	})
 
-	it("throws a Panic when given a Panic", () => {
-		const msg = "Test panic"
-		const panic = new Panic(msg)
-		expect(() => toStdError(panic)).toThrow(panic)
-	})
-
-	it("throws a Panic when given an unknown value", () => {
-		expect(() => toStdError(0)).toThrow(InvalidErrorPanic)
-		expect(() => toStdError("")).toThrow(InvalidErrorPanic)
-		expect(() => toStdError(true)).toThrow(InvalidErrorPanic)
-		expect(() => toStdError(undefined)).toThrow(InvalidErrorPanic)
-		expect(() => toStdError(null)).toThrow(InvalidErrorPanic)
-		expect(() => toStdError({})).toThrow(InvalidErrorPanic)
-		expect(() => toStdError([])).toThrow(InvalidErrorPanic)
+	it("creates an instance when given an unknown value", () => {
+		const values = [1, "str", true, undefined, null, {}, [], new Date()] as const
+		for (const value of values) {
+			const stdError = new StdError(value)
+			expect(stdError).toBeInstanceOf(StdError)
+			expect(stdError.origin).toBeInstanceOf(TypeError)
+			expect(stdError.origin.message).toEqual(`Unexpected error type: "${String(value)}"`)
+			expect(stdError.originRaw).toEqual(value)
+		}
 	})
 })

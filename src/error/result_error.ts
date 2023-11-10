@@ -1,60 +1,60 @@
 import {inspectSymbol} from "../util"
-import {InvalidErrorPanic, Panic} from "./panic"
-import {getName, getOriginName, replaceStack} from "./util"
+import {formatErrorString} from "./util"
 
-export abstract class ResultError implements Error {
+export abstract class ResultError<T extends Error | null = null> implements Error {
 	abstract readonly tag: string
 
 	readonly message: string
-	readonly origin?: Readonly<Error>
-	private readonly originName: string
-	private readonly _stack?: string
+	readonly stack?: string
+	readonly origin: T | null
 
-	constructor(messageOrError: string | Error = "") {
-		if (messageOrError instanceof Error) {
-			this.message = messageOrError.message
-			this.origin = messageOrError
-			if (this.origin.stack) {
-				this._stack = this.origin.stack
-			}
+	constructor(message?: string, origin?: T) {
+		this.message = message ?? ""
+		this.origin = origin ?? null
+
+		if (Error.captureStackTrace) {
+			Error.captureStackTrace(this, this.constructor)
 		} else {
-			this.message = messageOrError
+			this.stack = new Error().stack
 		}
-		if (!this._stack) {
-			this._stack = new Error(this.message).stack
-		}
-		this.originName = getOriginName(this.origin)
 	}
 
 	get name() {
-		return getName(this.tag, this.originName)
-	}
-
-	get stack() {
-		return replaceStack(this.name, this.originName, this._stack)
+		return this.tag
 	}
 
 	toString() {
-		return `${this.name}${this.message ? `: ${this.message}` : ""}`
+		let str = formatErrorString(this.name, this.message)
+		if (this.origin) {
+			str += `\nCaused by: ${this.origin.toString()}`
+		}
+		return str
 	}
 
 	[inspectSymbol]() {
-		return this.stack
+		let str = this.stack
+		if (this.origin) {
+			str += `\nCaused by: ${this.origin.stack}`
+		}
+		return str
 	}
 }
 
-export class StdError extends ResultError {
+export class StdError<T = unknown> extends ResultError<Error> {
 	readonly tag = "StdError"
+
+	override readonly origin: Error
+	readonly originRaw: T
+
+	constructor(origin: T, message?: string) {
+		const o =
+			origin instanceof Error
+				? origin
+				: new TypeError(`Unexpected error type: "${String(origin)}"`)
+		super(message)
+		this.origin = o
+		this.originRaw = origin
+	}
 }
 
-export type ErrorHandler<E extends ResultError = StdError> = (error: unknown) => E
-
-export function toStdError(error: unknown): StdError {
-	if (error instanceof Panic) {
-		throw error
-	}
-	if (error instanceof Error) {
-		return new StdError(error)
-	}
-	throw new InvalidErrorPanic(error)
-}
+export type ErrorHandler<E> = (error: unknown) => E

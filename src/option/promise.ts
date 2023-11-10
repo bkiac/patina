@@ -1,4 +1,3 @@
-import type {Panic} from "../error/panic"
 import type {Option} from "./interface"
 
 export class PromiseOption<T> implements PromiseLike<Option<T>> {
@@ -38,7 +37,7 @@ export class PromiseOption<T> implements PromiseLike<Option<T>> {
 		return new PromiseOption<U>(this.then((option) => option.andThen((value) => f(value))))
 	}
 
-	async expect(panic: Panic | string) {
+	async expect(panic: string) {
 		return (await this).expect(panic)
 	}
 

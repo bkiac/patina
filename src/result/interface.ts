@@ -1,11 +1,10 @@
-import type {Panic} from "../error/panic"
 import type {inspectSymbol} from "../util"
 
 export interface ResultMethods<T, E> {
 	and<U, F>(other: Result<U, F>): Result<U, E | F>
 	andThen<U, F>(f: (value: T) => Result<U, F>): Result<U, E | F>
-	expect(panic: string | Panic): T
-	expectErr(panic: string | Panic): E
+	expect(panic: string): T
+	expectErr(panic: string): E
 	inspect(f: (value: T) => void): Result<T, E>
 	inspectErr(f: (error: E) => void): Result<T, E>
 	map<U>(f: (value: T) => U): Result<U, E>

@@ -60,8 +60,8 @@ describe.concurrent("expect", () => {
 
 	it("throws when called on a None option", () => {
 		const option = None
+		expect(() => option.expect("error")).toThrow(Panic)
 		expect(() => option.expect("error")).toThrow("error")
-		expect(() => option.expect(new Panic("custom panic"))).toThrow("custom panic")
 	})
 })
 

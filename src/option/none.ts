@@ -14,8 +14,8 @@ export class NoneImpl implements NoneVariant, OptionMethods<never> {
 		return None
 	}
 
-	expect(panic: string | Panic): never {
-		throw typeof panic === "string" ? new Panic(panic) : panic
+	expect(panic: string): never {
+		throw new Panic(panic)
 	}
 
 	filter(_f: (value: never) => boolean) {

@@ -1,4 +1,3 @@
-import type {Panic} from "../error/panic"
 import {inspectSymbol} from "../util"
 import type {OptionMethods, Option, SomeVariant} from "./interface"
 import {None} from "./none"
@@ -20,7 +19,7 @@ export class SomeImpl<T> implements SomeVariant<T>, OptionMethods<T> {
 		return f(this.value)
 	}
 
-	expect(_panic: string | Panic) {
+	expect(_panic: string) {
 		return this.value
 	}
 

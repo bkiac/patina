@@ -1,40 +1,43 @@
 import {inspectSymbol} from "../util"
-import {getName, getOriginName, replaceStack} from "./util"
 
 export class Panic extends Error {
-	readonly origin?: Error
-	private readonly originName: string
-	private readonly _stack?: string
+	readonly origin?: unknown
+	override readonly name: string = "Panic"
 
-	constructor(messageOrError?: string | Error) {
-		if (messageOrError instanceof Error) {
-			super(messageOrError.message)
-			this.origin = messageOrError
-		} else {
-			super(messageOrError)
-		}
-		this.originName = getOriginName(this.origin)
-		this.name = getName("Panic", this.originName)
-		this._stack = this.stack // Save a copy of the stack trace before it gets overridden.
+	constructor(message?: string, origin?: unknown) {
+		super(message)
+		this.origin = origin
 	}
 
-	override get stack() {
-		return replaceStack(this.name, this.originName, this._stack)
-	}
+	// override toString() {
+	// 	let str = formatErrorString(this.name, this.message)
+	// 	if (this.origin !== undefined) {
+	// 		str += ", caused by "
+	// 		if (this.origin instanceof Error) {
+	// 			str += formatErrorString(this.origin.name, this.origin.message)
+	// 		} else {
+	// 			str += String(this.origin)
+	// 		}
+	// 	}
+	// 	return str
+	// }
 
 	[inspectSymbol]() {
-		return this.stack
+		let str = this.stack
+		if (this.origin !== undefined) {
+			str += "\nCaused by: "
+			if (this.origin instanceof Error && this.origin.stack) {
+				str += this.origin.stack
+			} else {
+				str += String(this.origin)
+			}
+		}
+		return str
 	}
 }
 
 export class UnwrapPanic extends Panic {
 	constructor(msg: string) {
 		super(msg)
-	}
-}
-
-export class InvalidErrorPanic extends Panic {
-	constructor(value: unknown) {
-		super(`Invalid error: "${value}"`)
 	}
 }
