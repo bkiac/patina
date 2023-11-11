@@ -76,10 +76,6 @@ export class ErrImpl<E> implements ErrVariant<E>, ResultMethods<never, E> {
 		return defaultValue(this.value)
 	}
 
-	get() {
-		return this.value
-	}
-
 	match<A, B>(_ok: (value: never) => A, err: (error: E) => B) {
 		return err(this.value)
 	}
