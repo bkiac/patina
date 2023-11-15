@@ -1,8 +1,8 @@
 import {inspectSymbol} from "../util"
-import type {OptionMethods, Option, SomeVariant} from "./interface"
+import type {OptionMethods, Option} from "./interface"
 import {None} from "./none"
 
-export class SomeImpl<T> implements SomeVariant<T>, OptionMethods<T> {
+export class SomeImpl<T> implements OptionMethods<T> {
 	readonly some = true
 	readonly none = false
 	readonly value: T

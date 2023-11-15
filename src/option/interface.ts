@@ -1,4 +1,6 @@
 import type {inspectSymbol} from "../util"
+import type {None} from "./none"
+import type {Some} from "./some"
 
 export interface OptionMethods<T> {
 	and<U>(other: Option<U>): Option<U>
@@ -24,18 +26,4 @@ export interface OptionMethods<T> {
 	toJSON(): {meta: "Some"; value: T} | {meta: "None"; value: null}
 }
 
-export interface SomeVariant<T> {
-	readonly some: true
-	readonly none: false
-	readonly value: T
-}
-
-export interface NoneVariant {
-	readonly some: false
-	readonly none: true
-	readonly value: null
-}
-
-export type OptionVariants<T> = SomeVariant<T> | NoneVariant
-
-export type Option<T> = OptionVariants<T> & OptionMethods<T>
+export type Option<T> = (Some<T> | None) & OptionMethods<T>
