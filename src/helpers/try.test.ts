@@ -13,41 +13,6 @@ class MyError extends ResultError {
 	readonly tag = "MyError"
 }
 
-describe.concurrent("tryPromise", () => {
-	it("settles a Promise to an Ok result", async () => {
-		const promise = Promise.resolve(42)
-		const result = await tryPromise(promise)
-		expect(result.ok).toEqual(true)
-		expect(result.unwrap()).toEqual(42)
-	})
-
-	it("settles a rejected Promise to an Err result", async () => {
-		const error = new Error("Test error")
-		const promise = Promise.reject(error)
-		const result = await tryPromise(promise)
-		expect(result.ok).toEqual(false)
-		expect(result.unwrapErr().origin).toEqual(error)
-	})
-})
-
-describe.concurrent("tryPromiseWith", () => {
-	it("settles a Promise to an Ok result", async () => {
-		const promise = Promise.resolve(42)
-		const result = await tryPromiseWith(promise, () => new MyError())
-		expect(result.ok).toEqual(true)
-		expect(result.unwrap()).toEqual(42)
-	})
-
-	it("settles a rejected Promise to an Err result", async () => {
-		const error = new Error("Test error")
-		const promise = Promise.reject(error)
-		const myError = new MyError()
-		const result = await tryPromiseWith(promise, () => myError)
-		expect(result.ok).toEqual(false)
-		expect(result.unwrapErr()).toEqual(myError)
-	})
-})
-
 describe.concurrent("tryFn", () => {
 	it("wraps a function call into a Result object", () => {
 		const fn = () => 42
@@ -82,6 +47,41 @@ describe.concurrent("tryFnWith", () => {
 		}
 		const myError = new MyError()
 		const result = tryFnWith(fn, () => myError)
+		expect(result.ok).toEqual(false)
+		expect(result.unwrapErr()).toEqual(myError)
+	})
+})
+
+describe.concurrent("tryPromise", () => {
+	it("settles a Promise to an Ok result", async () => {
+		const promise = Promise.resolve(42)
+		const result = await tryPromise(promise)
+		expect(result.ok).toEqual(true)
+		expect(result.unwrap()).toEqual(42)
+	})
+
+	it("settles a rejected Promise to an Err result", async () => {
+		const error = new Error("Test error")
+		const promise = Promise.reject(error)
+		const result = await tryPromise(promise)
+		expect(result.ok).toEqual(false)
+		expect(result.unwrapErr().origin).toEqual(error)
+	})
+})
+
+describe.concurrent("tryPromiseWith", () => {
+	it("settles a Promise to an Ok result", async () => {
+		const promise = Promise.resolve(42)
+		const result = await tryPromiseWith(promise, () => new MyError())
+		expect(result.ok).toEqual(true)
+		expect(result.unwrap()).toEqual(42)
+	})
+
+	it("settles a rejected Promise to an Err result", async () => {
+		const error = new Error("Test error")
+		const promise = Promise.reject(error)
+		const myError = new MyError()
+		const result = await tryPromiseWith(promise, () => myError)
 		expect(result.ok).toEqual(false)
 		expect(result.unwrapErr()).toEqual(myError)
 	})

@@ -26,36 +26,59 @@ describe.concurrent("fn", () => {
 
 	describe("types", () => {
 		it("returns correct type with function returning Ok | Err", () => {
-			const f = (_arg: number) => {
+			const wrapped = fn((_arg: number) => {
 				if (Math.random() > 0.5) {
 					return Ok(1)
 				}
 				return Err("error")
-			}
-			const wrapped = fn(f)
+			})
 			expectTypeOf(wrapped).parameter(0).toBeNumber()
 			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<number, string>>()
 		})
 
 		it("returns correct type with function returning Ok", () => {
-			const f = (_arg: number) => Ok(1)
-			const wrapped = fn(f)
+			const wrapped = fn((_arg: number) => Ok(1))
 			expectTypeOf(wrapped).parameter(0).toBeNumber()
-			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<number, unknown>>()
+			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<number, never>>()
 		})
 
 		it("returns correct type with function returning Err", () => {
-			const f = (_arg: number) => Err(1)
-			const wrapped = fn(f)
+			const wrapped = fn((_arg: number) => Err(1))
 			expectTypeOf(wrapped).parameter(0).toBeNumber()
-			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<unknown, number>>()
+			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<never, number>>()
 		})
 
 		it("returns correct type with function returning Result", () => {
-			const f = (_arg: number) => tryFn(() => 1)
-			const wrapped = fn(f)
+			const wrapped = fn((_arg: number) => tryFn(() => 1))
 			expectTypeOf(wrapped).parameter(0).toBeNumber()
 			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<number, StdError>>()
+		})
+
+		it("works with generics", () => {
+			const wrapped = fn(<A, B>(a: A, b: B) => {
+				if (Math.random() > 0.5) {
+					return Ok(a)
+				}
+				return Err(b)
+			})
+			expectTypeOf(wrapped).toEqualTypeOf<<A, B>(a: A, b: B) => Result<A, B>>()
+		})
+
+		it("works with short-circuit return", () => {
+			const foo = (): Result<number, string> => {
+				if (Math.random() > 0.5) {
+					return Ok(42)
+				}
+				return Err("error")
+			}
+			const wrapped = fn(() => {
+				const r = foo()
+				if (r.err) {
+					return r
+				}
+				return Ok(true)
+			})
+			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<boolean, string>>()
 		})
 	})
 })
@@ -90,14 +113,14 @@ describe.concurrent("asyncFn", () => {
 			const f = async (_arg: number) => Ok(1)
 			const wrapped = asyncFn(f)
 			expectTypeOf(wrapped).parameter(0).toBeNumber()
-			expectTypeOf(wrapped).returns.toEqualTypeOf<PromiseResult<number, unknown>>()
+			expectTypeOf(wrapped).returns.toEqualTypeOf<PromiseResult<number, never>>()
 		})
 
 		it("returns correct type with function returning Promise<Err>", () => {
 			const f = async (_arg: number) => Err(1)
 			const wrapped = asyncFn(f)
 			expectTypeOf(wrapped).parameter(0).toBeNumber()
-			expectTypeOf(wrapped).returns.toEqualTypeOf<PromiseResult<unknown, number>>()
+			expectTypeOf(wrapped).returns.toEqualTypeOf<PromiseResult<never, number>>()
 		})
 
 		it("returns correct type with function returning PromiseResult", () => {
@@ -117,6 +140,33 @@ describe.concurrent("asyncFn", () => {
 			const wrapped = asyncFn(f)
 			expectTypeOf(wrapped).parameter(0).toBeNumber()
 			expectTypeOf(wrapped).returns.toEqualTypeOf<PromiseResult<number, StdError>>()
+		})
+
+		it("works with generics", () => {
+			const wrapped = asyncFn(async <A, B>(a: A, b: B) => {
+				if (Math.random() > 0.5) {
+					return Ok(a)
+				}
+				return Err(b)
+			})
+			expectTypeOf(wrapped).toEqualTypeOf<<A, B>(a: A, b: B) => PromiseResult<A, B>>()
+		})
+
+		it("works with short-circuit return", () => {
+			const foo = asyncFn(async () => {
+				if (Math.random() > 0.5) {
+					return Ok(42)
+				}
+				return Err("error")
+			})
+			const wrapped = asyncFn(async () => {
+				const r = await foo()
+				if (r.err) {
+					return r
+				}
+				return Ok(true)
+			})
+			expectTypeOf(wrapped).returns.toEqualTypeOf<PromiseResult<boolean, string>>()
 		})
 	})
 })

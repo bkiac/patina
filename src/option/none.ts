@@ -1,17 +1,17 @@
 import {Panic, UnwrapPanic} from "../error/panic"
 import {inspectSymbol} from "../util"
-import type {OptionMethods, Option, NoneVariant} from "./interface"
+import type {OptionMethods, Option} from "./option"
 
-export class NoneImpl implements NoneVariant, OptionMethods<never> {
+export class NoneImpl implements OptionMethods<never> {
 	readonly some = false
 	readonly none = true
 	readonly value = null
 
-	and<U>(_other: Option<U>) {
+	and<U>(_other: Option<U>): None {
 		return None
 	}
 
-	andThen<U>(_f: (value: never) => Option<U>) {
+	andThen<U>(_f: (value: never) => Option<U>): None {
 		return None
 	}
 
@@ -19,71 +19,67 @@ export class NoneImpl implements NoneVariant, OptionMethods<never> {
 		throw new Panic(panic)
 	}
 
-	filter(_f: (value: never) => boolean) {
+	filter(_f: (value: never) => boolean): None {
 		return None
 	}
 
-	inspect(_f: (value: never) => void) {
-		return this
-	}
-
-	map<U>(_f: (value: never) => U) {
+	inspect(_f: (value: never) => void): None {
 		return None
 	}
 
-	mapOr<A, B>(defaultValue: A, _f: (value: never) => B) {
+	map<U>(_f: (value: never) => U): None {
+		return None
+	}
+
+	mapOr<A, B>(defaultValue: A, _f: (value: never) => B): A {
 		return defaultValue
 	}
 
-	mapOrElse<A, B>(defaultValue: () => A, _f: (value: never) => B) {
+	mapOrElse<A, B>(defaultValue: () => A, _f: (value: never) => B): A {
 		return defaultValue()
 	}
 
-	or<U>(other: Option<U>) {
+	or<U>(other: Option<U>): Option<U> {
 		return other
 	}
 
-	orElse<U>(f: () => Option<U>) {
+	orElse<U>(f: () => Option<U>): Option<U> {
 		return f()
 	}
 
 	unwrap(): never {
-		throw new UnwrapPanic("Cannot unwrap on a None")
+		throw new UnwrapPanic(`called "unwrap()" on None`)
 	}
 
-	unwrapOr<U>(defaultValue: U) {
+	unwrapOr<U>(defaultValue: U): U {
 		return defaultValue
 	}
 
-	unwrapOrElse<U>(defaultValue: () => U) {
+	unwrapOrElse<U>(defaultValue: () => U): U {
 		return defaultValue()
 	}
 
-	xor<U>(other: Option<U>) {
+	xor<U>(other: Option<U>): Option<U> {
 		return other
 	}
 
-	get() {
-		return null
-	}
-
-	match<A, B>(_some: (value: never) => A, none: () => B) {
+	match<A, B>(_some: (value: never) => A, none: () => B): B {
 		return none()
 	}
 
-	toString() {
+	toString(): "None" {
 		return "None" as const
 	}
 
-	[inspectSymbol]() {
+	[inspectSymbol](): "None" {
 		return this.toString()
 	}
 
-	toObject() {
+	toObject(): {some: false; value: null} {
 		return {some: false, value: null} as const
 	}
 
-	toJSON() {
+	toJSON(): {meta: "None"; value: null} {
 		return {meta: "None", value: null} as const
 	}
 }

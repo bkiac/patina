@@ -1,4 +1,4 @@
-import type {Option} from "./interface"
+import type {Option} from "./option"
 
 export class PromiseOption<T> implements PromiseLike<Option<T>> {
 	constructor(readonly promise: Promise<Option<T>> | PromiseLike<Option<T>>) {}
@@ -27,69 +27,69 @@ export class PromiseOption<T> implements PromiseLike<Option<T>> {
 		)
 	}
 
-	and<U>(other: PromiseOption<U>) {
+	and<U>(other: PromiseOption<U>): PromiseOption<U> {
 		return new PromiseOption<U>(
 			this.then((option) => other.then((otherOption) => option.and(otherOption))),
 		)
 	}
 
-	andThen<U>(f: (value: T) => Option<U>) {
+	andThen<U>(f: (value: T) => Option<U>): PromiseOption<U> {
 		return new PromiseOption<U>(this.then((option) => option.andThen((value) => f(value))))
 	}
 
-	async expect(panic: string) {
+	async expect(panic: string): Promise<T> {
 		return (await this).expect(panic)
 	}
 
-	async filter(f: (value: T) => boolean) {
-		return (await this).filter(f)
+	filter(f: (value: T) => boolean): PromiseOption<T> {
+		return new PromiseOption<T>(this.then((option) => option.filter(f)))
 	}
 
 	async inspect(f: (value: T) => void) {
 		return new PromiseOption<T>(this.then((option) => option.inspect(f)))
 	}
 
-	async map<U>(f: (value: T) => U) {
-		return (await this).map(f)
+	map<U>(f: (value: T) => U): PromiseOption<U> {
+		return new PromiseOption<U>(this.then((option) => option.map(f)))
 	}
 
-	async mapOr<A, B>(defaultValue: A, f: (value: T) => B) {
+	async mapOr<A, B>(defaultValue: A, f: (value: T) => B): Promise<A | B> {
 		return (await this).mapOr(defaultValue, f)
 	}
 
-	async mapOrElse<A, B>(defaultValue: () => A, f: (value: T) => B) {
+	async mapOrElse<A, B>(defaultValue: () => A, f: (value: T) => B): Promise<A | B> {
 		return (await this).mapOrElse(defaultValue, f)
 	}
 
-	or<U>(other: PromiseOption<U>) {
+	or<U>(other: PromiseOption<U>): PromiseOption<T | U> {
 		return new PromiseOption<T | U>(
 			this.then((thisOption) => other.then((otherOption) => thisOption.or(otherOption))),
 		)
 	}
 
-	orElse<U>(f: () => Option<U>) {
+	orElse<U>(f: () => Option<U>): PromiseOption<T | U> {
 		return new PromiseOption<T | U>(this.then((thisOption) => thisOption.orElse(() => f())))
 	}
 
-	async unwrap() {
+	async unwrap(): Promise<T> {
 		return (await this).unwrap()
 	}
 
-	async unwrapOr<U>(defaultValue: U) {
+	async unwrapOr<U>(defaultValue: U): Promise<T | U> {
 		return (await this).unwrapOr(defaultValue)
 	}
 
-	async unwrapOrElse<U>(f: () => U) {
+	async unwrapOrElse<U>(f: () => U): Promise<T | U> {
 		return (await this).unwrapOrElse(f)
 	}
 
-	xor<U>(other: PromiseOption<U>) {
+	xor<U>(other: PromiseOption<U>): PromiseOption<T | U> {
 		return new PromiseOption<T | U>(
 			this.then((thisOption) => other.then((otherOption) => thisOption.xor(otherOption))),
 		)
 	}
 
-	async match<A, B>(some: (value: T) => A, none: () => B) {
+	async match<A, B>(some: (value: T) => A, none: () => B): Promise<A | B> {
 		return (await this).match(some, none)
 	}
 }

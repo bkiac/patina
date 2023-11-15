@@ -1,5 +1,14 @@
-import {expect, it, describe} from "vitest"
-import {ResultError, guard, guardAsync, guardAsyncWith, guardWith} from "../internal"
+import {expect, it, describe, expectTypeOf} from "vitest"
+import {
+	ResultError,
+	StdError,
+	guard,
+	guardAsync,
+	guardAsyncWith,
+	guardWith,
+	Result,
+	PromiseResult,
+} from "../internal"
 
 class MyError extends ResultError {
 	readonly tag = "MyError"
@@ -24,6 +33,24 @@ describe.concurrent("guard", () => {
 		expect(result.ok).toEqual(false)
 		expect(result.unwrapErr().origin).toEqual(error)
 	})
+
+	describe("types", () => {
+		it("works with a function", () => {
+			const f = (value: number) => value
+			const guarded = guard(f)
+			expectTypeOf(guarded).toEqualTypeOf<
+				(value: number) => Result<number, StdError<unknown>>
+			>()
+		})
+
+		it("works with a generic function", () => {
+			const f = <A, B>(a: A, _b: B) => a
+			const guarded = guard(f)
+			expectTypeOf(guarded).toEqualTypeOf<
+				<A, B>(a: A, b: B) => Result<A, StdError<unknown>>
+			>()
+		})
+	})
 })
 
 describe.concurrent("guardWith", () => {
@@ -46,6 +73,20 @@ describe.concurrent("guardWith", () => {
 		expect(result.ok).toEqual(false)
 		expect(result.unwrapErr()).toEqual(myError)
 	})
+
+	describe("types", () => {
+		it("works with a function", () => {
+			const f = (value: number) => value
+			const guarded = guardWith(f, () => new MyError())
+			expectTypeOf(guarded).toEqualTypeOf<(value: number) => Result<number, MyError>>()
+		})
+
+		it("works with a generic function", () => {
+			const f = <A, B>(a: A, _b: B) => a
+			const guarded = guardWith(f, () => new MyError())
+			expectTypeOf(guarded).toEqualTypeOf<<A, B>(a: A, b: B) => Result<A, MyError>>()
+		})
+	})
 })
 
 describe.concurrent("guardAsync", () => {
@@ -66,6 +107,24 @@ describe.concurrent("guardAsync", () => {
 		const result = await wrappedFn()
 		expect(result.ok).toEqual(false)
 		expect(result.unwrapErr().origin).toEqual(error)
+	})
+
+	describe("types", () => {
+		it("works with a function", () => {
+			const f = async (value: number) => value
+			const guarded = guardAsync(f)
+			expectTypeOf(guarded).toEqualTypeOf<
+				(value: number) => PromiseResult<number, StdError<unknown>>
+			>()
+		})
+
+		it("works with a generic function", () => {
+			const f = async <A, B>(a: A, _b: B) => a
+			const guarded = guardAsync(f)
+			expectTypeOf(guarded).toEqualTypeOf<
+				<A, B>(a: A, b: B) => PromiseResult<A, StdError<unknown>>
+			>()
+		})
 	})
 })
 
@@ -88,5 +147,19 @@ describe.concurrent("guardAsyncWith", () => {
 		const result = await wrappedFn()
 		expect(result.ok).toEqual(false)
 		expect(result.unwrapErr()).toEqual(myError)
+	})
+
+	describe("types", () => {
+		it("works with a function", () => {
+			const f = async (value: number) => value
+			const guarded = guardAsyncWith(f, () => new MyError())
+			expectTypeOf(guarded).toEqualTypeOf<(value: number) => PromiseResult<number, MyError>>()
+		})
+
+		it("works with a generic function", () => {
+			const f = async <A, B>(a: A, _b: B) => a
+			const guarded = guardAsyncWith(f, () => new MyError())
+			expectTypeOf(guarded).toEqualTypeOf<<A, B>(a: A, b: B) => PromiseResult<A, MyError>>()
+		})
 	})
 })
