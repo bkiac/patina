@@ -1,4 +1,6 @@
 import type {inspectSymbol} from "../util"
+import type {Err} from "./err"
+import type {Ok} from "./ok"
 
 export interface ResultMethods<T, E> {
 	and<U, F>(other: Result<U, F>): Result<U, E | F>
@@ -17,7 +19,6 @@ export interface ResultMethods<T, E> {
 	unwrapErr(): E
 	unwrapOr<U>(defaultValue: U): T | U
 	unwrapOrElse<U>(defaultValue: (error: E) => U): T | U
-
 	match<A, B>(ok: (value: T) => A, err: (error: E) => B): A | B
 
 	toString(): `Ok(${string})` | `Err(${string})`
@@ -26,18 +27,4 @@ export interface ResultMethods<T, E> {
 	toJSON(): {meta: "Ok"; value: T} | {meta: "Err"; value: E}
 }
 
-export interface OkVariant<T> {
-	readonly ok: true
-	readonly err: false
-	readonly value: T
-}
-
-export interface ErrVariant<E> {
-	readonly ok: false
-	readonly err: true
-	readonly value: E
-}
-
-export type ResultVariants<T, E> = OkVariant<T> | ErrVariant<E>
-
-export type Result<T, E> = ResultVariants<T, E> & ResultMethods<T, E>
+export type Result<T, E> = (Ok<T> | Err<E>) & ResultMethods<T, E>
