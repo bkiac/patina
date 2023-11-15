@@ -1,8 +1,6 @@
 import {describe, it, expect} from "vitest"
 import {Panic, UnwrapPanic, Ok, Err} from "../internal"
 
-const testErr = new Error("hello")
-
 describe.concurrent("ok", () => {
 	it("returns an Ok result", () => {
 		const result = Ok(42)
@@ -68,11 +66,6 @@ describe.concurrent("expect", () => {
 		const error = new Error("Original error")
 		const result = Err(error)
 		const panicMsg = "Panic message"
-		try {
-			Err(testErr).expect("hello")
-		} catch (err) {
-			console.log(err)
-		}
 		expect(() => result.expect(panicMsg)).toThrow(Panic)
 		expect(() => result.expect(panicMsg)).toThrow(panicMsg)
 	})
