@@ -1,13 +1,13 @@
 import {type ErrorHandler, type ResultError} from "../error/result_error"
 import {tryAsyncFn, tryAsyncFnWith, tryFn, tryFnWith} from "./try"
 
-export function guard<A extends any[], T extends any>(f: (...args: A) => T) {
+export function guard<A extends any[], T>(f: (...args: A) => T) {
 	return function (...args: A) {
 		return tryFn<T>(() => f(...args))
 	}
 }
 
-export function guardWith<A extends any[], T extends any, E extends ResultError<Error | null>>(
+export function guardWith<A extends any[], T, E extends ResultError<Error | null>>(
 	f: (...args: A) => T,
 	h: ErrorHandler<E>,
 ) {
@@ -16,13 +16,13 @@ export function guardWith<A extends any[], T extends any, E extends ResultError<
 	}
 }
 
-export function guardAsync<A extends any[], T extends any>(f: (...args: A) => Promise<T>) {
+export function guardAsync<A extends any[], T>(f: (...args: A) => Promise<T>) {
 	return function (...args: A) {
 		return tryAsyncFn<T>(() => f(...args))
 	}
 }
 
-export function guardAsyncWith<A extends any[], T extends any, E extends ResultError<Error | null>>(
+export function guardAsyncWith<A extends any[], T, E extends ResultError<Error | null>>(
 	f: (...args: A) => Promise<T>,
 	h: ErrorHandler<E>,
 ) {
