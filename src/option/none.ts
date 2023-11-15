@@ -1,6 +1,6 @@
 import {Panic, UnwrapPanic} from "../error/panic"
 import {inspectSymbol} from "../util"
-import type {OptionMethods, Option} from "./interface"
+import type {OptionMethods, Option} from "./option"
 
 export class NoneImpl implements OptionMethods<never> {
 	readonly some = false

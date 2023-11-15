@@ -1,4 +1,4 @@
-import type {Result} from "../result/interface"
+import type {Result} from "../result/result"
 import {PromiseResult} from "../result/promise"
 import type {Err, Ok} from "../internal"
 

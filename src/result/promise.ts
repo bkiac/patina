@@ -1,4 +1,4 @@
-import type {Result} from "./interface"
+import type {Result} from "./result"
 
 export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 	constructor(

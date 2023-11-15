@@ -1,6 +1,6 @@
 import {Panic, UnwrapPanic} from "../error/panic"
 import {inspectSymbol} from "../util"
-import type {Result} from "./interface"
+import type {Result} from "./result"
 
 export class ErrImpl<E = null> {
 	readonly ok = false

@@ -1,5 +1,5 @@
 import {inspectSymbol} from "../util"
-import type {OptionMethods, Option} from "./interface"
+import type {OptionMethods, Option} from "./option"
 import {None} from "./none"
 
 export class SomeImpl<T> implements OptionMethods<T> {

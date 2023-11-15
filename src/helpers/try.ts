@@ -1,7 +1,7 @@
 import {Panic} from "../error/panic"
 import {type ErrorHandler, StdError} from "../error/result_error"
 import {Err} from "../result/err"
-import type {Result} from "../result/interface"
+import type {Result} from "../result/result"
 import {Ok} from "../result/ok"
 import {PromiseResult} from "../result/promise"
 

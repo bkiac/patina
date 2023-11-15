@@ -1,4 +1,4 @@
-import type {Option} from "./interface"
+import type {Option} from "./option"
 
 export class PromiseOption<T> implements PromiseLike<Option<T>> {
 	constructor(readonly promise: Promise<Option<T>> | PromiseLike<Option<T>>) {}
