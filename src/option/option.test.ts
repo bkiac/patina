@@ -244,18 +244,6 @@ describe.concurrent("xor", () => {
 	})
 })
 
-describe.concurrent("into", () => {
-	it("returns the value when called on a Some option", () => {
-		const option = Some(42)
-		expect(option.get()).toEqual(42)
-	})
-
-	it("throws when called on a None option", () => {
-		const option = None
-		expect(option.get()).toEqual(null)
-	})
-})
-
 describe.concurrent("match", () => {
 	it("returns the result of the some callback when called on a Some option", () => {
 		const option = Some(42)
