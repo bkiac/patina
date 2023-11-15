@@ -1,18 +1,27 @@
 {
 	"name": "ruts",
 	"version": "0.9.0",
-	"type": "module",
-	"description": "",
+	"description": "Type-safe error-handling library for TypeScript",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/bkiac/ruts.git"
 	},
 	"author": "bkiac <bkiac@pm.me>",
 	"license": "MIT",
-	"module": "./lib/index.js",
+	"main": "./lib/index.js",
+	"module": "./lib/index.mjs",
 	"exports": {
-		".": "./lib/index.js",
-		"./internal": "./lib/internal.js"
+		".": {
+			"types": "./lib/index.d.ts",
+			"require": "./lib/index.js",
+			"import": "./lib/index.mjs"
+		},
+		"./internal": {
+			"types": "./lib/internal.d.ts",
+			"require": "./lib/internal.js",
+			"import": "./lib/internal.mjs"
+		},
+		"./package.json": "./package.json"
 	},
 	"types": "./lib/index.d.ts",
 	"files": [
@@ -25,7 +34,7 @@
 		"result-type"
 	],
 	"scripts": {
-		"build": "rm -rf lib && tsc --p tsconfig.build.json && prettier --write ./lib --ignore-path ''",
+		"build": "tsup && tsc --p tsconfig.build.json",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"prepublishOnly": "pnpm run build",
@@ -37,6 +46,7 @@
 		"lint-staged": "^14.0.1",
 		"prettier": "^3.0.2",
 		"prettier-plugin-pkg": "^0.18.0",
+		"tsup": "^7.2.0",
 		"tsx": "^3.14.0",
 		"typescript": "^5.0.4",
 		"vitest": "^0.34.6"

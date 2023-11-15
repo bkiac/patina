@@ -4,6 +4,7 @@
 		"noEmit": false,
 		"outDir": "lib",
 		"declaration": true,
+		"emitDeclarationOnly": true,
 		"removeComments": false
 	},
 	"include": ["src"],
