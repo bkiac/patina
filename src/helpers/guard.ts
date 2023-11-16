@@ -1,5 +1,5 @@
-import {type ErrorHandler, type ResultError} from "../error/result_error.js"
-import {tryAsyncFn, tryAsyncFnWith, tryFn, tryFnWith} from "./try.js"
+import {type ErrorHandler, type ResultError} from "../error/result_error"
+import {tryAsyncFn, tryAsyncFnWith, tryFn, tryFnWith} from "./try"
 
 export function guard<A extends any[], T>(f: (...args: A) => T) {
 	return function (...args: A) {

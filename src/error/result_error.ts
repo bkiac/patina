@@ -1,5 +1,5 @@
-import {inspectSymbol} from "../util.js"
-import {formatErrorString} from "./util.js"
+import {inspectSymbol} from "../util"
+import {formatErrorString} from "./util"
 
 export abstract class ResultError<T extends Error | null = null> implements Error {
 	abstract readonly tag: string

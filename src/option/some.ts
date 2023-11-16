@@ -1,6 +1,6 @@
-import {inspectSymbol} from "../util.js"
-import type {OptionMethods, Option} from "./option.js"
-import {None} from "./none.js"
+import {inspectSymbol} from "../util"
+import type {OptionMethods, Option} from "./option"
+import {None} from "./none"
 
 export class SomeImpl<T> implements OptionMethods<T> {
 	readonly some = true

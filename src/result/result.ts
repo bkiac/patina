@@ -1,6 +1,6 @@
-import type {inspectSymbol} from "../util.js"
-import type {Err} from "./err.js"
-import type {Ok} from "./ok.js"
+import type {inspectSymbol} from "../util"
+import type {Err} from "./err"
+import type {Ok} from "./ok"
 
 export interface ResultMethods<T, E> {
 	and<U, F>(other: Result<U, F>): Result<U, E | F>
