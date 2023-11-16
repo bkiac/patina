@@ -1,4 +1,4 @@
-import {type ErrorHandler, type ResultError} from "../error/result_error"
+import {type ErrorHandler, type ResultError} from "./result_error"
 import {tryAsyncFn, tryAsyncFnWith, tryFn, tryFnWith} from "./try"
 
 export function guard<A extends any[], T>(f: (...args: A) => T) {

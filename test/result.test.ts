@@ -1,19 +1,27 @@
-import {describe, it, expect} from "vitest"
-import {Panic, UnwrapPanic, Ok, Err} from "../internal"
+import {describe, it, expect, expectTypeOf} from "vitest"
+import {Panic, UnwrapPanic, Ok, Err, type Result} from "../src/internal"
 
-describe.concurrent("ok", () => {
+describe.concurrent("basic", () => {
 	it("returns an Ok result", () => {
 		const result = Ok(42)
 		expect(result.ok).toEqual(true)
 		expect(result.value).toEqual(42)
 	})
-})
 
-describe.concurrent("err", () => {
 	it("returns an Err result", () => {
 		const result = Err("error")
 		expect(result.ok).toEqual(false)
 		expect(result.value).toEqual("error")
+	})
+
+	it("works as discriminated union", () => {
+		const r = Ok(42) as Result<number, string>
+		expectTypeOf(r.value).toEqualTypeOf<number | string>()
+		if (r.ok) {
+			expectTypeOf(r.value).toEqualTypeOf<number>()
+		} else {
+			expectTypeOf(r.value).toEqualTypeOf<string>()
+		}
 	})
 })
 

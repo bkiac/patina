@@ -1,4 +1,4 @@
-import {inspectSymbol} from "../util"
+import {inspectSymbol} from "./util"
 import type {OptionMethods, Option} from "./option"
 import {None} from "./none"
 

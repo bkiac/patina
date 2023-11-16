@@ -1,4 +1,4 @@
-import type {inspectSymbol} from "../util"
+import type {inspectSymbol} from "./util"
 import type {None} from "./none"
 import type {Some} from "./some"
 

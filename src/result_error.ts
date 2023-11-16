@@ -1,4 +1,4 @@
-import {inspectSymbol} from "../util"
+import {inspectSymbol} from "./util"
 import {formatErrorString} from "./util"
 
 export abstract class ResultError<T extends Error | null = null> implements Error {

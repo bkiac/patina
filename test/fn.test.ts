@@ -9,7 +9,15 @@ import {
 	type StdError,
 	type Result,
 	tryFn,
-} from "../internal"
+} from "../src/internal"
+
+declare const tag: unique symbol
+
+export type TagContainer<Token> = {
+	readonly [tag]: Token
+}
+
+export type Opaque<Type, Token = unknown> = Type & TagContainer<Token>
 
 describe.concurrent("fn", () => {
 	it("returns Ok result when provided function does not throw", () => {
@@ -30,10 +38,16 @@ describe.concurrent("fn", () => {
 				if (Math.random() > 0.5) {
 					return Ok(1)
 				}
+				if (Math.random() > 0.5) {
+					return Ok("foo")
+				}
+				if (Math.random() > 0.5) {
+					return Err(1)
+				}
 				return Err("error")
 			})
 			expectTypeOf(wrapped).parameter(0).toBeNumber()
-			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<number, string>>()
+			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<string | number, string | number>>()
 		})
 
 		it("returns correct type with function returning Ok", () => {
@@ -76,9 +90,9 @@ describe.concurrent("fn", () => {
 				if (r.err) {
 					return r
 				}
-				return Ok(true)
+				return Ok("foo")
 			})
-			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<boolean, string>>()
+			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<string, string>>()
 		})
 	})
 })
