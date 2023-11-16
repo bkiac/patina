@@ -1,12 +1,12 @@
-import {describe, expect, it, vi} from "vitest"
+import {describe, expect, expectTypeOf, it, vi} from "vitest"
 import {Panic, UnwrapPanic, None, Some, type Option} from "../src/internal"
 
 function TestSome<T>(value: T): Option<T> {
-	return Some(value)
+	return Some(value) as Option<T>
 }
 
 function TestNone<T>(): Option<T> {
-	return None
+	return None as Option<T>
 }
 
 describe.concurrent("basic", () => {
@@ -25,11 +25,11 @@ describe.concurrent("basic", () => {
 	})
 
 	it("works with discriminated union", () => {
-		const option = Some(42)
+		const option = TestSome(42)
 		if (option.some) {
-			expect(option.value).toEqual(42)
+			expectTypeOf(option.value).toEqualTypeOf<number>()
 		} else {
-			expect(option.value).toEqual(null)
+			expectTypeOf(option.value).toEqualTypeOf<null>()
 		}
 	})
 })

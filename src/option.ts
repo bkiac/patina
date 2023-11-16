@@ -4,7 +4,7 @@ import {inspectSymbol} from "./util"
 export class OptionImpl<T> {
 	readonly some: boolean
 	readonly none: boolean
-	readonly value: T | never
+	readonly value: T | null
 
 	constructor(some: boolean, value: T) {
 		this.some = some
@@ -13,11 +13,11 @@ export class OptionImpl<T> {
 	}
 
 	and<U>(other: Option<U>): Option<T | U> {
-		return this.some ? other : None
+		return (this.some ? other : None) as Option<T | U>
 	}
 
 	andThen<U>(f: (value: T) => Option<U>): Option<T | U> {
-		return this.some ? f(this.value as T) : None
+		return (this.some ? f(this.value as T) : None) as Option<T | U>
 	}
 
 	expect(panic: string): T {
@@ -77,7 +77,7 @@ export class OptionImpl<T> {
 		if (this.some) {
 			return (other.some ? None : this) as Option<T | U>
 		}
-		return other.some ? other : None
+		return (other.some ? other : None) as Option<T | U>
 	}
 
 	match<A, B>(some: (value: T) => A, none: () => B): A | B {
@@ -110,10 +110,10 @@ export function Some<T>(value: T): Some<T> {
 	return new OptionImpl(true, value) as Some<T>
 }
 
-export interface None extends OptionImpl<never> {
+export interface None extends OptionImpl<null> {
 	readonly some: false
 	readonly none: true
-	readonly value: never
+	readonly value: null
 }
 export const None = new OptionImpl(false, null) as None
 
