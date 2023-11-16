@@ -77,7 +77,7 @@ export class OptionImpl<T> {
 		if (this.some) {
 			return (other.some ? None : this) as Option<T | U>
 		}
-		return other.some ? other : (None as Option<T | U>)
+		return other.some ? other : None
 	}
 
 	match<A, B>(some: (value: T) => A, none: () => B): A | B {
