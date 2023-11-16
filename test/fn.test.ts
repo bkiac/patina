@@ -116,11 +116,19 @@ describe.concurrent("asyncFn", () => {
 				if (Math.random() > 0.5) {
 					return Ok(1)
 				}
+				if (Math.random() > 0.5) {
+					return Ok("foo")
+				}
+				if (Math.random() > 0.5) {
+					return Err(1)
+				}
 				return Err("error")
 			}
 			const wrapped = asyncFn(f)
 			expectTypeOf(wrapped).parameter(0).toBeNumber()
-			expectTypeOf(wrapped).returns.toEqualTypeOf<PromiseResult<number, string>>()
+			expectTypeOf(wrapped).returns.toEqualTypeOf<
+				PromiseResult<number | string, number | string>
+			>()
 		})
 
 		it("returns correct type with function returning Promise<Ok>", () => {
