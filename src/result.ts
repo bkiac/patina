@@ -136,8 +136,6 @@ export class ResultImpl<T, E> {
 	}
 }
 
-export type Result<T, E> = Ok<T> | Err<E>
-
 export interface Ok<T = null> extends ResultImpl<T, never> {
 	readonly ok: true
 	readonly err: false
@@ -161,3 +159,5 @@ export function Err<E>(value: E): Err<E>
 export function Err<E>(value?: E): Err<E> {
 	return new ResultImpl<never, E>(false, (value ?? null) as E) as Err<E>
 }
+
+export type Result<T, E> = (Ok<T> | Err<E>) & ResultImpl<T, E>

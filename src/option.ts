@@ -1,29 +1,114 @@
-import type {inspectSymbol} from "./util"
-import type {None} from "./none"
-import type {Some} from "./some"
+import {Panic} from "./panic"
+import {inspectSymbol} from "./util"
 
-export interface OptionMethods<T> {
-	and<U>(other: Option<U>): Option<U>
-	andThen<U>(f: (value: T) => Option<U>): Option<U>
-	expect(panic: string): T
-	filter(f: (value: T) => boolean): Option<T>
-	inspect(f: (value: T) => void): Option<T>
-	map<U>(f: (value: T) => U): Option<U>
-	mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B
-	mapOrElse<A, B>(defaultValue: () => A, f: (value: T) => B): A | B
-	or<U>(other: Option<U>): Option<T | U>
-	orElse<U>(f: () => Option<U>): Option<T | U>
-	unwrap(): T
-	unwrapOr<U>(defaultValue: U): T | U
-	unwrapOrElse<U>(defaultValue: () => U): T | U
-	xor<U>(other: Option<U>): Option<T | U>
+export class OptionImpl<T> {
+	readonly some: boolean
+	readonly none: boolean
+	readonly value: T | never
 
-	match<A, B>(some: (value: T) => A, none: () => B): A | B
+	constructor(value: T) {
+		this.some = true
+		this.none = false
+		this.value = value
+	}
 
-	toString(): `Some(${string})` | "None"
-	[inspectSymbol](): ReturnType<OptionMethods<T>["toString"]>
-	toObject(): {some: true; value: T} | {some: false; value: null}
-	toJSON(): {meta: "Some"; value: T} | {meta: "None"; value: null}
+	and<U>(other: Option<U>): Option<T | U> {
+		return this.some ? other : None
+	}
+
+	andThen<U>(f: (value: T) => Option<U>): Option<T | U> {
+		return this.some ? f(this.value as T) : None
+	}
+
+	expect(panic: string): T {
+		if (this.some) {
+			return this.value as T
+		}
+		throw new Panic(panic)
+	}
+
+	filter(f: (value: T) => boolean): Option<T> {
+		return (this.some && f(this.value as T) ? this : None) as Option<T>
+	}
+
+	inspect(f: (value: T) => void): this {
+		if (this.some) {
+			f(this.value as T)
+		}
+		return this
+	}
+
+	map<U>(f: (value: T) => U): Option<T | U> {
+		return (this.some ? new OptionImpl(f(this.value as T)) : None) as Option<T | U>
+	}
+
+	mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B {
+		return this.some ? f(this.value as T) : defaultValue
+	}
+
+	mapOrElse<A, B>(defaultValue: () => A, f: (value: T) => B): A | B {
+		return this.some ? f(this.value as T) : defaultValue()
+	}
+
+	or<U>(other: Option<U>): Option<T | U> {
+		return (this.some ? this : other) as Option<T | U>
+	}
+
+	orElse<U>(f: () => Option<U>): Option<T | U> {
+		return (this.some ? this : f()) as Option<T | U>
+	}
+
+	unwrap(): T {
+		return this.value as T
+	}
+
+	unwrapOr<U>(defaultValue: U): T | U {
+		return this.some ? (this.value as T) : defaultValue
+	}
+
+	unwrapOrElse<U>(defaultValue: () => U): T | U {
+		return this.some ? (this.value as T) : defaultValue()
+	}
+
+	xor<U>(other: Option<U>): Option<T | U> {
+		return (other.some ? None : this) as Option<T | U>
+	}
+
+	match<A, B>(some: (value: T) => A, none: () => B): A | B {
+		return this.some ? some(this.value as T) : none()
+	}
+
+	toString(): `Some(${string})` | "None" {
+		return this.some ? `Some(${this.value})` : "None"
+	}
+
+	[inspectSymbol](): ReturnType<OptionImpl<T>["toString"]> {
+		return this.toString()
+	}
+
+	toObject(): {some: true; value: T} | {some: false; value: null} {
+		return this.some ? {some: true, value: this.value as T} : {some: false, value: null}
+	}
+
+	toJSON(): {meta: "Some"; value: T} | {meta: "None"; value: null} {
+		return this.some ? {meta: "Some", value: this.value as T} : {meta: "None", value: null}
+	}
 }
 
-export type Option<T> = (Some<T> | None) & OptionMethods<T>
+export interface Some<T> extends OptionImpl<T> {
+	readonly some: true
+	readonly none: false
+	readonly value: T
+}
+export function Some<T>(value: T): Some<T> {
+	return new OptionImpl(value) as Some<T>
+}
+
+export interface None extends OptionImpl<never> {
+	readonly some: false
+	readonly none: true
+	readonly value: never
+}
+export const None = new OptionImpl(null) as None
+
+export type Option<T> = (Some<T> | None) & OptionImpl<T>
