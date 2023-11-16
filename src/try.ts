@@ -10,9 +10,6 @@ function handlePanic(error: unknown) {
 	return error
 }
 
-// Couldn't figure out how to overload these functions without a TypeScript error and making
-// the error handler required if the error template param is defined.
-
 export function tryFn<T>(f: () => T): Result<T, StdError> {
 	try {
 		return Ok(f())
