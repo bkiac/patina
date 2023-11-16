@@ -9,8 +9,8 @@
 	},
 	"author": "bkiac <bkiac@pm.me>",
 	"license": "MIT",
-	"main": "./lib/index.js",
-	"module": "./lib/index.mjs",
+	"main": "./lib/index.cjs",
+	"module": "./lib/index.js",
 	"exports": {
 		".": {
 			"types": "./lib/index.d.ts",
