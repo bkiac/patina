@@ -1,9 +1,9 @@
-import {Panic} from "../error/panic"
-import {type ErrorHandler, StdError} from "../error/result_error"
-import {Err} from "../result/err"
-import type {Result} from "../result/result"
-import {Ok} from "../result/ok"
-import {PromiseResult} from "../result/promise"
+import {Panic} from "../error/panic.js"
+import {type ErrorHandler, StdError} from "../error/result_error.js"
+import {Err} from "../result/err.js"
+import type {Result} from "../result/result.js"
+import {Ok} from "../result/ok.js"
+import {PromiseResult} from "../result/promise.js"
 
 function handlePanic(error: unknown) {
 	if (error instanceof Panic) {

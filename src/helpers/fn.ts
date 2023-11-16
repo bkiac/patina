@@ -1,6 +1,6 @@
-import type {Result} from "../result/result"
-import {PromiseResult} from "../result/promise"
-import type {Err, Ok} from "../internal"
+import type {Result} from "../result/result.js"
+import {PromiseResult} from "../result/promise.js"
+import type {Err, Ok} from "../internal.js"
 
 export function fn<A extends any[], T>(f: (...args: A) => Ok<T>): (...args: A) => Result<T, never>
 export function fn<A extends any[], E>(f: (...args: A) => Err<E>): (...args: A) => Result<never, E>

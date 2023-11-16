@@ -8,7 +8,7 @@ import {
 	guardWith,
 	Result,
 	PromiseResult,
-} from "../internal"
+} from "../internal.js"
 
 class MyError extends ResultError {
 	readonly tag = "MyError"

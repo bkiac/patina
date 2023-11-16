@@ -1,4 +1,4 @@
-import {inspectSymbol} from "../util"
+import {inspectSymbol} from "../util.js"
 
 export class Panic extends Error {
 	readonly origin?: unknown

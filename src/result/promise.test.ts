@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest"
-import {Err, Panic, PromiseResult, Ok, UnwrapPanic} from "../internal"
+import {Err, Panic, PromiseResult, Ok, UnwrapPanic} from "../internal.js"
 
 function promiseOk<T, E = any>(value: T) {
 	return new PromiseResult<T, E>(Promise.resolve(Ok<T>(value)))

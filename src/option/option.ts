@@ -1,6 +1,6 @@
-import type {inspectSymbol} from "../util"
-import type {None} from "./none"
-import type {Some} from "./some"
+import type {inspectSymbol} from "../util.js"
+import type {None} from "./none.js"
+import type {Some} from "./some.js"
 
 export interface OptionMethods<T> {
 	and<U>(other: Option<U>): Option<U>

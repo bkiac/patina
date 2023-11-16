@@ -1,5 +1,5 @@
 import {describe, expect, it, test} from "vitest"
-import {ResultError, StdError, inspectSymbol} from "../internal"
+import {ResultError, StdError, inspectSymbol} from "../internal.js"
 
 describe.concurrent("ResultError", () => {
 	class MyResultError extends ResultError<Error> {

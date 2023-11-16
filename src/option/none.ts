@@ -1,6 +1,6 @@
-import {Panic, UnwrapPanic} from "../error/panic"
-import {inspectSymbol} from "../util"
-import type {OptionMethods, Option} from "./option"
+import {Panic, UnwrapPanic} from "../error/panic.js"
+import {inspectSymbol} from "../util.js"
+import type {OptionMethods, Option} from "./option.js"
 
 export class NoneImpl implements OptionMethods<never> {
 	readonly some = false

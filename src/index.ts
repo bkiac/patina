@@ -24,4 +24,4 @@ export {
 	tryFnWith,
 	tryPromise,
 	tryPromiseWith,
-} from "./internal"
+} from "./internal.js"

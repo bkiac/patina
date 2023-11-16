@@ -1,6 +1,6 @@
 import {expect, it} from "vitest"
-import {Panic} from "./panic"
-import {inspectSymbol} from "../util"
+import {Panic} from "./panic.js"
+import {inspectSymbol} from "../util.js"
 
 it("returns an instance without params", () => {
 	const panic = new Panic()

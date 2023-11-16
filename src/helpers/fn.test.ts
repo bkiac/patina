@@ -9,7 +9,7 @@ import {
 	type StdError,
 	type Result,
 	tryFn,
-} from "../internal"
+} from "../internal.js"
 
 describe.concurrent("fn", () => {
 	it("returns Ok result when provided function does not throw", () => {

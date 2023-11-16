@@ -1,6 +1,6 @@
-import {Panic, UnwrapPanic} from "../error/panic"
-import {inspectSymbol} from "../util"
-import type {Result, ResultMethods} from "./result"
+import {Panic, UnwrapPanic} from "../error/panic.js"
+import {inspectSymbol} from "../util.js"
+import type {Result, ResultMethods} from "./result.js"
 
 export class OkImpl<T = null> {
 	readonly ok = true
