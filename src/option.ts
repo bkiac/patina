@@ -1,4 +1,4 @@
-import {Panic} from "./panic"
+import {Panic, UnwrapPanic} from "./panic"
 import {inspectSymbol} from "./util"
 
 export class OptionImpl<T> {
@@ -6,9 +6,9 @@ export class OptionImpl<T> {
 	readonly none: boolean
 	readonly value: T | never
 
-	constructor(value: T) {
-		this.some = true
-		this.none = false
+	constructor(some: boolean, value: T) {
+		this.some = some
+		this.none = !some
 		this.value = value
 	}
 
@@ -39,7 +39,7 @@ export class OptionImpl<T> {
 	}
 
 	map<U>(f: (value: T) => U): Option<T | U> {
-		return (this.some ? new OptionImpl(f(this.value as T)) : None) as Option<T | U>
+		return (this.some ? new OptionImpl(true, f(this.value as T)) : None) as Option<T | U>
 	}
 
 	mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B {
@@ -59,7 +59,10 @@ export class OptionImpl<T> {
 	}
 
 	unwrap(): T {
-		return this.value as T
+		if (this.some) {
+			return this.value as T
+		}
+		throw new UnwrapPanic(`called "unwrap()" on ${this.toString()}`)
 	}
 
 	unwrapOr<U>(defaultValue: U): T | U {
@@ -71,7 +74,10 @@ export class OptionImpl<T> {
 	}
 
 	xor<U>(other: Option<U>): Option<T | U> {
-		return (other.some ? None : this) as Option<T | U>
+		if (this.some) {
+			return (other.some ? None : this) as Option<T | U>
+		}
+		return other.some ? other : (None as Option<T | U>)
 	}
 
 	match<A, B>(some: (value: T) => A, none: () => B): A | B {
@@ -101,7 +107,7 @@ export interface Some<T> extends OptionImpl<T> {
 	readonly value: T
 }
 export function Some<T>(value: T): Some<T> {
-	return new OptionImpl(value) as Some<T>
+	return new OptionImpl(true, value) as Some<T>
 }
 
 export interface None extends OptionImpl<never> {
@@ -109,6 +115,6 @@ export interface None extends OptionImpl<never> {
 	readonly none: true
 	readonly value: never
 }
-export const None = new OptionImpl(null) as None
+export const None = new OptionImpl(false, null) as None
 
 export type Option<T> = (Some<T> | None) & OptionImpl<T>
