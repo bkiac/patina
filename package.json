@@ -1,6 +1,6 @@
 {
 	"name": "ruts",
-	"version": "0.9.0",
+	"version": "0.10.0",
 	"type": "module",
 	"description": "Type-safe error-handling library for TypeScript",
 	"repository": {
