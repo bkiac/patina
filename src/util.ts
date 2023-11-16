@@ -1,3 +1,5 @@
+import type {Err, Ok} from "./result"
+
 export const inspectSymbol = Symbol.for("nodejs.util.inspect.custom")
 
 /**
@@ -17,3 +19,6 @@ export function replaceStack(name: string, originName: string, stack?: string) {
 export function formatErrorString(name: string, message = "") {
 	return name + (message ? ": " + message : "")
 }
+
+export type InferOk<T> = T extends Ok<infer O> ? O : never
+export type InferErr<T> = T extends Err<infer E> ? E : never

@@ -1,10 +1,10 @@
 import type {Result} from "./result"
 import {PromiseResult} from "./promise_result"
-import type {Err, Ok} from "./internal"
+import type {Err, InferErr, InferOk, Ok} from "./internal"
 
-export function fn<A extends any[], T, E>(
-	f: (...args: A) => Result<T, E>,
-): (...args: A) => Result<T, E> {
+export function fn<A extends any[], R extends Result<any, any>>(
+	f: (...args: A) => R,
+): (...args: A) => Result<InferOk<R>, InferErr<R>> {
 	return f
 }
 
