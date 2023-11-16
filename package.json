@@ -2,17 +2,27 @@
 	"name": "ruts",
 	"version": "0.9.0",
 	"type": "module",
-	"description": "",
+	"description": "Type-safe error-handling library for TypeScript",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/bkiac/ruts.git"
 	},
 	"author": "bkiac <bkiac@pm.me>",
 	"license": "MIT",
+	"main": "./lib/index.cjs",
 	"module": "./lib/index.js",
 	"exports": {
-		".": "./lib/index.js",
-		"./internal": "./lib/internal.js"
+		".": {
+			"types": "./lib/index.d.ts",
+			"require": "./lib/index.cjs",
+			"import": "./lib/index.js"
+		},
+		"./internal": {
+			"types": "./lib/internal.d.ts",
+			"require": "./lib/internal.cjs",
+			"import": "./lib/internal.js"
+		},
+		"./package.json": "./package.json"
 	},
 	"types": "./lib/index.d.ts",
 	"files": [
@@ -25,18 +35,20 @@
 		"result-type"
 	],
 	"scripts": {
-		"build": "rm -rf lib && tsc --p tsconfig.build.json && prettier --write ./lib --ignore-path ''",
+		"build": "tsup --config ./cfg/tsup.config.ts && pnpm build:ts",
+		"build:ts": "tsc --p ./cfg/tsconfig.types.json",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"prepublishOnly": "pnpm run build",
-		"test": "vitest",
-		"types": "tsc"
+		"test": "vitest --config ./cfg/vitest.config.ts",
+		"ts:check": "tsc"
 	},
 	"devDependencies": {
 		"husky": "^8.0.3",
 		"lint-staged": "^14.0.1",
 		"prettier": "^3.0.2",
 		"prettier-plugin-pkg": "^0.18.0",
+		"tsup": "^7.2.0",
 		"tsx": "^3.14.0",
 		"typescript": "^5.0.4",
 		"vitest": "^0.34.6"

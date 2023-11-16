@@ -1,0 +1,11 @@
+{
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		"noEmit": false,
+		"outDir": "../lib",
+		"declaration": true,
+		"emitDeclarationOnly": true,
+		"removeComments": false
+	},
+	"exclude": ["../node_modules", "../**/*.ignore.ts", "../**/*.test.ts"]
+}

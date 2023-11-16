@@ -22,7 +22,7 @@ jobs:
                   cache: "pnpm"
             - run: pnpm install --frozen-lockfile
             - run: pnpm run format:check
-            - run: pnpm run types
+            - run: pnpm run ts:check
             - run: pnpm run build
 
     test:
@@ -30,7 +30,7 @@ jobs:
         runs-on: ubuntu-22.04
         strategy:
             matrix:
-                node-version: [16.x, 18.x, 20.x]
+                node-version: [18.x, 20.x]
         steps:
             - uses: actions/checkout@v3
             - uses: pnpm/action-setup@v2
