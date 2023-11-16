@@ -40,7 +40,8 @@
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"prepublishOnly": "pnpm run build",
-		"test": "vitest --config ./cfg/vitest.config.ts"
+		"test": "vitest --config ./cfg/vitest.config.ts",
+		"ts:check": "tsc"
 	},
 	"devDependencies": {
 		"husky": "^8.0.3",
