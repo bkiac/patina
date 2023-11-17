@@ -12,12 +12,12 @@ export class ResultImpl<T, E> {
 		this.value = value
 	}
 
-	and<U, F>(other: Result<U, F>): Result<T | U, E | F> {
-		return (this.ok ? other : this) as Result<T | U, E | F>
+	and<U, F>(other: Result<U, F>): Result<U, E | F> {
+		return (this.ok ? other : this) as Result<U, E | F>
 	}
 
-	andThen<U, F>(f: (value: T) => Result<U, F>): Result<T | U, E | F> {
-		return (this.ok ? f(this.value as T) : this) as Result<T | U, E | F>
+	andThen<U, F>(f: (value: T) => Result<U, F>): Result<U, E | F> {
+		return (this.ok ? f(this.value as T) : this) as Result<U, E | F>
 	}
 
 	expect(panic: string): T {
@@ -48,15 +48,12 @@ export class ResultImpl<T, E> {
 		return this as unknown as Result<T, E>
 	}
 
-	map<U>(f: (value: T) => U): Result<T | U, E> {
-		return (this.ok ? new ResultImpl<U, E>(true, f(this.value as T)) : this) as Result<T | U, E>
+	map<U>(f: (value: T) => U): Result<U, E> {
+		return (this.ok ? new ResultImpl<U, E>(true, f(this.value as T)) : this) as Result<U, E>
 	}
 
-	mapErr<F>(f: (error: E) => F): Result<T, E | F> {
-		return (this.ok ? this : new ResultImpl<T, E | F>(false, f(this.value as E))) as Result<
-			T,
-			E | F
-		>
+	mapErr<F>(f: (error: E) => F): Result<T, F> {
+		return (this.ok ? this : new ResultImpl<T, F>(false, f(this.value as E))) as Result<T, F>
 	}
 
 	mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B {
@@ -67,12 +64,12 @@ export class ResultImpl<T, E> {
 		return this.ok ? f(this.value as T) : defaultValue(this.value as E)
 	}
 
-	or<U, F>(other: Result<U, F>): Result<T | U, E | F> {
-		return (this.ok ? this : other) as Result<T | U, E | F>
+	or<U, F>(other: Result<U, F>): Result<T | U, F> {
+		return (this.ok ? this : other) as Result<T | U, F>
 	}
 
-	orElse<U, F>(f: (error: E) => Result<U, F>): Result<T | U, E | F> {
-		return (this.ok ? this : f(this.value as E)) as Result<T | U, E | F>
+	orElse<U, F>(f: (error: E) => Result<U, F>): Result<T | U, F> {
+		return (this.ok ? this : f(this.value as E)) as Result<T | U, F>
 	}
 
 	unwrap(): T {

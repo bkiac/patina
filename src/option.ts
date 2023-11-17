@@ -12,12 +12,12 @@ export class OptionImpl<T> {
 		this.value = value
 	}
 
-	and<U>(other: Option<U>): Option<T | U> {
-		return (this.some ? other : None) as Option<T | U>
+	and<U>(other: Option<U>): Option<U> {
+		return this.some ? other : None
 	}
 
-	andThen<U>(f: (value: T) => Option<U>): Option<T | U> {
-		return (this.some ? f(this.value as T) : None) as Option<T | U>
+	andThen<U>(f: (value: T) => Option<U>): Option<U> {
+		return this.some ? f(this.value as T) : None
 	}
 
 	expect(panic: string): T {
@@ -38,8 +38,8 @@ export class OptionImpl<T> {
 		return this
 	}
 
-	map<U>(f: (value: T) => U): Option<T | U> {
-		return (this.some ? new OptionImpl(true, f(this.value as T)) : None) as Option<T | U>
+	map<U>(f: (value: T) => U): Option<U> {
+		return (this.some ? new OptionImpl(true, f(this.value as T)) : None) as Option<U>
 	}
 
 	mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B {

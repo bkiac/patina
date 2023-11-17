@@ -29,16 +29,14 @@ export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 		)
 	}
 
-	and<U, F>(other: PromiseResult<U, F>): PromiseResult<T | U, E | F> {
-		return new PromiseResult<T | U, E | F>(
+	and<U, F>(other: PromiseResult<U, F>): PromiseResult<U, E | F> {
+		return new PromiseResult(
 			this.then((result) => other.then((otherResult) => result.and(otherResult))),
 		)
 	}
 
-	andThen<U, F>(f: (value: T) => Result<U, F>): PromiseResult<T | U, E | F> {
-		return new PromiseResult<T | U, E | F>(
-			this.then((result) => result.andThen((value) => f(value))),
-		)
+	andThen<U, F>(f: (value: T) => Result<U, F>): PromiseResult<U, E | F> {
+		return new PromiseResult(this.then((result) => result.andThen((value) => f(value))))
 	}
 
 	async expect(panic: string): Promise<T> {
@@ -50,19 +48,19 @@ export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 	}
 
 	inspect(f: (value: T) => void): PromiseResult<T, E> {
-		return new PromiseResult<T, E>(this.then((result) => result.inspect(f)))
+		return new PromiseResult(this.then((result) => result.inspect(f)))
 	}
 
 	inspectErr(f: (error: E) => void): PromiseResult<T, E> {
-		return new PromiseResult<T, E>(this.then((result) => result.inspectErr(f)))
+		return new PromiseResult(this.then((result) => result.inspectErr(f)))
 	}
 
-	map<U>(f: (value: T) => U): PromiseResult<T | U, E> {
-		return new PromiseResult<T | U, E>(this.then((result) => result.map(f)))
+	map<U>(f: (value: T) => U): PromiseResult<U, E> {
+		return new PromiseResult(this.then((result) => result.map(f)))
 	}
 
-	mapErr<F>(f: (error: E) => F): PromiseResult<T, E | F> {
-		return new PromiseResult<T, E | F>(this.then((result) => result.mapErr(f)))
+	mapErr<F>(f: (error: E) => F): PromiseResult<T, F> {
+		return new PromiseResult(this.then((result) => result.mapErr(f)))
 	}
 
 	async mapOr<A, B>(defaultValue: A, f: (value: T) => B): Promise<A | B> {
@@ -73,16 +71,14 @@ export class PromiseResult<T, E> implements PromiseLike<Result<T, E>> {
 		return (await this).mapOrElse(defaultValue, f)
 	}
 
-	or<U, F>(other: PromiseResult<U, F>): PromiseResult<T | U, E | F> {
-		return new PromiseResult<T | U, E | F>(
+	or<U, F>(other: PromiseResult<U, F>): PromiseResult<T | U, F> {
+		return new PromiseResult(
 			this.then((thisResult) => other.then((otherResult) => thisResult.or(otherResult))),
 		)
 	}
 
-	orElse<U, F>(f: (error: E) => Result<U, F>): PromiseResult<T | U, E | F> {
-		return new PromiseResult<T | U, E | F>(
-			this.then((thisResult) => thisResult.orElse((error) => f(error))),
-		)
+	orElse<U, F>(f: (error: E) => Result<U, F>): PromiseResult<T | U, F> {
+		return new PromiseResult(this.then((thisResult) => thisResult.orElse((error) => f(error))))
 	}
 
 	async unwrap(): Promise<T> {
