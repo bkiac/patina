@@ -11,14 +11,6 @@ import {
 	tryFn,
 } from "../src/internal"
 
-declare const tag: unique symbol
-
-export type TagContainer<Token> = {
-	readonly [tag]: Token
-}
-
-export type Opaque<Type, Token = unknown> = Type & TagContainer<Token>
-
 describe.concurrent("fn", () => {
 	it("returns Ok result when provided function does not throw", () => {
 		const wrappedFn = fn(() => Ok(42))
