@@ -20,8 +20,8 @@ describe.concurrent("basic", () => {
 		expectTypeOf(r.ok).toEqualTypeOf<true>()
 		expectTypeOf(r.err).toEqualTypeOf<false>()
 		expectTypeOf(r.value).toEqualTypeOf<number>()
-		expectTypeOf(r.unwrap()).toEqualTypeOf<number>()
-		expectTypeOf(r.unwrapErr()).toEqualTypeOf<never>()
+		expectTypeOf(() => r.unwrap()).toEqualTypeOf<() => number>()
+		expectTypeOf(() => r.unwrapErr()).toEqualTypeOf<() => never>()
 	})
 
 	it("returns an Err result", () => {
@@ -34,8 +34,8 @@ describe.concurrent("basic", () => {
 		expectTypeOf(r.ok).toEqualTypeOf<false>()
 		expectTypeOf(r.err).toEqualTypeOf<true>()
 		expectTypeOf(r.value).toEqualTypeOf<string>()
-		expectTypeOf(r.unwrap()).toEqualTypeOf<never>()
-		expectTypeOf(r.unwrapErr()).toEqualTypeOf<string>()
+		expectTypeOf(() => r.unwrap()).toEqualTypeOf<() => never>()
+		expectTypeOf(() => r.unwrapErr()).toEqualTypeOf<() => string>()
 	})
 
 	it("works as discriminated union", () => {
@@ -45,14 +45,14 @@ describe.concurrent("basic", () => {
 			expectTypeOf(r.ok).toEqualTypeOf<true>()
 			expectTypeOf(r.err).toEqualTypeOf<false>()
 			expectTypeOf(r.value).toEqualTypeOf<number>()
-			expectTypeOf(r.unwrap()).toEqualTypeOf<number>()
-			expectTypeOf(r.unwrapErr()).toEqualTypeOf<never>()
+			expectTypeOf(() => r.unwrap()).toEqualTypeOf<() => number>()
+			expectTypeOf(() => r.unwrapErr()).toEqualTypeOf<() => never>()
 		} else {
 			expectTypeOf(r.ok).toEqualTypeOf<false>()
 			expectTypeOf(r.err).toEqualTypeOf<true>()
 			expectTypeOf(r.value).toEqualTypeOf<string>()
-			expectTypeOf(r.unwrap()).toEqualTypeOf<never>()
-			expectTypeOf(r.unwrapErr()).toEqualTypeOf<string>()
+			expectTypeOf(() => r.unwrap()).toEqualTypeOf<() => never>()
+			expectTypeOf(() => r.unwrapErr()).toEqualTypeOf<() => string>()
 		}
 	})
 })
