@@ -11,24 +11,48 @@ function TestErr<T, E>(value: E): Result<T, E> {
 
 describe.concurrent("basic", () => {
 	it("returns an Ok result", () => {
-		const result = Ok(42)
-		expect(result.ok).toEqual(true)
-		expect(result.value).toEqual(42)
+		const r = Ok(42)
+
+		expect(r.ok).toEqual(true)
+		expect(r.err).toEqual(false)
+		expect(r.value).toEqual(42)
+
+		expectTypeOf(r.ok).toEqualTypeOf<true>()
+		expectTypeOf(r.err).toEqualTypeOf<false>()
+		expectTypeOf(r.value).toEqualTypeOf<number>()
+		expectTypeOf(() => r.unwrap()).toEqualTypeOf<() => number>()
+		expectTypeOf(() => r.unwrapErr()).toEqualTypeOf<() => never>()
 	})
 
 	it("returns an Err result", () => {
-		const result = Err("error")
-		expect(result.ok).toEqual(false)
-		expect(result.value).toEqual("error")
+		const r = Err("error")
+
+		expect(r.ok).toEqual(false)
+		expect(r.err).toEqual(true)
+		expect(r.value).toEqual("error")
+
+		expectTypeOf(r.ok).toEqualTypeOf<false>()
+		expectTypeOf(r.err).toEqualTypeOf<true>()
+		expectTypeOf(r.value).toEqualTypeOf<string>()
+		expectTypeOf(() => r.unwrap()).toEqualTypeOf<() => never>()
+		expectTypeOf(() => r.unwrapErr()).toEqualTypeOf<() => string>()
 	})
 
 	it("works as discriminated union", () => {
 		const r = TestOk<number, string>(42)
 		expectTypeOf(r.value).toEqualTypeOf<number | string>()
 		if (r.ok) {
+			expectTypeOf(r.ok).toEqualTypeOf<true>()
+			expectTypeOf(r.err).toEqualTypeOf<false>()
 			expectTypeOf(r.value).toEqualTypeOf<number>()
+			expectTypeOf(() => r.unwrap()).toEqualTypeOf<() => number>()
+			expectTypeOf(() => r.unwrapErr()).toEqualTypeOf<() => never>()
 		} else {
+			expectTypeOf(r.ok).toEqualTypeOf<false>()
+			expectTypeOf(r.err).toEqualTypeOf<true>()
 			expectTypeOf(r.value).toEqualTypeOf<string>()
+			expectTypeOf(() => r.unwrap()).toEqualTypeOf<() => never>()
+			expectTypeOf(() => r.unwrapErr()).toEqualTypeOf<() => string>()
 		}
 	})
 })
