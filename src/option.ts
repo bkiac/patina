@@ -110,7 +110,7 @@ export function Some<T>(value: T): Some<T> {
 	return new OptionImpl(true, value) as Some<T>
 }
 
-export interface None extends OptionImpl<null> {
+export interface None extends OptionImpl<never> {
 	readonly some: false
 	readonly none: true
 	readonly value: null
