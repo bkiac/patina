@@ -9,6 +9,7 @@ import {
 	type StdError,
 	type Result,
 	tryFn,
+	ResultError,
 } from "../src/internal"
 
 describe.concurrent("fn", () => {
@@ -85,6 +86,31 @@ describe.concurrent("fn", () => {
 				return Ok("foo")
 			})
 			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<string, string>>()
+		})
+
+		it("works with complicated result", () => {
+			class MyError extends ResultError {
+				readonly tag = "MyError"
+			}
+
+			type Data = {
+				id: number
+				name: string
+				createdAt: Date
+				amount: bigint
+			}
+
+			// @ts-expect-error
+			const foo = (): Result<Data, StdError | MyError> => {}
+
+			const wrapped = fn(() => {
+				const r = foo()
+				if (r.err) {
+					return r
+				}
+				return Ok(r.value)
+			})
+			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<Data, StdError | MyError>>()
 		})
 	})
 })

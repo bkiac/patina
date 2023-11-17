@@ -117,4 +117,6 @@ export interface None extends OptionImpl<never> {
 }
 export const None = new OptionImpl(false, null) as None
 
-export type Option<T> = (Some<T> | None) & OptionImpl<T>
+type Methods<T> = Omit<OptionImpl<T>, "some" | "none" | "value">
+
+export type Option<T> = (Some<T> | None) & Methods<T>

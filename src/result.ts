@@ -160,4 +160,6 @@ export function Err<E>(value?: E): Err<E> {
 	return new ResultImpl<never, E>(false, (value ?? null) as E) as Err<E>
 }
 
-export type Result<T, E> = (Ok<T> | Err<E>) & ResultImpl<T, E>
+type Methods<T, E> = Omit<ResultImpl<T, E>, "ok" | "err" | "value">
+
+export type Result<T, E> = (Ok<T> | Err<E>) & Methods<T, E>
