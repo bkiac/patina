@@ -1,9 +1,7 @@
-import {Panic} from "../error/panic"
-import {type ErrorHandler, StdError} from "../error/result_error"
-import {Err} from "../result/err"
-import type {Result} from "../result/result"
-import {Ok} from "../result/ok"
-import {PromiseResult} from "../result/promise"
+import {Panic} from "./panic"
+import {type ErrorHandler, StdError} from "./result_error"
+import {Err, Ok, type Result} from "./result"
+import {PromiseResult} from "./promise_result"
 
 function handlePanic(error: unknown) {
 	if (error instanceof Panic) {
@@ -11,9 +9,6 @@ function handlePanic(error: unknown) {
 	}
 	return error
 }
-
-// Couldn't figure out how to overload these functions without a TypeScript error and making
-// the error handler required if the error template param is defined.
 
 export function tryFn<T>(f: () => T): Result<T, StdError> {
 	try {

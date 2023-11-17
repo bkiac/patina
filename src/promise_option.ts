@@ -27,14 +27,14 @@ export class PromiseOption<T> implements PromiseLike<Option<T>> {
 		)
 	}
 
-	and<U>(other: PromiseOption<U>): PromiseOption<U> {
-		return new PromiseOption<U>(
+	and<U>(other: PromiseOption<U>): PromiseOption<T | U> {
+		return new PromiseOption<T | U>(
 			this.then((option) => other.then((otherOption) => option.and(otherOption))),
 		)
 	}
 
-	andThen<U>(f: (value: T) => Option<U>): PromiseOption<U> {
-		return new PromiseOption<U>(this.then((option) => option.andThen((value) => f(value))))
+	andThen<U>(f: (value: T) => Option<U>): PromiseOption<T | U> {
+		return new PromiseOption<T | U>(this.then((option) => option.andThen((value) => f(value))))
 	}
 
 	async expect(panic: string): Promise<T> {
@@ -49,8 +49,8 @@ export class PromiseOption<T> implements PromiseLike<Option<T>> {
 		return new PromiseOption<T>(this.then((option) => option.inspect(f)))
 	}
 
-	map<U>(f: (value: T) => U): PromiseOption<U> {
-		return new PromiseOption<U>(this.then((option) => option.map(f)))
+	map<U>(f: (value: T) => U): PromiseOption<T | U> {
+		return new PromiseOption<T | U>(this.then((option) => option.map(f)))
 	}
 
 	async mapOr<A, B>(defaultValue: A, f: (value: T) => B): Promise<A | B> {

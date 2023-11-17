@@ -1,7 +1,7 @@
 import {tryAsyncFnWith, tryFnWith, tryPromiseWith} from "./try"
-import type {ErrorHandler} from "../error/result_error"
-import type {Result} from "../result/result"
-import type {PromiseResult} from "../result/promise"
+import type {ErrorHandler} from "./result_error"
+import type {Result} from "./result"
+import type {PromiseResult} from "./promise_result"
 
 type Fn = (...args: any[]) => any
 type AsyncFn = (...args: any[]) => Promise<any>
