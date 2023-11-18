@@ -4,5 +4,6 @@ export default {
 	test: {
 		include: ["**/*.test.ts"],
 		cache: false,
+		environment: "node",
 	},
 } satisfies UserConfig
