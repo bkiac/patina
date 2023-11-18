@@ -40,7 +40,7 @@
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"prepublishOnly": "pnpm run build",
-		"test:firefox": "vitest --config ./cfg/vitest.firefox.config.ts",
+		"test:browser": "vitest --config ./cfg/vitest.browser.config.ts",
 		"test:node": "vitest --config ./cfg/vitest.config.ts",
 		"ts:check": "tsc"
 	},

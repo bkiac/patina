@@ -25,12 +25,9 @@ jobs:
             - run: pnpm run ts:check
             - run: pnpm run build
 
-    test_node:
+    test-node:
         needs: check
         runs-on: ubuntu-22.04
-        strategy:
-            matrix:
-                node-version: [18.x, 20.x]
         steps:
             - uses: actions/checkout@v3
             - uses: pnpm/action-setup@v2
@@ -38,17 +35,14 @@ jobs:
                   version: 8
             - uses: actions/setup-node@v3
               with:
-                  node-version: ${{ matrix.node-version }}
+                  node-version: 18
                   cache: "pnpm"
             - run: pnpm install --frozen-lockfile
             - run: pnpm run test:node
 
-    test_browser:
+    test-browser:
         needs: check
         runs-on: ubuntu-22.04
-        strategy:
-            matrix:
-                node-version: [firefox]
         steps:
             - uses: actions/checkout@v3
             - uses: pnpm/action-setup@v2
@@ -56,8 +50,8 @@ jobs:
                   version: 8
             - uses: actions/setup-node@v3
               with:
-                  node-version: ${{ matrix.node-version }}
+                  node-version: 20
                   cache: "pnpm"
             - run: pnpm install --frozen-lockfile
             - run: pnpm exec playwright install
-            - run: pnpm run test:${{ matrix.node-version }}
+            - run: pnpm run test:browser
