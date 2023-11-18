@@ -1,6 +1,6 @@
 import type {Option} from "./option"
 
-export class PromiseOption<T> implements PromiseLike<Option<T>> {
+export class OptionPromise<T> implements PromiseLike<Option<T>> {
 	constructor(readonly promise: Promise<Option<T>> | PromiseLike<Option<T>>) {}
 
 	then<A, B>(
@@ -27,30 +27,30 @@ export class PromiseOption<T> implements PromiseLike<Option<T>> {
 		)
 	}
 
-	and<U>(other: PromiseOption<U>): PromiseOption<U> {
-		return new PromiseOption(
+	and<U>(other: OptionPromise<U>): OptionPromise<U> {
+		return new OptionPromise(
 			this.then((option) => other.then((otherOption) => option.and(otherOption))),
 		)
 	}
 
-	andThen<U>(f: (value: T) => Option<U>): PromiseOption<U> {
-		return new PromiseOption(this.then((option) => option.andThen((value) => f(value))))
+	andThen<U>(f: (value: T) => Option<U>): OptionPromise<U> {
+		return new OptionPromise(this.then((option) => option.andThen((value) => f(value))))
 	}
 
 	async expect(panic: string): Promise<T> {
 		return (await this).expect(panic)
 	}
 
-	filter(f: (value: T) => boolean): PromiseOption<T> {
-		return new PromiseOption(this.then((option) => option.filter(f)))
+	filter(f: (value: T) => boolean): OptionPromise<T> {
+		return new OptionPromise(this.then((option) => option.filter(f)))
 	}
 
-	inspect(f: (value: T) => void): PromiseOption<T> {
-		return new PromiseOption(this.then((option) => option.inspect(f)))
+	inspect(f: (value: T) => void): OptionPromise<T> {
+		return new OptionPromise(this.then((option) => option.inspect(f)))
 	}
 
-	map<U>(f: (value: T) => U): PromiseOption<U> {
-		return new PromiseOption(this.then((option) => option.map(f)))
+	map<U>(f: (value: T) => U): OptionPromise<U> {
+		return new OptionPromise(this.then((option) => option.map(f)))
 	}
 
 	async mapOr<A, B>(defaultValue: A, f: (value: T) => B): Promise<A | B> {
@@ -61,14 +61,14 @@ export class PromiseOption<T> implements PromiseLike<Option<T>> {
 		return (await this).mapOrElse(defaultValue, f)
 	}
 
-	or<U>(other: PromiseOption<U>): PromiseOption<T | U> {
-		return new PromiseOption(
+	or<U>(other: OptionPromise<U>): OptionPromise<T | U> {
+		return new OptionPromise(
 			this.then((thisOption) => other.then((otherOption) => thisOption.or(otherOption))),
 		)
 	}
 
-	orElse<U>(f: () => Option<U>): PromiseOption<T | U> {
-		return new PromiseOption(this.then((thisOption) => thisOption.orElse(() => f())))
+	orElse<U>(f: () => Option<U>): OptionPromise<T | U> {
+		return new OptionPromise(this.then((thisOption) => thisOption.orElse(() => f())))
 	}
 
 	async unwrap(): Promise<T> {
@@ -83,8 +83,8 @@ export class PromiseOption<T> implements PromiseLike<Option<T>> {
 		return (await this).unwrapOrElse(f)
 	}
 
-	xor<U>(other: PromiseOption<U>): PromiseOption<T | U> {
-		return new PromiseOption(
+	xor<U>(other: OptionPromise<U>): OptionPromise<T | U> {
+		return new OptionPromise(
 			this.then((thisOption) => other.then((otherOption) => thisOption.xor(otherOption))),
 		)
 	}

@@ -159,10 +159,10 @@ export function Err<E>(value?: E): Err<E> {
 
 type Methods<T, E> = Omit<ResultImpl<T, E>, "ok" | "err" | "value">
 
-type _OkResult<T, E> = Ok<T> & Methods<T, E>
-export interface OkResult<T, E> extends _OkResult<T, E> {}
+type _ResultOk<T, E> = Ok<T> & Methods<T, E>
+export interface ResultOk<T, E> extends _ResultOk<T, E> {}
 
-type _ErrResult<T, E> = Err<E> & Methods<T, E>
-export interface ErrResult<T, E> extends _ErrResult<T, E> {}
+type _ResultErr<T, E> = Err<E> & Methods<T, E>
+export interface ResultErr<T, E> extends _ResultErr<T, E> {}
 
-export type Result<T, E> = OkResult<T, E> | ErrResult<T, E>
+export type Result<T, E> = ResultOk<T, E> | ResultErr<T, E>

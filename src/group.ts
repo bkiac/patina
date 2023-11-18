@@ -1,7 +1,7 @@
 import {tryAsyncFnWith, tryFnWith, tryPromiseWith} from "./try"
 import type {ErrorHandler} from "./result_error"
 import type {Result} from "./result"
-import type {PromiseResult} from "./promise_result"
+import type {ResultPromise} from "./result_promise"
 
 type Fn = (...args: any[]) => any
 type AsyncFn = (...args: any[]) => Promise<any>
@@ -17,19 +17,19 @@ export class ResultGroup<E> {
 		return tryFnWith(f, (error) => handleError(this.handleError(error)))
 	}
 
-	tryPromise<T>(promise: Promise<T>): PromiseResult<T, E> {
+	tryPromise<T>(promise: Promise<T>): ResultPromise<T, E> {
 		return tryPromiseWith(promise, this.handleError)
 	}
 
-	tryPromiseWith<T, F>(promise: Promise<T>, handleError: (error: E) => F): PromiseResult<T, F> {
+	tryPromiseWith<T, F>(promise: Promise<T>, handleError: (error: E) => F): ResultPromise<T, F> {
 		return tryPromiseWith(promise, (error) => handleError(this.handleError(error)))
 	}
 
-	tryAsyncFn<T>(f: () => Promise<T>): PromiseResult<T, E> {
+	tryAsyncFn<T>(f: () => Promise<T>): ResultPromise<T, E> {
 		return tryAsyncFnWith(f, this.handleError)
 	}
 
-	tryAsyncFnWith<T, F>(f: () => Promise<T>, handleError: (error: E) => F): PromiseResult<T, F> {
+	tryAsyncFnWith<T, F>(f: () => Promise<T>, handleError: (error: E) => F): ResultPromise<T, F> {
 		return tryAsyncFnWith(f, (error) => handleError(this.handleError(error)))
 	}
 

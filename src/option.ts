@@ -119,10 +119,10 @@ export const None = new OptionImpl(false, null) as None
 
 type Methods<T> = Omit<OptionImpl<T>, "some" | "none" | "value">
 
-type _SomeOption<T> = Some<T> & Methods<T>
-export interface SomeOption<T> extends _SomeOption<T> {}
+type _OptionSome<T> = Some<T> & Methods<T>
+export interface OptionSome<T> extends _OptionSome<T> {}
 
-type _NoneOption<T> = None & Methods<T>
-export interface NoneOption extends _NoneOption<never> {}
+type _OptionNone<T> = None & Methods<T>
+export interface OptionNone extends _OptionNone<never> {}
 
-export type Option<T> = SomeOption<T> | NoneOption
+export type Option<T> = OptionSome<T> | OptionNone

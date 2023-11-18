@@ -7,7 +7,7 @@ import {
 	guardAsyncWith,
 	guardWith,
 	Result,
-	PromiseResult,
+	ResultPromise,
 } from "../src/internal"
 
 class MyError extends ResultError {
@@ -114,7 +114,7 @@ describe.concurrent("guardAsync", () => {
 			const f = async (value: number) => value
 			const guarded = guardAsync(f)
 			expectTypeOf(guarded).toEqualTypeOf<
-				(value: number) => PromiseResult<number, StdError<unknown>>
+				(value: number) => ResultPromise<number, StdError<unknown>>
 			>()
 		})
 
@@ -122,7 +122,7 @@ describe.concurrent("guardAsync", () => {
 			const f = async <A, B>(a: A, _b: B) => a
 			const guarded = guardAsync(f)
 			expectTypeOf(guarded).toEqualTypeOf<
-				<A, B>(a: A, b: B) => PromiseResult<A, StdError<unknown>>
+				<A, B>(a: A, b: B) => ResultPromise<A, StdError<unknown>>
 			>()
 		})
 	})
@@ -153,13 +153,13 @@ describe.concurrent("guardAsyncWith", () => {
 		it("works with a function", () => {
 			const f = async (value: number) => value
 			const guarded = guardAsyncWith(f, () => new MyError())
-			expectTypeOf(guarded).toEqualTypeOf<(value: number) => PromiseResult<number, MyError>>()
+			expectTypeOf(guarded).toEqualTypeOf<(value: number) => ResultPromise<number, MyError>>()
 		})
 
 		it("works with a generic function", () => {
 			const f = async <A, B>(a: A, _b: B) => a
 			const guarded = guardAsyncWith(f, () => new MyError())
-			expectTypeOf(guarded).toEqualTypeOf<<A, B>(a: A, b: B) => PromiseResult<A, MyError>>()
+			expectTypeOf(guarded).toEqualTypeOf<<A, B>(a: A, b: B) => ResultPromise<A, MyError>>()
 		})
 	})
 })

@@ -1,12 +1,12 @@
 import {describe, it, expect, vi} from "vitest"
-import {Panic, UnwrapPanic, PromiseOption, Some, None} from "../src/internal"
+import {Panic, UnwrapPanic, OptionPromise, Some, None} from "../src/internal"
 
 function promiseSome<T>(value: T) {
-	return new PromiseOption<T>(Promise.resolve(Some<T>(value)))
+	return new OptionPromise<T>(Promise.resolve(Some<T>(value)))
 }
 
 function promiseNone() {
-	return new PromiseOption<any>(Promise.resolve(None))
+	return new OptionPromise<any>(Promise.resolve(None))
 }
 
 describe.concurrent("and", () => {
