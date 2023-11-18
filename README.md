@@ -1,4 +1,84 @@
-Similar libraries
+# ruts
+
+... description ...
+
+## Table of contents
+
+-   [Installation](#installation)
+-   [Similar Libraries](#similar-libraries)
+-   [Basic Usage](#basic-usage)
+-   [Result](#result)
+    -   [and](#and)
+    -   [andThen](#andthen)
+    -   [expect](#expect)
+    -   [expectErr](#expecterr)
+    -   [inspect](#inspect)
+    -   [inspectErr](#inspecterr)
+    -   [map](#map)
+    -   [mapErr](#maperr)
+    -   [mapOr](#mapor)
+    -   [mapOrElse](#maporelse)
+    -   [or](#or)
+    -   [orElse](#orelse)
+    -   [unwrap](#unwrap)
+    -   [unwrapErr](#unwraperr)
+    -   [unwrapOr](#unwrapor)
+    -   [unwrapOrElse](#unwraporelse)
+    -   [match](#match)
+-   [Helpers](#helpers)
+-   [Async](#async)
+
+## Installation
+
+```sh
+npm install ruts
+```
+
+## Basic Usage
+
+... add basic example ...
+
+## Result
+
+### and
+
+### andThen
+
+### expect
+
+### expectErr
+
+### inspect
+
+### inspectErr
+
+### map
+
+### mapErr
+
+### mapOr
+
+### mapOrElse
+
+### or
+
+### orElse
+
+### unwrap
+
+### unwrapErr
+
+### unwrapOr
+
+### unwrapOrElse
+
+### match
+
+## Helpers
+
+## Async
+
+## Similar Libraries
 
 -   [@badrap/result](https://github.com/badrap/result)
 -   [effect](https://github.com/Effect-TS/effect)
