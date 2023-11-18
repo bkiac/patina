@@ -52,6 +52,14 @@ jobs:
               with:
                   node-version: 20
                   cache: "pnpm"
+            - name: Cache Playwright Browsers
+              uses: actions/cache@v2
+              with:
+                  path: |
+                      ~/.cache/ms-playwright/
+                  key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+                  restore-keys: |
+                      ${{ runner.os }}-playwright-
             - run: pnpm install --frozen-lockfile
             - run: pnpm exec playwright install
             - run: pnpm run test:browser
