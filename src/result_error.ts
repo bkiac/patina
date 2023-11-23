@@ -8,9 +8,9 @@ export abstract class ResultError<T extends Error | null = null> implements Erro
 	readonly stack?: string
 	readonly origin: T | null
 
-	constructor(message?: string, origin?: T) {
-		this.message = message ?? ""
-		this.origin = origin ?? null
+	constructor(args: {message?: string; origin?: T} = {}) {
+		this.message = args.message ?? ""
+		this.origin = args.origin ?? null
 
 		if (Error.captureStackTrace) {
 			Error.captureStackTrace(this, this.constructor)
@@ -51,7 +51,7 @@ export class StdError<T = unknown> extends ResultError<Error> {
 			origin instanceof Error
 				? origin
 				: new TypeError(`Unexpected error type: "${String(origin)}"`)
-		super(message)
+		super({message})
 		this.origin = o
 		this.originRaw = origin
 	}
