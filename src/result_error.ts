@@ -1,7 +1,7 @@
 import {inspectSymbol} from "./util"
 import {formatErrorString} from "./util"
 
-export abstract class ResultError<T extends Error | null = Error | null> implements Error {
+export abstract class ResultError<T extends Error | null = null> implements Error {
 	abstract readonly tag: string
 
 	readonly message: string
