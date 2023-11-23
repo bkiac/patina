@@ -7,7 +7,7 @@ describe.concurrent("ResultError", () => {
 		readonly tag = MyResultError._tag
 
 		constructor(message?: string, origin?: Error) {
-			super(message, origin)
+			super({message, origin})
 		}
 	}
 
