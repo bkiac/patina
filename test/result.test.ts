@@ -312,19 +312,19 @@ describe.concurrent("unwrapOrElse", () => {
 describe.concurrent("match", () => {
 	it("calls the ok function for an Ok result", () => {
 		const result = TestOk<number, string>(42)
-		const output = result.match(
-			(value) => value * 2,
-			() => 0,
-		)
+		const output = result.match({
+			Ok: (value) => value * 2,
+			Err: () => 0,
+		})
 		expect(output).toEqual(84)
 	})
 
 	it("calls the err function for an Err result", () => {
 		const result = TestErr<number, string>("error")
-		const output = result.match(
-			(value) => value * 2,
-			() => 0,
-		)
+		const output = result.match({
+			Ok: (value) => value * 2,
+			Err: () => 0,
+		})
 		expect(output).toEqual(0)
 	})
 })

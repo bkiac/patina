@@ -1,6 +1,11 @@
 import {Panic, UnwrapPanic} from "./panic"
 import {inspectSymbol} from "./util"
 
+export type OptionMatcher<T, A, B> = {
+	Some: (value: T) => A
+	None: () => B
+}
+
 export class OptionImpl<T> {
 	readonly some: boolean
 	readonly none: boolean
@@ -80,8 +85,8 @@ export class OptionImpl<T> {
 		return (other.some ? other : None) as Option<T | U>
 	}
 
-	match<A, B>(some: (value: T) => A, none: () => B): A | B {
-		return this.some ? some(this.value as T) : none()
+	match<A, B>(matcher: OptionMatcher<T, A, B>): A | B {
+		return this.some ? matcher.Some(this.value as T) : matcher.None()
 	}
 
 	toString(): `Some(${string})` | "None" {
@@ -123,6 +128,6 @@ type _OptionSome<T> = Some<T> & Methods<T>
 export interface OptionSome<T> extends _OptionSome<T> {}
 
 type _OptionNone<T> = None & Methods<T>
-export interface OptionNone extends _OptionNone<never> {}
+export interface OptionNone<T> extends _OptionNone<T> {}
 
-export type Option<T> = OptionSome<T> | OptionNone
+export type Option<T> = OptionSome<T> | OptionNone<T>

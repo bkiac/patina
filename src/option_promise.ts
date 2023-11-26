@@ -1,4 +1,4 @@
-import type {Option} from "./option"
+import type {Option, OptionMatcher} from "./option"
 
 export class OptionPromise<T> implements PromiseLike<Option<T>> {
 	constructor(readonly promise: Promise<Option<T>> | PromiseLike<Option<T>>) {}
@@ -89,7 +89,7 @@ export class OptionPromise<T> implements PromiseLike<Option<T>> {
 		)
 	}
 
-	async match<A, B>(some: (value: T) => A, none: () => B): Promise<A | B> {
-		return (await this).match(some, none)
+	async match<A, B>(matcher: OptionMatcher<T, A, B>): Promise<A | B> {
+		return (await this).match(matcher)
 	}
 }

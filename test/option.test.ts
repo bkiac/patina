@@ -286,20 +286,20 @@ describe.concurrent("match", () => {
 	it("returns the result of the some callback when called on a Some option", () => {
 		const option = TestSome(42)
 		expect(
-			option.match(
-				(value) => value + 1,
-				() => "default",
-			),
+			option.match({
+				Some: (value) => value + 1,
+				None: () => "default",
+			}),
 		).toEqual(43)
 	})
 
 	it("returns the result of the none callback when called on a None option", () => {
 		const option = TestNone<string>()
 		expect(
-			option.match(
-				(value) => value + 1,
-				() => "default",
-			),
+			option.match({
+				Some: (value) => value + 1,
+				None: () => "default",
+			}),
 		).toEqual("default")
 	})
 })
