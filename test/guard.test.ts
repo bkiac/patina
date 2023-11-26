@@ -8,7 +8,7 @@ import {
 	guardWith,
 	Result,
 	ResultPromise,
-} from "../src/internal"
+} from "../src"
 
 class MyError extends ResultError {
 	readonly tag = "MyError"

@@ -1,5 +1,5 @@
 import {describe, it, expect, expectTypeOf, vi, test} from "vitest"
-import {Panic, UnwrapPanic, Ok, Err, type Result} from "../src/internal"
+import {Panic, UnwrapPanic, Ok, Err, type Result} from "../src"
 
 function TestOk<T, E>(value: T): Result<T, E> {
 	return Ok(value)

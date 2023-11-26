@@ -1,5 +1,5 @@
 import {describe, it, expect, vi} from "vitest"
-import {Panic, UnwrapPanic, OptionPromise, Some, None} from "../src/internal"
+import {Panic, UnwrapPanic, OptionPromise, Some, None} from "../src"
 
 function promiseSome<T>(value: T) {
 	return new OptionPromise<T>(Promise.resolve(Some<T>(value)))

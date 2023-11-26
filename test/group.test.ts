@@ -1,6 +1,6 @@
 import {test, expect, vi} from "vitest"
 import {ResultGroup, createGroup} from "../src/group"
-import {ResultError} from "../src/internal"
+import {ResultError} from "../src"
 
 test("constructor", () => {
 	const handleError = vi.fn()

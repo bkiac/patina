@@ -1,5 +1,5 @@
 import {describe, expect, expectTypeOf, it, vi} from "vitest"
-import {Panic, UnwrapPanic, None, Some, type Option} from "../src/internal"
+import {Panic, UnwrapPanic, None, Some, type Option} from "../src"
 
 function TestSome<T>(value: T): Option<T> {
 	return Some(value) as Option<T>

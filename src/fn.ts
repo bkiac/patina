@@ -1,6 +1,6 @@
 import type {Result} from "./result"
 import {ResultPromise} from "./result_promise"
-import type {InferErr, InferOk} from "./internal"
+import type {InferErr, InferOk} from "./util"
 
 export function fn<A extends any[], R extends Result<any, any>>(
 	f: (...args: A) => R,

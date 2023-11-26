@@ -10,7 +10,7 @@ import {
 	type Result,
 	tryFn,
 	ResultError,
-} from "../src/internal"
+} from "../src"
 
 describe.concurrent("fn", () => {
 	it("returns Ok result when provided function does not throw", () => {

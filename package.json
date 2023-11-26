@@ -17,11 +17,6 @@
 			"require": "./lib/index.cjs",
 			"import": "./lib/index.js"
 		},
-		"./internal": {
-			"types": "./lib/internal.d.ts",
-			"require": "./lib/internal.cjs",
-			"import": "./lib/internal.js"
-		},
 		"./package.json": "./package.json"
 	},
 	"types": "./lib/index.d.ts",
