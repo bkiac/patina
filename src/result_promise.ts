@@ -1,4 +1,4 @@
-import type {Result} from "./result"
+import type {Result, ResultMatcher} from "./result"
 
 export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 	constructor(
@@ -97,7 +97,7 @@ export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 		return (await this).unwrapOrElse(defaultValue)
 	}
 
-	async match<A, B>(ok: (value: T) => A, err: (error: E) => B): Promise<A | B> {
-		return (await this).match(ok, err)
+	async match<A, B>(matcher: ResultMatcher<T, E, A, B>): Promise<A | B> {
+		return (await this).match(matcher)
 	}
 }

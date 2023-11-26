@@ -237,20 +237,20 @@ describe.concurrent("match", () => {
 	it("returns the mapped value for a Some option", async () => {
 		const option = promiseSome(42)
 		await expect(
-			option.match(
-				(value) => value + 1,
-				() => "none",
-			),
+			option.match({
+				Some: (value) => value + 1,
+				None: () => "none",
+			}),
 		).resolves.toEqual(43)
 	})
 
 	it("returns the mapped value for a None option", async () => {
 		const option = promiseNone()
 		await expect(
-			option.match(
-				(value) => value + 1,
-				() => "none",
-			),
+			option.match({
+				Some: (value) => value + 1,
+				None: () => "none",
+			}),
 		).resolves.toEqual("none")
 	})
 })

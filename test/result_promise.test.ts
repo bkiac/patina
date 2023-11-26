@@ -285,20 +285,20 @@ describe.concurrent("unwrapOrElse", () => {
 describe.concurrent("match", () => {
 	it("calls the ok function for an Ok result", async () => {
 		const result = new ResultPromise(Promise.resolve(Ok(42)))
-		const output = result.match(
-			(value) => value * 2,
-			() => 0,
-		)
+		const output = result.match({
+			Ok: (value) => value * 2,
+			Err: () => 0,
+		})
 		await expect(output).resolves.toEqual(84)
 	})
 
 	it("calls the err function for an Err result", async () => {
 		const error = new Error("Test error")
 		const result = new ResultPromise<number, Error>(Promise.resolve(Err(error)))
-		const output = result.match(
-			(value) => value * 2,
-			() => 0,
-		)
+		const output = result.match({
+			Ok: (value) => value * 2,
+			Err: () => 0,
+		})
 		await expect(output).resolves.toEqual(0)
 	})
 })

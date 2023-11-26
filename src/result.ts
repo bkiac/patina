@@ -1,6 +1,11 @@
 import {Panic, UnwrapPanic} from "./panic"
 import {inspectSymbol} from "./util"
 
+export type ResultMatcher<T, E, A, B> = {
+	Ok: (value: T) => A
+	Err: (error: E) => B
+}
+
 export class ResultImpl<T, E> {
 	readonly ok: boolean
 	readonly err: boolean
@@ -94,8 +99,8 @@ export class ResultImpl<T, E> {
 		return this.ok ? (this.value as T) : defaultValue(this.value as E)
 	}
 
-	match<A, B>(ok: (value: T) => A, err: (error: E) => B): A | B {
-		return this.ok ? ok(this.value as T) : err(this.value as E)
+	match<A, B>(matcher: ResultMatcher<T, E, A, B>): A | B {
+		return this.ok ? matcher.Ok(this.value as T) : matcher.Err(this.value as E)
 	}
 
 	toString(): `Ok(${string})` | `Err(${string})` {
