@@ -131,3 +131,5 @@ type _OptionNone<T> = None & Methods<T>
 export interface OptionNone<T> extends _OptionNone<T> {}
 
 export type Option<T> = OptionSome<T> | OptionNone<T>
+export function Option() {}
+Option.from = <T>(value: T | null | undefined): Option<T> => (value ? Some(value) : None)
