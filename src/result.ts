@@ -138,7 +138,7 @@ export class ResultImpl<T, E> {
 	}
 }
 
-export interface Ok<T = null> extends ResultImpl<T, never> {
+export interface Ok<T = undefined> extends ResultImpl<T, never> {
 	readonly ok: true
 	readonly err: false
 	readonly value: T
@@ -147,10 +147,10 @@ export interface Ok<T = null> extends ResultImpl<T, never> {
 export function Ok(): Ok
 export function Ok<T>(value: T): Ok<T>
 export function Ok<T>(value?: T): Ok<T> {
-	return new ResultImpl<T, never>(true, (value ?? null) as T) as Ok<T>
+	return new ResultImpl<T, never>(true, value as T) as Ok<T>
 }
 
-export interface Err<E = null> extends ResultImpl<never, E> {
+export interface Err<E = undefined> extends ResultImpl<never, E> {
 	readonly ok: false
 	readonly err: true
 	readonly value: E
@@ -159,7 +159,7 @@ export interface Err<E = null> extends ResultImpl<never, E> {
 export function Err(): Err
 export function Err<E>(value: E): Err<E>
 export function Err<E>(value?: E): Err<E> {
-	return new ResultImpl<never, E>(false, (value ?? null) as E) as Err<E>
+	return new ResultImpl<never, E>(false, value as E) as Err<E>
 }
 
 type Methods<T, E> = Omit<ResultImpl<T, E>, "ok" | "err" | "value">
