@@ -1,7 +1,13 @@
-import type {Result} from "./result"
+import {type Result} from "./result"
 import {ResultPromise} from "./result_promise"
-import type {InferErr, InferOk} from "./util"
+import type {ExtractErr, ExtractOk, InferErr, InferOk} from "./util"
 
+export function fn<A extends any[], R extends Result<Result<any, any>, any>>(
+	f: (...args: A) => R,
+): (...args: A) => Result<Result<ExtractOk<InferOk<R>>, ExtractErr<InferOk<R>>>, InferErr<R>>
+export function fn<A extends any[], R extends Result<any, any>>(
+	f: (...args: A) => R,
+): (...args: A) => Result<InferOk<R>, InferErr<R>>
 export function fn<A extends any[], R extends Result<any, any>>(
 	f: (...args: A) => R,
 ): (...args: A) => Result<InferOk<R>, InferErr<R>> {

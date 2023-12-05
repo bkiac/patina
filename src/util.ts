@@ -1,4 +1,4 @@
-import type {Err, Ok} from "./result"
+import type {Err, Ok, Result} from "./result"
 
 export const inspectSymbol = Symbol.for("nodejs.util.inspect.custom")
 
@@ -21,4 +21,17 @@ export function formatErrorString(name: string, message = "") {
 }
 
 export type InferOk<T> = T extends Ok<infer O> ? O : never
+
 export type InferErr<T> = T extends Err<infer E> ? E : never
+
+export type ExtractOk<T> = T extends Ok<infer O>
+	? O
+	: T extends Result<infer O, infer _>
+	? O
+	: never
+
+export type ExtractErr<T> = T extends Err<infer E>
+	? E
+	: T extends Result<infer _, infer E>
+	? E
+	: never

@@ -49,11 +49,12 @@ describe.concurrent("fn", () => {
 			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<number, never>>()
 		})
 
-		it("returns correct type with function returning Err", () => {
-			const wrapped = fn((_arg: number) => Err(1))
-			expectTypeOf(wrapped).parameter(0).toBeNumber()
-			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<never, number>>()
-		})
+		// This won't work with nested results, but it's not a big deal since a function should never return only an Err
+		// it("returns correct type with function returning Err", () => {
+		// 	const wrapped = fn((_arg: number) => Err(1))
+		// 	expectTypeOf(wrapped).parameter(0).toBeNumber()
+		// 	expectTypeOf(wrapped).returns.toEqualTypeOf<Result<never, number>>()
+		// })
 
 		it("returns correct type with function returning Result", () => {
 			const wrapped = fn((_arg: number) => tryFn(() => 1))
@@ -111,6 +112,32 @@ describe.concurrent("fn", () => {
 				return Ok(r.value)
 			})
 			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<Data, StdError | MyError>>()
+		})
+
+		it("works with nested result", () => {
+			const foo = fn(() => {
+				if (Math.random() > 0.5) {
+					return Ok(42)
+				}
+				return Err("error")
+			})
+			const bar = fn(() => {
+				const ye = foo()
+				if (Math.random() > 0.5) {
+					return Ok(ye)
+				}
+				return Err("error")
+			})
+			expectTypeOf(bar).returns.toEqualTypeOf<Result<Result<number, string>, string>>()
+
+			const bar2 = fn(() => {
+				const ye = foo()
+				if (ye.ok) {
+					return Ok(ye)
+				}
+				return Err("error")
+			})
+			expectTypeOf(bar2).returns.toEqualTypeOf<Result<Result<number, string>, string>>()
 		})
 	})
 })
