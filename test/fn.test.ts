@@ -119,25 +119,36 @@ describe.concurrent("fn", () => {
 				if (Math.random() > 0.5) {
 					return Ok(42)
 				}
-				return Err("error")
+				return Err(2)
 			})
-			const bar = fn(() => {
+			let bar = fn(() => {
 				const ye = foo()
 				if (Math.random() > 0.5) {
 					return Ok(ye)
 				}
-				return Err("error")
+				return Err(true)
 			})
-			expectTypeOf(bar).returns.toEqualTypeOf<Result<Result<number, string>, string>>()
+			expectTypeOf(bar).returns.toEqualTypeOf<Result<Result<number, number>, boolean>>()
 
-			const bar2 = fn(() => {
+			bar = fn(() => {
 				const ye = foo()
+				if (ye.ok) {
+					return Ok(ye)
+				}
+				return Err(true)
+			})
+			expectTypeOf(bar).returns.toEqualTypeOf<Result<Result<number, number>, boolean>>()
+
+			const baz = fn(() => {
+				const ye = bar()
 				if (ye.ok) {
 					return Ok(ye)
 				}
 				return Err("error")
 			})
-			expectTypeOf(bar2).returns.toEqualTypeOf<Result<Result<number, string>, string>>()
+			expectTypeOf(baz).returns.toEqualTypeOf<
+				Result<Result<Result<number, number>, boolean>, string>
+			>()
 		})
 	})
 })
