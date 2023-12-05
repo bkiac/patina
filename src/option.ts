@@ -25,6 +25,13 @@ export class OptionImpl<T> {
 		return this.some ? f(this.value as T) : None
 	}
 
+	examine(f: (value: T) => void): this {
+		if (this.some) {
+			f(this.value as T)
+		}
+		return this
+	}
+
 	expect(panic: string): T {
 		if (this.some) {
 			return this.value as T
@@ -38,13 +45,6 @@ export class OptionImpl<T> {
 
 	flatten<U>(this: Option<Option<U>>): Option<U> {
 		return (this.some ? (this.value as Option<U>) : None) as Option<U>
-	}
-
-	inspect(f: (value: T) => void): this {
-		if (this.some) {
-			f(this.value as T)
-		}
-		return this
 	}
 
 	map<U>(f: (value: T) => U): Option<U> {

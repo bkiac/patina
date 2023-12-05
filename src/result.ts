@@ -25,6 +25,20 @@ export class ResultImpl<T, E> {
 		return (this.ok ? f(this.value as T) : this) as Result<U, E | F>
 	}
 
+	examine(f: (value: T) => void): Result<T, E> {
+		if (this.ok) {
+			f(this.value as T)
+		}
+		return this as unknown as Result<T, E>
+	}
+
+	examineErr(f: (error: E) => void): Result<T, E> {
+		if (this.err) {
+			f(this.value as E)
+		}
+		return this as unknown as Result<T, E>
+	}
+
 	expect(panic: string): T {
 		if (this.ok) {
 			return this.value as T
@@ -41,20 +55,6 @@ export class ResultImpl<T, E> {
 
 	flatten<U, F>(this: Result<Result<U, F>, E>): Result<U, E | F> {
 		return (this.ok ? (this.value as Result<U, F>) : this) as Result<U, E | F>
-	}
-
-	inspect(f: (value: T) => void): Result<T, E> {
-		if (this.ok) {
-			f(this.value as T)
-		}
-		return this as unknown as Result<T, E>
-	}
-
-	inspectErr(f: (error: E) => void): Result<T, E> {
-		if (this.err) {
-			f(this.value as E)
-		}
-		return this as unknown as Result<T, E>
 	}
 
 	map<U>(f: (value: T) => U): Result<U, E> {

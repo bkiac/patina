@@ -37,6 +37,10 @@ export class OptionPromise<T> implements PromiseLike<Option<T>> {
 		return new OptionPromise(this.then((option) => option.andThen((value) => f(value))))
 	}
 
+	examine(f: (value: T) => void): OptionPromise<T> {
+		return new OptionPromise(this.then((option) => option.examine(f)))
+	}
+
 	async expect(panic: string): Promise<T> {
 		return (await this).expect(panic)
 	}
@@ -47,10 +51,6 @@ export class OptionPromise<T> implements PromiseLike<Option<T>> {
 
 	flatten<U>(this: OptionPromise<Option<U>>): OptionPromise<U> {
 		return new OptionPromise(this.then((option) => option.flatten()))
-	}
-
-	inspect(f: (value: T) => void): OptionPromise<T> {
-		return new OptionPromise(this.then((option) => option.inspect(f)))
 	}
 
 	map<U>(f: (value: T) => U): OptionPromise<U> {

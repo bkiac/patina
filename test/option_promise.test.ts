@@ -83,18 +83,18 @@ describe.concurrent("flatten", () => {
 	})
 })
 
-describe.concurrent("inspect", () => {
+describe.concurrent("examine", () => {
 	it("calls the function when called on a Some option", async () => {
 		const option = promiseSome(42)
 		const fn = vi.fn()
-		await option.inspect(fn)
+		await option.examine(fn)
 		expect(fn).toHaveBeenCalledWith(42)
 	})
 
 	it("does not call the function when called on a None option", async () => {
 		const option = promiseNone()
 		const fn = vi.fn()
-		await option.inspect(fn)
+		await option.examine(fn)
 		expect(fn).not.toHaveBeenCalled()
 	})
 })

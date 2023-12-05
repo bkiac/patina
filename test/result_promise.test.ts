@@ -100,11 +100,11 @@ describe.concurrent("flatten", () => {
 	})
 })
 
-describe.concurrent("inspect", async () => {
-	it("returns result and calls inspect on Ok result", async () => {
+describe.concurrent("examine", async () => {
+	it("returns result and calls closure on Ok result", async () => {
 		let counter = 0
 		const result = new ResultPromise(Promise.resolve(Ok(42)))
-		const result2 = result.inspect((value) => {
+		const result2 = result.examine((value) => {
 			counter += value
 		})
 		const awaitedResult = await result
@@ -112,10 +112,10 @@ describe.concurrent("inspect", async () => {
 		expect(counter).toEqual(42)
 	})
 
-	it("returns result and does not call inspect on Err result", async () => {
+	it("returns result and does not call closure on Err result", async () => {
 		let counter = 0
 		const result = new ResultPromise(Promise.resolve(Err()))
-		const result2 = result.inspect(() => {
+		const result2 = result.examine(() => {
 			counter += 1
 		})
 		const awaitedResult = await result
@@ -124,11 +124,11 @@ describe.concurrent("inspect", async () => {
 	})
 })
 
-describe.concurrent("inspectErr", async () => {
-	it("returns result and does not call inspectErr on Ok result", async () => {
+describe.concurrent("examineErr", async () => {
+	it("returns result and does not call closure on Ok result", async () => {
 		let counter = 0
 		const result = new ResultPromise(Promise.resolve(Ok()))
-		const result2 = result.inspectErr((error) => {
+		const result2 = result.examineErr((error) => {
 			counter += 1
 			expect(error).toEqual(undefined)
 		})
@@ -137,10 +137,10 @@ describe.concurrent("inspectErr", async () => {
 		expect(counter).toEqual(0)
 	})
 
-	it("returns result and calls inspectErr on Err result", async () => {
+	it("returns result and calls closure on Err result", async () => {
 		let counter = 0
 		const result = new ResultPromise(Promise.resolve(Err("foo")))
-		const result2 = result.inspectErr((error) => {
+		const result2 = result.examineErr((error) => {
 			counter += 1
 			expect(error).toEqual("foo")
 		})
