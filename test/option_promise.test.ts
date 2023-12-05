@@ -71,6 +71,18 @@ describe.concurrent("filter", () => {
 	})
 })
 
+describe.concurrent("flatten", () => {
+	it("returns the inner option for a Some option", async () => {
+		const option = promiseSome(Some(42))
+		await expect(option.flatten()).resolves.toEqual(Some(42))
+	})
+
+	it("returns None for a None option", async () => {
+		const option = promiseNone()
+		await expect(option.flatten()).resolves.toEqual(None)
+	})
+})
+
 describe.concurrent("inspect", () => {
 	it("calls the function when called on a Some option", async () => {
 		const option = promiseSome(42)

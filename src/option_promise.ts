@@ -45,6 +45,10 @@ export class OptionPromise<T> implements PromiseLike<Option<T>> {
 		return new OptionPromise(this.then((option) => option.filter(f)))
 	}
 
+	flatten<U>(this: OptionPromise<Option<U>>): OptionPromise<U> {
+		return new OptionPromise(this.then((option) => option.flatten()))
+	}
+
 	inspect(f: (value: T) => void): OptionPromise<T> {
 		return new OptionPromise(this.then((option) => option.inspect(f)))
 	}
