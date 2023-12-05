@@ -120,6 +120,19 @@ describe.concurrent("filter", () => {
 	})
 })
 
+describe.concurrent("flatten", () => {
+	it("returns the inner option when called on a Some option", () => {
+		const inner = TestSome(42)
+		const option = TestSome(inner)
+		expect(option.flatten()).toEqual(inner)
+	})
+
+	it("returns None when called on a None option", () => {
+		const option = TestNone<Option<string>>()
+		expect(option.flatten()).toEqual(option)
+	})
+})
+
 describe.concurrent("inspect", () => {
 	it("calls the function with the value when called on a Some option", () => {
 		const option = TestSome(42)

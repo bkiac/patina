@@ -36,6 +36,10 @@ export class OptionImpl<T> {
 		return (this.some && f(this.value as T) ? this : None) as Option<T>
 	}
 
+	flatten<U>(this: Option<Option<U>>): Option<U> {
+		return (this.some ? (this.value as Option<U>) : None) as Option<U>
+	}
+
 	inspect(f: (value: T) => void): this {
 		if (this.some) {
 			f(this.value as T)
