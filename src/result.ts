@@ -39,6 +39,10 @@ export class ResultImpl<T, E> {
 		throw new Panic(panic, this.value as T)
 	}
 
+	flatten<U, F>(this: Result<Result<U, F>, E>): Result<U, E | F> {
+		return (this.ok ? (this.value as Result<U, F>) : this) as Result<U, E | F>
+	}
+
 	inspect(f: (value: T) => void): Result<T, E> {
 		if (this.ok) {
 			f(this.value as T)

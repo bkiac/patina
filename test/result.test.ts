@@ -124,6 +124,31 @@ describe.concurrent("expectErr", () => {
 	})
 })
 
+describe.concurrent("flatten", () => {
+	it("work with an Ok<Ok> result", () => {
+		const inner = TestOk<number, string>(42)
+		const result = TestOk<Result<number, string>, boolean>(inner)
+		const result2 = result.flatten()
+		expectTypeOf(result2).toEqualTypeOf<Result<number, string | boolean>>()
+		expect(result2).toEqual(inner)
+	})
+
+	it("work with an Ok<Err> result", () => {
+		const inner = TestErr<number, string>("error")
+		const result = TestOk<Result<number, string>, boolean>(inner)
+		const result2 = result.flatten()
+		expectTypeOf(result2).toEqualTypeOf<Result<number, string | boolean>>()
+		expect(result2).toEqual(inner)
+	})
+
+	it("work with an Err result", () => {
+		const result = TestErr<Result<number, string>, boolean>(true)
+		const result2 = result.flatten()
+		expectTypeOf(result2).toEqualTypeOf<Result<number, string | boolean>>()
+		expect(result2).toEqual(result)
+	})
+})
+
 describe.concurrent("inspect", () => {
 	it("returns this and calls inspect on Ok result", () => {
 		const f = vi.fn()
