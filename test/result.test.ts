@@ -1,11 +1,11 @@
 import {describe, it, expect, expectTypeOf, vi, test} from "vitest"
 import {Panic, UnwrapPanic, Ok, Err, type Result} from "../src"
 
-function TestOk<T, E>(value: T): Result<T, E> {
+export function TestOk<T, E>(value: T): Result<T, E> {
 	return Ok(value)
 }
 
-function TestErr<T, E>(value: E): Result<T, E> {
+export function TestErr<T, E>(value: E): Result<T, E> {
 	return Err(value)
 }
 
@@ -125,7 +125,7 @@ describe.concurrent("expectErr", () => {
 })
 
 describe.concurrent("flatten", () => {
-	it("work with an Ok<Ok> result", () => {
+	it("works with an Ok<Ok> result", () => {
 		const inner = TestOk<number, string>(42)
 		const result = TestOk<Result<number, string>, boolean>(inner)
 		const result2 = result.flatten()
@@ -133,7 +133,7 @@ describe.concurrent("flatten", () => {
 		expect(result2).toEqual(inner)
 	})
 
-	it("work with an Ok<Err> result", () => {
+	it("works with an Ok<Err> result", () => {
 		const inner = TestErr<number, string>("error")
 		const result = TestOk<Result<number, string>, boolean>(inner)
 		const result2 = result.flatten()
@@ -141,7 +141,7 @@ describe.concurrent("flatten", () => {
 		expect(result2).toEqual(inner)
 	})
 
-	it("work with an Err result", () => {
+	it("works with an Err result", () => {
 		const result = TestErr<Result<number, string>, boolean>(true)
 		const result2 = result.flatten()
 		expectTypeOf(result2).toEqualTypeOf<Result<number, string | boolean>>()

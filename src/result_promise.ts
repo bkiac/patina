@@ -47,6 +47,10 @@ export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 		return (await this).expectErr(panic)
 	}
 
+	flatten<U, F>(this: ResultPromise<Result<U, F>, E>): ResultPromise<U, E | F> {
+		return new ResultPromise(this.then((result) => result.flatten()))
+	}
+
 	inspect(f: (value: T) => void): ResultPromise<T, E> {
 		return new ResultPromise(this.then((result) => result.inspect(f)))
 	}

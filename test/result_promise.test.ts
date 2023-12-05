@@ -1,48 +1,49 @@
-import {describe, it, expect} from "vitest"
-import {Err, Panic, ResultPromise, Ok, UnwrapPanic} from "../src"
+import {describe, it, expect, expectTypeOf} from "vitest"
+import {Err, Panic, ResultPromise, Ok, UnwrapPanic, Result} from "../src"
+import {TestErr, TestOk} from "./result.test"
 
-function promiseOk<T, E = any>(value: T) {
+function TestOkPromise<T, E = any>(value: T) {
 	return new ResultPromise<T, E>(Promise.resolve(Ok<T>(value)))
 }
 
-function promiseErr<E, T = any>(error: E) {
+function TestErrPromise<E, T = any>(error: E) {
 	return new ResultPromise<T, E>(Promise.resolve(Err<E>(error)))
 }
 
 describe.concurrent("and", () => {
 	it("returns the error when Ok and Err", async () => {
-		const a = promiseOk(1)
-		const b = promiseErr("late error")
+		const a = TestOkPromise(1)
+		const b = TestErrPromise("late error")
 		expect(a.and(b)).toEqual(b)
 	})
 
 	it("returns the late value when Ok and Ok", async () => {
-		const a = promiseOk(1)
-		const b = promiseOk(2)
+		const a = TestOkPromise(1)
+		const b = TestOkPromise(2)
 		expect(a.and(b)).toEqual(b)
 	})
 
 	it("returns the error when Err and Ok", async () => {
-		const a = promiseErr("early error")
-		const b = promiseOk(1)
+		const a = TestErrPromise("early error")
+		const b = TestOkPromise(1)
 		expect(a.and(b)).toEqual(a)
 	})
 
 	it("returns the early error when Err and Err", () => {
-		const a = promiseErr("early error")
-		const b = promiseErr("late error")
+		const a = TestErrPromise("early error")
+		const b = TestErrPromise("late error")
 		expect(a.and(b)).toEqual(a)
 	})
 })
 
 describe.concurrent("andThen", () => {
 	it("returns the mapped value for an Ok result", async () => {
-		const a = promiseOk(0)
+		const a = TestOkPromise(0)
 		await expect(a.andThen((value) => Ok(value + 1))).resolves.toEqual(Ok(1))
 	})
 
 	it("returns the result for an Err result", () => {
-		const a = promiseErr("error")
+		const a = TestErrPromise("error")
 		expect(a.andThen((value) => Ok(value + 1))).toEqual(a)
 	})
 })
@@ -71,6 +72,31 @@ describe.concurrent("expectErr", () => {
 	it("throws a Panic with the provided message when called on an Ok result", async () => {
 		const result = new ResultPromise(Promise.resolve(Ok()))
 		await expect(result.expectErr("Panic message")).rejects.toThrow(Panic)
+	})
+})
+
+describe.concurrent("flatten", () => {
+	it("works with an Ok<Ok> result", () => {
+		const inner = TestOk<number, string>(42)
+		const result = TestOkPromise<Result<number, string>, boolean>(inner)
+		const result2 = result.flatten()
+		expectTypeOf(result2).toEqualTypeOf<ResultPromise<number, string | boolean>>()
+		expect(result2).resolves.toEqual(inner)
+	})
+
+	it("works with an Ok<Err> result", () => {
+		const inner = TestErr<number, string>("error")
+		const result = TestOkPromise<Result<number, string>, boolean>(inner)
+		const result2 = result.flatten()
+		expectTypeOf(result2).toEqualTypeOf<ResultPromise<number, string | boolean>>()
+		expect(result2).resolves.toEqual(inner)
+	})
+
+	it("works with an Err result", () => {
+		const result = TestErrPromise<boolean, Result<number, string>>(true)
+		const result2 = result.flatten()
+		expectTypeOf(result2).toEqualTypeOf<ResultPromise<number, string | boolean>>()
+		expect(result2).resolves.toEqual(Err(true))
 	})
 })
 
@@ -194,39 +220,39 @@ describe.concurrent("mapOrElse", () => {
 
 describe.concurrent("or", () => {
 	it("returns the value when Ok or Err", () => {
-		const a = promiseOk(1)
-		const b = promiseErr("late error")
+		const a = TestOkPromise(1)
+		const b = TestErrPromise("late error")
 		expect(a.or(b)).toEqual(a)
 	})
 
 	it("returns the early value when Ok or Ok", () => {
-		const a = promiseOk(0)
-		const b = promiseOk(1)
+		const a = TestOkPromise(0)
+		const b = TestOkPromise(1)
 		expect(a.or(b)).toEqual(a)
 	})
 
 	it("returns the late value when Err or Ok", () => {
-		const a = promiseErr("early error")
-		const b = promiseOk(1)
+		const a = TestErrPromise("early error")
+		const b = TestOkPromise(1)
 		expect(a.or(b)).toEqual(b)
 	})
 
 	it("returns the late error when Err and Err", () => {
-		const a = promiseErr("early error")
-		const b = promiseErr("late error")
+		const a = TestErrPromise("early error")
+		const b = TestErrPromise("late error")
 		expect(a.or(b)).toEqual(b)
 	})
 })
 
 describe.concurrent("orElse", () => {
 	it("returns the result for an Ok result", () => {
-		const a = promiseOk(1)
+		const a = TestOkPromise(1)
 		expect(a.orElse(() => Ok(1))).toEqual(a)
 	})
 
 	it("returns the mapped value for an Err result", () => {
-		const a = promiseErr("error")
-		expect(a.orElse(() => Ok(1))).toEqual(promiseOk(1))
+		const a = TestErrPromise("error")
+		expect(a.orElse(() => Ok(1))).toEqual(TestOkPromise(1))
 	})
 })
 
