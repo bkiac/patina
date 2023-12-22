@@ -1,4 +1,4 @@
-import type {Result, ResultMatcher} from "./result"
+import type {Result, ResultImpl, ResultMatcher} from "./result"
 
 export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 	constructor(
@@ -47,7 +47,7 @@ export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 		return (await this).expectErr(panic)
 	}
 
-	flatten<U, F>(this: ResultPromise<Result<U, F>, E>): ResultPromise<U, E | F> {
+	flatten<U, F>(this: ResultPromise<ResultImpl<U, F>, E>): ResultPromise<U, E | F> {
 		return new ResultPromise(this.then((result) => result.flatten()))
 	}
 

@@ -1,5 +1,5 @@
 import {describe, it, expect, expectTypeOf} from "vitest"
-import {Err, Panic, ResultPromise, Ok, UnwrapPanic, Result} from "../src"
+import {Err, Panic, ResultPromise, Ok, UnwrapPanic, Result, ResultError} from "../src"
 import {TestErr, TestOk} from "./result.test"
 
 function TestOkPromise<T, E = any>(value: T) {
@@ -97,6 +97,28 @@ describe.concurrent("flatten", () => {
 		const result2 = result.flatten()
 		expectTypeOf(result2).toEqualTypeOf<ResultPromise<number, string | boolean>>()
 		expect(result2).resolves.toEqual(Err(true))
+	})
+
+	it("works with non-primitive value or error", () => {
+		class Foo extends ResultError {
+			readonly tag = "foo"
+		}
+
+		class Bar extends ResultError {
+			readonly tag = "bar"
+		}
+
+		const foo = TestOkPromise<
+			| {
+					id: string
+			  }
+			| undefined,
+			Foo
+		>({
+			id: "1",
+		})
+		const bar = foo.map((value) => (value === undefined ? Err(new Bar()) : Ok(value))).flatten()
+		expectTypeOf(bar).toEqualTypeOf<ResultPromise<{id: string}, Foo | Bar>>()
 	})
 })
 

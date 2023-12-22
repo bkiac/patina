@@ -53,7 +53,7 @@ export class ResultImpl<T, E> {
 		throw new Panic(panic, this.value as T)
 	}
 
-	flatten<U, F>(this: Result<Result<U, F>, E>): Result<U, E | F> {
+	flatten<U, F>(this: Result<ResultImpl<U, F>, E>): Result<U, E | F> {
 		return (this.ok ? (this.value as Result<U, F>) : this) as Result<U, E | F>
 	}
 

@@ -1,5 +1,5 @@
 import {describe, it, expect, expectTypeOf, vi, test} from "vitest"
-import {Panic, UnwrapPanic, Ok, Err, type Result} from "../src"
+import {Panic, UnwrapPanic, Ok, Err, type Result, ResultError} from "../src"
 
 export function TestOk<T, E>(value: T): Result<T, E> {
 	return Ok(value)
@@ -146,6 +146,28 @@ describe.concurrent("flatten", () => {
 		const result2 = result.flatten()
 		expectTypeOf(result2).toEqualTypeOf<Result<number, string | boolean>>()
 		expect(result2).toEqual(result)
+	})
+
+	it("works with non-primitive value or error", () => {
+		class Foo extends ResultError {
+			readonly tag = "foo"
+		}
+
+		class Bar extends ResultError {
+			readonly tag = "bar"
+		}
+
+		const foo = TestOk<
+			| {
+					id: string
+			  }
+			| undefined,
+			Foo
+		>({
+			id: "1",
+		})
+		const bar = foo.map((value) => (value === undefined ? Err(new Bar()) : Ok(value))).flatten()
+		expectTypeOf(bar).toEqualTypeOf<Result<{id: string}, Foo | Bar>>()
 	})
 })
 
