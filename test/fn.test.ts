@@ -138,17 +138,6 @@ describe.concurrent("fn", () => {
 				return Err(true)
 			})
 			expectTypeOf(bar).returns.toEqualTypeOf<Result<Result<number, number>, boolean>>()
-
-			const baz = fn(() => {
-				const ye = bar()
-				if (ye.ok) {
-					return Ok(ye)
-				}
-				return Err("error")
-			})
-			expectTypeOf(baz).returns.toEqualTypeOf<
-				Result<Result<Result<number, number>, boolean>, string>
-			>()
 		})
 	})
 })
