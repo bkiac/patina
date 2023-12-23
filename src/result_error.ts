@@ -6,11 +6,11 @@ export abstract class ResultError<T extends Error | null = null> implements Erro
 
 	readonly message: string
 	readonly stack?: string
-	readonly origin: T | null
+	readonly cause: T | null
 
-	constructor(args: {message?: string; origin?: T} = {}) {
+	constructor(args: {message?: string; cause?: T} = {}) {
 		this.message = args.message ?? ""
-		this.origin = args.origin ?? null
+		this.cause = args.cause ?? null
 
 		if (Error.captureStackTrace) {
 			Error.captureStackTrace(this, this.constructor)
@@ -25,16 +25,16 @@ export abstract class ResultError<T extends Error | null = null> implements Erro
 
 	toString() {
 		let str = formatErrorString(this.name, this.message)
-		if (this.origin) {
-			str += `\nCaused by: ${this.origin.toString()}`
+		if (this.cause) {
+			str += `\nCaused by: ${this.cause.toString()}`
 		}
 		return str
 	}
 
 	[inspectSymbol]() {
 		let str = this.stack
-		if (this.origin) {
-			str += `\nCaused by: ${this.origin.stack}`
+		if (this.cause) {
+			str += `\nCaused by: ${this.cause.stack}`
 		}
 		return str
 	}
@@ -43,17 +43,17 @@ export abstract class ResultError<T extends Error | null = null> implements Erro
 export class StdError<T = unknown> extends ResultError<Error> {
 	readonly tag = "StdError"
 
-	override readonly origin: Error
-	readonly originRaw: T
+	override readonly cause: Error
+	readonly causeRaw: T
 
-	constructor(origin: T, message?: string) {
+	constructor(cause: T, message?: string) {
 		const o =
-			origin instanceof Error
-				? origin
-				: new TypeError(`Unexpected error type: "${String(origin)}"`)
+			cause instanceof Error
+				? cause
+				: new TypeError(`Unexpected error type: "${String(cause)}"`)
 		super({message})
-		this.origin = o
-		this.originRaw = origin
+		this.cause = o
+		this.causeRaw = cause
 	}
 }
 

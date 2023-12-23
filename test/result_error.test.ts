@@ -6,8 +6,8 @@ describe.concurrent("ResultError", () => {
 		static _tag = "MyResultError" as const
 		readonly tag = MyResultError._tag
 
-		constructor(message?: string, origin?: Error) {
-			super({message, origin})
+		constructor(message?: string, cause?: Error) {
+			super({message, cause})
 		}
 	}
 
@@ -23,7 +23,7 @@ describe.concurrent("ResultError", () => {
 			expect(error.stack).toBeDefined()
 
 			expect(error.message).toEqual("")
-			expect(error.origin).toBeNull()
+			expect(error.cause).toBeNull()
 			expect(error.toString()).toEqual(error.name)
 			expect(error[inspectSymbol]()).toEqual(error.stack)
 		})
@@ -40,14 +40,14 @@ describe.concurrent("ResultError", () => {
 			expect(error.stack).toBeDefined()
 
 			expect(error.message).toEqual(msg)
-			expect(error.origin).toBeNull()
+			expect(error.cause).toBeNull()
 			expect(error.toString()).toEqual(`${error.name}: ${error.message}`)
 			expect(error[inspectSymbol]()).toEqual(error.stack)
 		})
 
-		test("with origin", () => {
-			let origin = new Error("msg")
-			let error = new MyResultError("", origin)
+		test("with cause", () => {
+			let cause = new Error("msg")
+			let error = new MyResultError("", cause)
 
 			expect(error).toBeInstanceOf(ResultError)
 			expect(error).toBeInstanceOf(MyResultError)
@@ -57,17 +57,15 @@ describe.concurrent("ResultError", () => {
 			expect(error.stack).toBeDefined()
 
 			expect(error.message).toEqual("")
-			expect(error.origin).toEqual(origin)
-			expect(error.toString()).toEqual(
-				`${error.name}\nCaused by: ${error.origin?.toString()}`,
-			)
-			expect(error[inspectSymbol]()).toEqual(error.stack + `\nCaused by: ${origin.stack}`)
+			expect(error.cause).toEqual(cause)
+			expect(error.toString()).toEqual(`${error.name}\nCaused by: ${error.cause?.toString()}`)
+			expect(error[inspectSymbol]()).toEqual(error.stack + `\nCaused by: ${cause.stack}`)
 		})
 
-		test("with message and origin", () => {
+		test("with message and cause", () => {
 			const msg = "panic message"
-			let origin = new Error("error message")
-			let error = new MyResultError(msg, origin)
+			let cause = new Error("error message")
+			let error = new MyResultError(msg, cause)
 
 			expect(error).toBeInstanceOf(ResultError)
 			expect(error).toBeInstanceOf(MyResultError)
@@ -77,11 +75,11 @@ describe.concurrent("ResultError", () => {
 			expect(error.stack).toBeDefined()
 
 			expect(error.message).toEqual(msg)
-			expect(error.origin).toEqual(origin)
+			expect(error.cause).toEqual(cause)
 			expect(error.toString()).toEqual(
-				`${error.name}: ${error.message}\nCaused by: ${error.origin?.toString()}`,
+				`${error.name}: ${error.message}\nCaused by: ${error.cause?.toString()}`,
 			)
-			expect(error[inspectSymbol]()).toEqual(error.stack + `\nCaused by: ${origin.stack}`)
+			expect(error[inspectSymbol]()).toEqual(error.stack + `\nCaused by: ${cause.stack}`)
 		})
 	})
 })
@@ -91,8 +89,8 @@ describe.concurrent("StdError", () => {
 		const error = new Error("Test error")
 		const stdError = new StdError(error)
 		expect(stdError).toBeInstanceOf(StdError)
-		expect(stdError.origin).toEqual(error)
-		expect(stdError.originRaw).toEqual(error)
+		expect(stdError.cause).toEqual(error)
+		expect(stdError.causeRaw).toEqual(error)
 	})
 
 	it("creates an instance when given an unknown value", () => {
@@ -100,9 +98,9 @@ describe.concurrent("StdError", () => {
 		for (const value of values) {
 			const stdError = new StdError(value)
 			expect(stdError).toBeInstanceOf(StdError)
-			expect(stdError.origin).toBeInstanceOf(TypeError)
-			expect(stdError.origin.message).toEqual(`Unexpected error type: "${String(value)}"`)
-			expect(stdError.originRaw).toEqual(value)
+			expect(stdError.cause).toBeInstanceOf(TypeError)
+			expect(stdError.cause.message).toEqual(`Unexpected error type: "${String(value)}"`)
+			expect(stdError.causeRaw).toEqual(value)
 		}
 	})
 })

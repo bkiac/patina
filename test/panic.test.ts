@@ -11,7 +11,7 @@ it("returns an instance without params", () => {
 	expect(panic.name).toEqual("Panic")
 	expect(panic.message).toEqual("")
 	expect(panic.stack).toBeDefined()
-	expect(panic.origin).toBeUndefined()
+	expect(panic.cause).toBeUndefined()
 })
 
 it("returns an instance with message", () => {
@@ -24,14 +24,14 @@ it("returns an instance with message", () => {
 	expect(panic.name).toEqual("Panic")
 	expect(panic.message).toEqual(msg)
 	expect(panic.stack).toBeDefined()
-	expect(panic.origin).toBeUndefined()
+	expect(panic.cause).toBeUndefined()
 })
 
 it("returns an instance with error", () => {
 	const panicMsg = "panic message"
 	const errorMsg = "error message"
-	let origin = new Error(errorMsg)
-	let panic = new Panic(panicMsg, origin)
+	let cause = new Error(errorMsg)
+	let panic = new Panic(panicMsg, cause)
 
 	expect(panic).toBeInstanceOf(Error)
 	expect(panic).toBeInstanceOf(Panic)
@@ -39,19 +39,19 @@ it("returns an instance with error", () => {
 	expect(panic.name).toEqual("Panic")
 	expect(panic.message).toEqual(panicMsg)
 	expect(panic.stack).toBeDefined()
-	expect(panic.origin).toEqual(origin)
-	expect(panic[inspectSymbol]()).toEqual(panic.stack + "\nCaused by: " + origin.stack)
+	expect(panic.cause).toEqual(cause)
+	expect(panic[inspectSymbol]()).toEqual(panic.stack + "\nCaused by: " + cause.stack)
 
-	origin.name = "MyError"
-	panic = new Panic(panicMsg, origin)
+	cause.name = "MyError"
+	panic = new Panic(panicMsg, cause)
 	expect(panic.stack).toBeDefined()
-	expect(panic[inspectSymbol]()).toEqual(panic.stack + "\nCaused by: " + origin.stack)
+	expect(panic[inspectSymbol]()).toEqual(panic.stack + "\nCaused by: " + cause.stack)
 })
 
 it("returns an instance with unknown", () => {
 	const panicMsg = "panic message"
-	let origin = "string origin"
-	let panic = new Panic(panicMsg, origin)
+	let cause = "string cause"
+	let panic = new Panic(panicMsg, cause)
 
 	expect(panic).toBeInstanceOf(Error)
 	expect(panic).toBeInstanceOf(Panic)
@@ -59,6 +59,6 @@ it("returns an instance with unknown", () => {
 	expect(panic.name).toEqual("Panic")
 	expect(panic.message).toEqual(panicMsg)
 	expect(panic.stack).toBeDefined()
-	expect(panic.origin).toEqual(origin)
-	expect(panic[inspectSymbol]()).toEqual(panic.stack + "\nCaused by: " + String(origin))
+	expect(panic.cause).toEqual(cause)
+	expect(panic[inspectSymbol]()).toEqual(panic.stack + "\nCaused by: " + String(cause))
 })

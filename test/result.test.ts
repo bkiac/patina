@@ -1,4 +1,4 @@
-import {describe, it, expect, expectTypeOf, vi, test} from "vitest"
+import {describe, it, expect, expectTypeOf, vi} from "vitest"
 import {Panic, UnwrapPanic, Ok, Err, type Result, ResultError} from "../src"
 
 export function TestOk<T, E>(value: T): Result<T, E> {

@@ -1,22 +1,22 @@
 import {inspectSymbol} from "./util"
 
 export class Panic extends Error {
-	readonly origin?: unknown
+	override readonly cause?: unknown
 	override readonly name: string = "Panic"
 
-	constructor(message?: string, origin?: unknown) {
+	constructor(message?: string, cause?: unknown) {
 		super(message)
-		this.origin = origin
+		this.cause = cause
 	}
 
 	// override toString() {
 	// 	let str = formatErrorString(this.name, this.message)
-	// 	if (this.origin !== undefined) {
+	// 	if (this.cause !== undefined) {
 	// 		str += ", caused by "
-	// 		if (this.origin instanceof Error) {
-	// 			str += formatErrorString(this.origin.name, this.origin.message)
+	// 		if (this.cause instanceof Error) {
+	// 			str += formatErrorString(this.cause.name, this.cause.message)
 	// 		} else {
-	// 			str += String(this.origin)
+	// 			str += String(this.cause)
 	// 		}
 	// 	}
 	// 	return str
@@ -24,12 +24,12 @@ export class Panic extends Error {
 
 	[inspectSymbol]() {
 		let str = this.stack
-		if (this.origin !== undefined) {
+		if (this.cause !== undefined) {
 			str += "\nCaused by: "
-			if (this.origin instanceof Error && this.origin.stack) {
-				str += this.origin.stack
+			if (this.cause instanceof Error && this.cause.stack) {
+				str += this.cause.stack
 			} else {
-				str += String(this.origin)
+				str += String(this.cause)
 			}
 		}
 		return str

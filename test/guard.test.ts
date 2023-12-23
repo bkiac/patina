@@ -31,7 +31,7 @@ describe.concurrent("guard", () => {
 		const wrappedFn = guard(fn)
 		const result = wrappedFn()
 		expect(result.ok).toEqual(false)
-		expect(result.unwrapErr().origin).toEqual(error)
+		expect(result.unwrapErr().cause).toEqual(error)
 	})
 
 	describe("types", () => {
@@ -106,7 +106,7 @@ describe.concurrent("guardAsync", () => {
 		const wrappedFn = guardAsync(fn)
 		const result = await wrappedFn()
 		expect(result.ok).toEqual(false)
-		expect(result.unwrapErr().origin).toEqual(error)
+		expect(result.unwrapErr().cause).toEqual(error)
 	})
 
 	describe("types", () => {

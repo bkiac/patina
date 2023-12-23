@@ -11,8 +11,8 @@ export const inspectSymbol = Symbol.for("nodejs.util.inspect.custom")
  *
  * See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/stack
  */
-export function replaceStack(name: string, originName: string, stack?: string) {
-	const r = new RegExp(`^${originName}`)
+export function replaceStack(name: string, causeName: string, stack?: string) {
+	const r = new RegExp(`^${causeName}`)
 	return stack?.replace(r, name)
 }
 
