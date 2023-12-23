@@ -16,7 +16,7 @@ it("returns an instance without params", () => {
 
 it("returns an instance with message", () => {
 	const msg = "msg"
-	const panic = new Panic(msg)
+	const panic = new Panic({message: msg})
 
 	expect(panic).toBeInstanceOf(Error)
 	expect(panic).toBeInstanceOf(Panic)
@@ -31,7 +31,7 @@ it("returns an instance with error", () => {
 	const panicMsg = "panic message"
 	const errorMsg = "error message"
 	let cause = new Error(errorMsg)
-	let panic = new Panic(panicMsg, cause)
+	let panic = new Panic({message: panicMsg, cause})
 
 	expect(panic).toBeInstanceOf(Error)
 	expect(panic).toBeInstanceOf(Panic)
@@ -43,7 +43,7 @@ it("returns an instance with error", () => {
 	expect(panic[inspectSymbol]()).toEqual(panic.stack + "\nCaused by: " + cause.stack)
 
 	cause.name = "MyError"
-	panic = new Panic(panicMsg, cause)
+	panic = new Panic({message: panicMsg, cause})
 	expect(panic.stack).toBeDefined()
 	expect(panic[inspectSymbol]()).toEqual(panic.stack + "\nCaused by: " + cause.stack)
 })
@@ -51,7 +51,7 @@ it("returns an instance with error", () => {
 it("returns an instance with unknown", () => {
 	const panicMsg = "panic message"
 	let cause = "string cause"
-	let panic = new Panic(panicMsg, cause)
+	let panic = new Panic({message: panicMsg, cause})
 
 	expect(panic).toBeInstanceOf(Error)
 	expect(panic).toBeInstanceOf(Panic)
