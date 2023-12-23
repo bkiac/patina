@@ -1,5 +1,5 @@
 import {describe, it, expect, expectTypeOf, vi} from "vitest"
-import {Panic, UnwrapPanic, Ok, Err, type Result, ResultError} from "../src"
+import {Panic, Ok, Err, type Result, ResultError} from "../src"
 
 export function TestOk<T, E>(value: T): Result<T, E> {
 	return Ok(value)
@@ -315,7 +315,7 @@ describe.concurrent("unwrap", () => {
 
 	it("throws a Panic for an Err result", () => {
 		const result = TestErr<number, string>("error")
-		expect(() => result.unwrap()).toThrow(UnwrapPanic)
+		expect(() => result.unwrap()).toThrow(Panic)
 	})
 })
 
@@ -327,7 +327,7 @@ describe.concurrent("unwrapErr", () => {
 
 	it("throws for an Ok result", () => {
 		const result = TestOk<number, string>(42)
-		expect(() => result.unwrapErr()).toThrow(UnwrapPanic)
+		expect(() => result.unwrapErr()).toThrow(Panic)
 	})
 })
 

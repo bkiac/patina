@@ -4,9 +4,9 @@ export class Panic extends Error {
 	override readonly cause?: unknown
 	override readonly name: string = "Panic"
 
-	constructor(message?: string, cause?: unknown) {
-		super(message)
-		this.cause = cause
+	constructor(args?: {message?: string; cause?: unknown}) {
+		super(args?.message)
+		this.cause = args?.cause
 	}
 
 	// override toString() {
@@ -33,11 +33,5 @@ export class Panic extends Error {
 			}
 		}
 		return str
-	}
-}
-
-export class UnwrapPanic extends Panic {
-	constructor(msg: string) {
-		super(msg)
 	}
 }

@@ -1,4 +1,4 @@
-import {Panic, UnwrapPanic} from "./panic"
+import {Panic} from "./panic"
 import {inspectSymbol} from "./util"
 
 export type ResultMatcher<T, E, A, B> = {
@@ -43,14 +43,14 @@ export class ResultImpl<T, E> {
 		if (this.ok) {
 			return this.value as T
 		}
-		throw new Panic(panic, this.value as E)
+		throw new Panic({message: panic, cause: this})
 	}
 
 	expectErr(panic: string): E {
 		if (this.err) {
 			return this.value as E
 		}
-		throw new Panic(panic, this.value as T)
+		throw new Panic({message: panic, cause: this})
 	}
 
 	flatten<U, F>(this: Result<ResultImpl<U, F>, E>): Result<U, E | F> {
@@ -85,14 +85,14 @@ export class ResultImpl<T, E> {
 		if (this.ok) {
 			return this.value as T
 		}
-		throw new UnwrapPanic(`called "unwrap()" on ${this.toString()}`)
+		throw new Panic({message: `called "unwrap()" on ${this.toString()}`, cause: this})
 	}
 
 	unwrapErr(): E {
 		if (this.err) {
 			return this.value as E
 		}
-		throw new UnwrapPanic(`called "unwrapErr()" on ${this.toString()}`)
+		throw new Panic({message: `called "unwrapErr()" on ${this.toString()}`, cause: this})
 	}
 
 	unwrapOr<U>(defaultValue: U): T | U {
