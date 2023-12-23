@@ -1,24 +1,21 @@
 import {describe, expect, it, test} from "vitest"
 import {ResultError, StdError, inspectSymbol} from "../src"
+import {expectTypeOf} from "vitest"
 
 describe.concurrent("ResultError", () => {
-	class MyResultError extends ResultError<Error> {
-		static _tag = "MyResultError" as const
-		readonly tag = MyResultError._tag
-
-		constructor(message?: string, cause?: Error) {
-			super({message, cause})
-		}
+	class MyResultError extends ResultError {
+		static TAG = "MyResultError" as const
+		readonly tag = MyResultError.TAG
 	}
 
-	describe("returns instance", () => {
+	describe.concurrent("returns instance", () => {
 		test("without params", () => {
 			const error = new MyResultError()
 
 			expect(error).toBeInstanceOf(ResultError)
 			expect(error).toBeInstanceOf(MyResultError)
 
-			expect(error.tag).toEqual(MyResultError._tag)
+			expect(error.tag).toEqual(MyResultError.TAG)
 			expect(error.name).toEqual(error.tag)
 			expect(error.stack).toBeDefined()
 
@@ -30,12 +27,12 @@ describe.concurrent("ResultError", () => {
 
 		test("with message", () => {
 			const msg = "msg"
-			const error = new MyResultError(msg)
+			const error = new MyResultError({message: msg})
 
 			expect(error).toBeInstanceOf(ResultError)
 			expect(error).toBeInstanceOf(MyResultError)
 
-			expect(error.tag).toEqual(MyResultError._tag)
+			expect(error.tag).toEqual(MyResultError.TAG)
 			expect(error.name).toEqual(error.tag)
 			expect(error.stack).toBeDefined()
 
@@ -47,12 +44,12 @@ describe.concurrent("ResultError", () => {
 
 		test("with cause", () => {
 			let cause = new Error("msg")
-			let error = new MyResultError("", cause)
+			let error = new MyResultError({cause})
 
 			expect(error).toBeInstanceOf(ResultError)
 			expect(error).toBeInstanceOf(MyResultError)
 
-			expect(error.tag).toEqual(MyResultError._tag)
+			expect(error.tag).toEqual(MyResultError.TAG)
 			expect(error.name).toEqual(error.tag)
 			expect(error.stack).toBeDefined()
 
@@ -65,12 +62,12 @@ describe.concurrent("ResultError", () => {
 		test("with message and cause", () => {
 			const msg = "panic message"
 			let cause = new Error("error message")
-			let error = new MyResultError(msg, cause)
+			let error = new MyResultError({message: msg, cause})
 
 			expect(error).toBeInstanceOf(ResultError)
 			expect(error).toBeInstanceOf(MyResultError)
 
-			expect(error.tag).toEqual(MyResultError._tag)
+			expect(error.tag).toEqual(MyResultError.TAG)
 			expect(error.name).toEqual(error.tag)
 			expect(error.stack).toBeDefined()
 
@@ -80,6 +77,45 @@ describe.concurrent("ResultError", () => {
 				`${error.name}: ${error.message}\nCaused by: ${error.cause?.toString()}`,
 			)
 			expect(error[inspectSymbol]()).toEqual(error.stack + `\nCaused by: ${cause.stack}`)
+		})
+	})
+
+	describe("types", () => {
+		it("works with optional", () => {
+			class ErrorWithMaybeCause extends ResultError {
+				readonly tag = "ErrorWithoutCause"
+			}
+
+			let error = new ErrorWithMaybeCause()
+			error = new ErrorWithMaybeCause({message: "msg"})
+			error = new ErrorWithMaybeCause({cause: new Error()})
+			error = new ErrorWithMaybeCause({message: "msg", cause: new Error()})
+		})
+
+		it("works without cause", () => {
+			class ErrorWithoutCause extends ResultError<null> {
+				readonly tag = "ErrorWithoutCause"
+			}
+
+			let error = new ErrorWithoutCause()
+			error = new ErrorWithoutCause({message: "msg"})
+			// @ts-expect-error
+			error = new ErrorWithoutCause({cause: new Error()})
+			// @ts-expect-error
+			error = new ErrorWithoutCause({message: "msg", cause: new Error()})
+		})
+
+		it("works with cause", () => {
+			class ErrorWithCause extends ResultError<Error> {
+				readonly tag = "ErrorWithoutCause"
+			}
+
+			// @ts-expect-error
+			let error = new ErrorWithCause()
+			// @ts-expect-error
+			error = new ErrorWithCause({message: "msg"})
+			error = new ErrorWithCause({cause: new Error()})
+			error = new ErrorWithCause({message: "msg", cause: new Error()})
 		})
 	})
 })

@@ -10,10 +10,10 @@ export abstract class ResultError<Cause extends Error | null = Error | null> imp
 	constructor(
 		args: Cause extends Error
 			? {message?: string; cause: Cause}
-			: {message?: string; cause?: Cause},
+			: {message?: string; cause?: Cause} | void,
 	) {
-		this.message = args.message ?? ""
-		this.cause = (args.cause ?? null) as Cause
+		this.message = args?.message ?? ""
+		this.cause = (args?.cause ?? null) as Cause
 
 		if (Error.captureStackTrace) {
 			Error.captureStackTrace(this, this.constructor)
