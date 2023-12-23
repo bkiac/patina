@@ -1,4 +1,4 @@
-import {Panic, UnwrapPanic} from "./panic"
+import {Panic} from "./panic"
 import {inspectSymbol} from "./util"
 
 export type OptionMatcher<T, A, B> = {
@@ -36,7 +36,7 @@ export class OptionImpl<T> {
 		if (this.some) {
 			return this.value as T
 		}
-		throw new Panic(panic)
+		throw new Panic({message: panic, cause: this})
 	}
 
 	filter(f: (value: T) => boolean): Option<T> {
@@ -71,7 +71,7 @@ export class OptionImpl<T> {
 		if (this.some) {
 			return this.value as T
 		}
-		throw new UnwrapPanic(`called "unwrap()" on ${this.toString()}`)
+		throw new Panic({message: `called "unwrap()" on ${this.toString()}`, cause: this})
 	}
 
 	unwrapOr<U>(defaultValue: U): T | U {

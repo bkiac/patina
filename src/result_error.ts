@@ -1,16 +1,19 @@
-import {inspectSymbol} from "./util"
-import {formatErrorString} from "./util"
+import {formatErrorString, inspectSymbol} from "./util"
 
-export abstract class ResultError<T extends Error | null = null> implements Error {
+export abstract class ResultError<Cause extends Error | null = Error | null> implements Error {
 	abstract readonly tag: string
 
 	readonly message: string
 	readonly stack?: string
-	readonly origin: T | null
+	readonly cause: Cause
 
-	constructor(args: {message?: string; origin?: T} = {}) {
-		this.message = args.message ?? ""
-		this.origin = args.origin ?? null
+	constructor(
+		args: Cause extends Error
+			? {message?: string; cause: Cause}
+			: {message?: string; cause?: Cause} | void,
+	) {
+		this.message = args?.message ?? ""
+		this.cause = (args?.cause ?? null) as Cause
 
 		if (Error.captureStackTrace) {
 			Error.captureStackTrace(this, this.constructor)
@@ -25,16 +28,16 @@ export abstract class ResultError<T extends Error | null = null> implements Erro
 
 	toString() {
 		let str = formatErrorString(this.name, this.message)
-		if (this.origin) {
-			str += `\nCaused by: ${this.origin.toString()}`
+		if (this.cause) {
+			str += `\nCaused by: ${this.cause.toString()}`
 		}
 		return str
 	}
 
 	[inspectSymbol]() {
 		let str = this.stack
-		if (this.origin) {
-			str += `\nCaused by: ${this.origin.stack}`
+		if (this.cause) {
+			str += `\nCaused by: ${this.cause.stack}`
 		}
 		return str
 	}
@@ -43,17 +46,15 @@ export abstract class ResultError<T extends Error | null = null> implements Erro
 export class StdError<T = unknown> extends ResultError<Error> {
 	readonly tag = "StdError"
 
-	override readonly origin: Error
-	readonly originRaw: T
+	readonly causeRaw: T
 
-	constructor(origin: T, message?: string) {
-		const o =
-			origin instanceof Error
-				? origin
-				: new TypeError(`Unexpected error type: "${String(origin)}"`)
-		super({message})
-		this.origin = o
-		this.originRaw = origin
+	constructor(cause: T, message?: string) {
+		const c =
+			cause instanceof Error
+				? cause
+				: new TypeError(`Unexpected error type: "${String(cause)}"`)
+		super({message, cause: c})
+		this.causeRaw = cause
 	}
 }
 

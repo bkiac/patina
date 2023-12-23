@@ -28,7 +28,7 @@ describe.concurrent("tryFn", () => {
 		}
 		const result = tryFn(fn)
 		expect(result.ok).toEqual(false)
-		expect(result.unwrapErr().origin).toEqual(error)
+		expect(result.unwrapErr().cause).toEqual(error)
 	})
 })
 
@@ -65,7 +65,7 @@ describe.concurrent("tryPromise", () => {
 		const promise = Promise.reject(error)
 		const result = await tryPromise(promise)
 		expect(result.ok).toEqual(false)
-		expect(result.unwrapErr().origin).toEqual(error)
+		expect(result.unwrapErr().cause).toEqual(error)
 	})
 })
 
@@ -102,7 +102,7 @@ describe.concurrent("tryAsyncFn", () => {
 		}
 		const result = await tryAsyncFn(fn)
 		expect(result.ok).toEqual(false)
-		expect(result.unwrapErr().origin).toEqual(error)
+		expect(result.unwrapErr().cause).toEqual(error)
 	})
 })
 
