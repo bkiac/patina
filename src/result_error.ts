@@ -8,12 +8,24 @@ export abstract class ResultError<Cause extends Error | null = Error | null> imp
 	readonly cause: Cause
 
 	constructor(
-		args: Cause extends Error
-			? {message?: string; cause: Cause}
-			: {message?: string; cause?: Cause} | void,
+		...args: Cause extends Error
+			? [message: string, cause: Cause] | [{message?: string; cause: Cause}]
+			: [message?: string, cause?: Cause] | [{message?: string; cause?: Cause} | void]
 	) {
-		this.message = args?.message ?? ""
-		this.cause = (args?.cause ?? null) as Cause
+		const arg0 = args[0]
+		let message = ""
+		let cause: Error | null = null
+		if (arg0) {
+			if (typeof arg0 === "string") {
+				message = arg0
+				cause = args[1] ?? null
+			} else {
+				message = arg0.message ?? ""
+				cause = arg0.cause ?? null
+			}
+		}
+		this.message = message
+		this.cause = cause as Cause
 
 		if (Error.captureStackTrace) {
 			Error.captureStackTrace(this, this.constructor)
