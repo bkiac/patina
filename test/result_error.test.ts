@@ -1,5 +1,6 @@
 import {describe, expect, it, test} from "vitest"
 import {ResultError, StdError, inspectSymbol} from "../src"
+import {expectTypeOf} from "vitest"
 
 describe.concurrent("ResultError", () => {
 	class MyResultError extends ResultError {
@@ -86,8 +87,6 @@ describe.concurrent("ResultError", () => {
 			}
 
 			let error = new ErrorWithMaybeCause()
-			error = new ErrorWithMaybeCause("hello")
-			error = new ErrorWithMaybeCause("hello", new Error())
 			error = new ErrorWithMaybeCause({message: "msg"})
 			error = new ErrorWithMaybeCause({cause: new Error()})
 			error = new ErrorWithMaybeCause({message: "msg", cause: new Error()})
@@ -99,9 +98,6 @@ describe.concurrent("ResultError", () => {
 			}
 
 			let error = new ErrorWithoutCause()
-			error = new ErrorWithoutCause("hello")
-			// @ts-expect-error
-			error = new ErrorWithoutCause("hello", new Error())
 			error = new ErrorWithoutCause({message: "msg"})
 			// @ts-expect-error
 			error = new ErrorWithoutCause({cause: new Error()})
@@ -116,9 +112,6 @@ describe.concurrent("ResultError", () => {
 
 			// @ts-expect-error
 			let error = new ErrorWithCause()
-			// @ts-expect-error
-			error = new ErrorWithCause("hello")
-			error = new ErrorWithCause("hello", new Error())
 			// @ts-expect-error
 			error = new ErrorWithCause({message: "msg"})
 			error = new ErrorWithCause({cause: new Error()})

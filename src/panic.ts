@@ -4,22 +4,9 @@ export class Panic extends Error {
 	override readonly cause?: unknown
 	override readonly name: string = "Panic"
 
-	constructor(message?: string, cause?: unknown)
-	constructor(args?: {message?: string; cause?: unknown})
-	constructor(args: any) {
-		let message: string | undefined
-		let cause: unknown | undefined
-		if (typeof args[0] === "string") {
-			message = args[0]
-			cause = args[1]
-		} else {
-			message = args?.message
-			cause = args?.cause
-		}
-		super(message)
-		if (cause) {
-			this.cause = cause
-		}
+	constructor(args?: {message?: string; cause?: unknown}) {
+		super(args?.message)
+		this.cause = args?.cause
 	}
 
 	// override toString() {
