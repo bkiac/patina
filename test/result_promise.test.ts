@@ -1,5 +1,5 @@
 import {describe, it, expect, expectTypeOf} from "vitest"
-import {Err, Panic, ResultPromise, Ok, UnwrapPanic, Result, ResultError} from "../src"
+import {Err, Panic, ResultPromise, Ok, Result, ResultError} from "../src"
 import {TestErr, TestOk} from "./result.test"
 
 function TestOkPromise<T, E = any>(value: T) {
@@ -287,7 +287,7 @@ describe.concurrent("unwrap", () => {
 	it("throws a Panic for an Err result", async () => {
 		const error = new Error("Test error")
 		const result = new ResultPromise(Promise.resolve(Err(error)))
-		await expect(result.unwrap()).rejects.toThrow(UnwrapPanic)
+		await expect(result.unwrap()).rejects.toThrow(Panic)
 	})
 })
 
@@ -300,7 +300,7 @@ describe.concurrent("unwrapErr", () => {
 
 	it("throws for an Ok result", async () => {
 		const result = new ResultPromise(Promise.resolve(Ok(42)))
-		await expect(result.unwrapErr()).rejects.toThrow(UnwrapPanic)
+		await expect(result.unwrapErr()).rejects.toThrow(Panic)
 	})
 })
 

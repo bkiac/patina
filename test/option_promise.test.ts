@@ -1,5 +1,5 @@
 import {describe, it, expect, vi} from "vitest"
-import {Panic, UnwrapPanic, OptionPromise, Some, None} from "../src"
+import {Panic, OptionPromise, Some, None} from "../src"
 
 function promiseSome<T>(value: T) {
 	return new OptionPromise<T>(Promise.resolve(Some<T>(value)))
@@ -55,7 +55,7 @@ describe.concurrent("expect", () => {
 
 	it("throws Panic when called on a None option", async () => {
 		const option = promiseNone()
-		await expect(option.expect("msg")).rejects.toEqual(new Panic("msg"))
+		await expect(option.expect("msg")).rejects.toEqual(new Panic({message: "msg"}))
 	})
 })
 
@@ -191,7 +191,7 @@ describe.concurrent("unwrap", () => {
 
 	it("throws Panic when called on a None option", async () => {
 		const option = promiseNone()
-		await expect(() => option.unwrap()).rejects.toThrow(UnwrapPanic)
+		await expect(() => option.unwrap()).rejects.toThrow(Panic)
 	})
 })
 

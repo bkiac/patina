@@ -1,5 +1,5 @@
 import {describe, expect, expectTypeOf, it, vi} from "vitest"
-import {Panic, UnwrapPanic, None, Some, type Option} from "../src"
+import {Panic, None, Some, type Option} from "../src"
 
 function TestSome<T>(value: T): Option<T> {
 	return Some(value) as Option<T>
@@ -241,7 +241,7 @@ describe.concurrent("unwrap", () => {
 
 	it("throws when called on a None option", () => {
 		const option = TestNone<string>()
-		expect(() => option.unwrap()).toThrow(UnwrapPanic)
+		expect(() => option.unwrap()).toThrow(Panic)
 	})
 })
 
