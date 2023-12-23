@@ -37,6 +37,7 @@
 		"prepublishOnly": "pnpm run build",
 		"test:browser": "vitest --config ./cfg/vitest.browser.config.ts",
 		"test:node": "vitest --config ./cfg/vitest.config.ts",
+		"test:ts": "tsc --project ./cfg/tsconfig.test.json",
 		"ts:check": "tsc"
 	},
 	"devDependencies": {
