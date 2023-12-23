@@ -1,6 +1,5 @@
 import {describe, expect, it, test} from "vitest"
 import {ResultError, StdError, inspectSymbol} from "../src"
-import {expectTypeOf} from "vitest"
 
 describe.concurrent("ResultError", () => {
 	class MyResultError extends ResultError {
