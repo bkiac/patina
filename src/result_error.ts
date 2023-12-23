@@ -1,16 +1,19 @@
-import {inspectSymbol} from "./util"
-import {formatErrorString} from "./util"
+import {formatErrorString, inspectSymbol} from "./util"
 
-export abstract class ResultError<T extends Error | null = null> implements Error {
+export abstract class ResultError<Cause extends Error | null = Error | null> implements Error {
 	abstract readonly tag: string
 
 	readonly message: string
 	readonly stack?: string
-	readonly cause: T | null
+	readonly cause: Cause
 
-	constructor(args: {message?: string; cause?: T} = {}) {
+	constructor(
+		args: Cause extends Error
+			? {message?: string; cause: Cause}
+			: {message?: string; cause?: Cause},
+	) {
 		this.message = args.message ?? ""
-		this.cause = args.cause ?? null
+		this.cause = (args.cause ?? null) as Cause
 
 		if (Error.captureStackTrace) {
 			Error.captureStackTrace(this, this.constructor)
@@ -43,16 +46,14 @@ export abstract class ResultError<T extends Error | null = null> implements Erro
 export class StdError<T = unknown> extends ResultError<Error> {
 	readonly tag = "StdError"
 
-	override readonly cause: Error
 	readonly causeRaw: T
 
 	constructor(cause: T, message?: string) {
-		const o =
+		const c =
 			cause instanceof Error
 				? cause
 				: new TypeError(`Unexpected error type: "${String(cause)}"`)
-		super({message})
-		this.cause = o
+		super({message, cause: c})
 		this.causeRaw = cause
 	}
 }
