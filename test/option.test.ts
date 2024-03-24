@@ -1,5 +1,5 @@
 import {describe, expect, expectTypeOf, it, vi} from "vitest"
-import {Panic, None, Some, type Option} from "../src"
+import {Panic, None, Some, Option} from "../src"
 
 function TestSome<T>(value: T): Option<T> {
 	return Some(value) as Option<T>
@@ -314,5 +314,22 @@ describe.concurrent("match", () => {
 				None: () => "default",
 			}),
 		).toEqual("default")
+	})
+})
+
+describe.concurrent("from", () => {
+	it("returns Some when the value is not null or undefined", () => {
+		expect(Option.from(42)).toEqual(Some(42))
+	})
+
+	it("returns Some when the value is falsy", () => {
+		expect(Option.from(false)).toEqual(Some(false))
+		expect(Option.from(0)).toEqual(Some(0))
+		expect(Option.from("")).toEqual(Some(""))
+	})
+
+	it("returns None when the value is null or undefined", () => {
+		expect(Option.from(null)).toEqual(None)
+		expect(Option.from(undefined)).toEqual(None)
 	})
 })
