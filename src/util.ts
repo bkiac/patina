@@ -20,17 +20,17 @@ export function formatErrorString(name: string, message = "") {
 	return name + (message ? ": " + message : "")
 }
 
-export type InferOk<T> = T extends Ok<infer O> ? O : never
+export type InferOk<T> = T extends Ok<infer O, any> ? O : never
 
-export type InferErr<T> = T extends Err<infer E> ? E : never
+export type InferErr<T> = T extends Err<infer E, any> ? E : never
 
-export type ExtractOk<T> = T extends Ok<infer O>
+export type ExtractOk<T> = T extends Ok<infer O, any>
 	? O
 	: T extends Result<infer O, infer _>
 	? O
 	: never
 
-export type ExtractErr<T> = T extends Err<infer E>
+export type ExtractErr<T> = T extends Err<infer E, any>
 	? E
 	: T extends Result<infer _, infer E>
 	? E
