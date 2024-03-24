@@ -13,12 +13,12 @@ describe.concurrent("basic", () => {
 	it("returns an Ok result", () => {
 		const r = Ok(42)
 
-		expect(r.ok).toEqual(true)
-		expect(r.err).toEqual(false)
+		expect(r.isOk).toEqual(true)
+		expect(r.isErr).toEqual(false)
 		expect(r.value).toEqual(42)
 
-		expectTypeOf(r.ok).toEqualTypeOf<true>()
-		expectTypeOf(r.err).toEqualTypeOf<false>()
+		expectTypeOf(r.isOk).toEqualTypeOf<true>()
+		expectTypeOf(r.isErr).toEqualTypeOf<false>()
 		expectTypeOf(r.value).toEqualTypeOf<number>()
 		expectTypeOf(() => r.unwrap()).toEqualTypeOf<() => number>()
 		expectTypeOf(() => r.unwrapErr()).toEqualTypeOf<() => never>()
@@ -27,12 +27,12 @@ describe.concurrent("basic", () => {
 	it("returns an Err result", () => {
 		const r = Err("error")
 
-		expect(r.ok).toEqual(false)
-		expect(r.err).toEqual(true)
+		expect(r.isOk).toEqual(false)
+		expect(r.isErr).toEqual(true)
 		expect(r.value).toEqual("error")
 
-		expectTypeOf(r.ok).toEqualTypeOf<false>()
-		expectTypeOf(r.err).toEqualTypeOf<true>()
+		expectTypeOf(r.isOk).toEqualTypeOf<false>()
+		expectTypeOf(r.isErr).toEqualTypeOf<true>()
 		expectTypeOf(r.value).toEqualTypeOf<string>()
 		expectTypeOf(() => r.unwrap()).toEqualTypeOf<() => never>()
 		expectTypeOf(() => r.unwrapErr()).toEqualTypeOf<() => string>()
@@ -41,15 +41,15 @@ describe.concurrent("basic", () => {
 	it("works as discriminated union", () => {
 		const r = TestOk<number, string>(42)
 		expectTypeOf(r.value).toEqualTypeOf<number | string>()
-		if (r.ok) {
-			expectTypeOf(r.ok).toEqualTypeOf<true>()
-			expectTypeOf(r.err).toEqualTypeOf<false>()
+		if (r.isOk) {
+			expectTypeOf(r.isOk).toEqualTypeOf<true>()
+			expectTypeOf(r.isErr).toEqualTypeOf<false>()
 			expectTypeOf(r.value).toEqualTypeOf<number>()
 			expectTypeOf(() => r.unwrap()).toEqualTypeOf<() => number>()
 			expectTypeOf(() => r.unwrapErr()).toEqualTypeOf<() => never>()
 		} else {
-			expectTypeOf(r.ok).toEqualTypeOf<false>()
-			expectTypeOf(r.err).toEqualTypeOf<true>()
+			expectTypeOf(r.isOk).toEqualTypeOf<false>()
+			expectTypeOf(r.isErr).toEqualTypeOf<true>()
 			expectTypeOf(r.value).toEqualTypeOf<string>()
 			expectTypeOf(() => r.unwrap()).toEqualTypeOf<() => never>()
 			expectTypeOf(() => r.unwrapErr()).toEqualTypeOf<() => string>()

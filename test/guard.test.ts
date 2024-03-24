@@ -19,7 +19,7 @@ describe.concurrent("guard", () => {
 		const fn = (x: number, y: number) => x + y
 		const wrappedFn = guard(fn)
 		const result = wrappedFn(40, 2)
-		expect(result.ok).toEqual(true)
+		expect(result.isOk).toEqual(true)
 		expect(result.unwrap()).toEqual(42)
 	})
 
@@ -30,7 +30,7 @@ describe.concurrent("guard", () => {
 		}
 		const wrappedFn = guard(fn)
 		const result = wrappedFn()
-		expect(result.ok).toEqual(false)
+		expect(result.isOk).toEqual(false)
 		expect(result.unwrapErr().cause).toEqual(error)
 	})
 
@@ -58,7 +58,7 @@ describe.concurrent("guardWith", () => {
 		const fn = (x: number, y: number) => x + y
 		const wrappedFn = guardWith(fn, () => new MyError())
 		const result = wrappedFn(40, 2)
-		expect(result.ok).toEqual(true)
+		expect(result.isOk).toEqual(true)
 		expect(result.unwrap()).toEqual(42)
 	})
 
@@ -70,7 +70,7 @@ describe.concurrent("guardWith", () => {
 		const myError = new MyError({message: "My error"})
 		const wrappedFn = guardWith(fn, () => myError)
 		const result = wrappedFn()
-		expect(result.ok).toEqual(false)
+		expect(result.isOk).toEqual(false)
 		expect(result.unwrapErr()).toEqual(myError)
 	})
 
@@ -94,7 +94,7 @@ describe.concurrent("guardAsync", () => {
 		const fn = async (x: number, y: number) => Promise.resolve(x + y)
 		const wrappedFn = guardAsync(fn)
 		const result = await wrappedFn(40, 2)
-		expect(result.ok).toEqual(true)
+		expect(result.isOk).toEqual(true)
 		expect(result.unwrap()).toEqual(42)
 	})
 
@@ -105,7 +105,7 @@ describe.concurrent("guardAsync", () => {
 		}
 		const wrappedFn = guardAsync(fn)
 		const result = await wrappedFn()
-		expect(result.ok).toEqual(false)
+		expect(result.isOk).toEqual(false)
 		expect(result.unwrapErr().cause).toEqual(error)
 	})
 
@@ -133,7 +133,7 @@ describe.concurrent("guardAsyncWith", () => {
 		const fn = async (x: number, y: number) => Promise.resolve(x + y)
 		const wrappedFn = guardAsyncWith(fn, () => new MyError())
 		const result = await wrappedFn(40, 2)
-		expect(result.ok).toEqual(true)
+		expect(result.isOk).toEqual(true)
 		expect(result.unwrap()).toEqual(42)
 	})
 
@@ -145,7 +145,7 @@ describe.concurrent("guardAsyncWith", () => {
 		const myError = new MyError({message: "My error"})
 		const wrappedFn = guardAsyncWith(fn, () => myError)
 		const result = await wrappedFn()
-		expect(result.ok).toEqual(false)
+		expect(result.isOk).toEqual(false)
 		expect(result.unwrapErr()).toEqual(myError)
 	})
 

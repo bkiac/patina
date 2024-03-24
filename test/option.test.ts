@@ -13,12 +13,12 @@ describe.concurrent("basic", () => {
 	it("returns a Some option", () => {
 		const option = Some(42)
 
-		expect(option.some).toEqual(true)
-		expect(option.none).toEqual(false)
+		expect(option.isSome).toEqual(true)
+		expect(option.isNone).toEqual(false)
 		expect(option.value).toEqual(42)
 
-		expectTypeOf(option.some).toEqualTypeOf<true>()
-		expectTypeOf(option.none).toEqualTypeOf<false>()
+		expectTypeOf(option.isSome).toEqualTypeOf<true>()
+		expectTypeOf(option.isNone).toEqualTypeOf<false>()
 		expectTypeOf(option.value).toEqualTypeOf<number>()
 		expectTypeOf(() => option.unwrap()).toEqualTypeOf<() => number>()
 	})
@@ -26,26 +26,26 @@ describe.concurrent("basic", () => {
 	it("returns a None option", () => {
 		const option = None
 
-		expect(option.some).toEqual(false)
-		expect(option.none).toEqual(true)
+		expect(option.isSome).toEqual(false)
+		expect(option.isNone).toEqual(true)
 		expect(option.value).toEqual(null)
 
-		expectTypeOf(option.some).toEqualTypeOf<false>()
-		expectTypeOf(option.none).toEqualTypeOf<true>()
+		expectTypeOf(option.isSome).toEqualTypeOf<false>()
+		expectTypeOf(option.isNone).toEqualTypeOf<true>()
 		expectTypeOf(option.value).toEqualTypeOf<null>()
 		expectTypeOf(() => option.unwrap()).toEqualTypeOf<() => never>()
 	})
 
 	it("works with discriminated union", () => {
 		const option = TestSome(42)
-		if (option.some) {
-			expectTypeOf(option.some).toEqualTypeOf<true>()
-			expectTypeOf(option.none).toEqualTypeOf<false>()
+		if (option.isSome) {
+			expectTypeOf(option.isSome).toEqualTypeOf<true>()
+			expectTypeOf(option.isNone).toEqualTypeOf<false>()
 			expectTypeOf(option.value).toEqualTypeOf<number>()
 			expectTypeOf(() => option.unwrap()).toEqualTypeOf<() => number>()
 		} else {
-			expectTypeOf(option.some).toEqualTypeOf<false>()
-			expectTypeOf(option.none).toEqualTypeOf<true>()
+			expectTypeOf(option.isSome).toEqualTypeOf<false>()
+			expectTypeOf(option.isNone).toEqualTypeOf<true>()
 			expectTypeOf(option.value).toEqualTypeOf<null>()
 			expectTypeOf(() => option.unwrap()).toEqualTypeOf<() => never>()
 		}

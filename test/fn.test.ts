@@ -81,7 +81,7 @@ describe.concurrent("fn", () => {
 			}
 			const wrapped = fn(() => {
 				const r = foo()
-				if (r.err) {
+				if (r.isErr) {
 					return r
 				}
 				return Ok("foo")
@@ -106,7 +106,7 @@ describe.concurrent("fn", () => {
 
 			const wrapped = fn(() => {
 				const r = foo()
-				if (r.err) {
+				if (r.isErr) {
 					return r
 				}
 				return Ok(r.value)
@@ -132,7 +132,7 @@ describe.concurrent("fn", () => {
 
 			bar = fn(() => {
 				const ye = foo()
-				if (ye.ok) {
+				if (ye.isOk) {
 					return Ok(ye)
 				}
 				return Err(true)
@@ -228,7 +228,7 @@ describe.concurrent("asyncFn", () => {
 			})
 			const wrapped = asyncFn(async () => {
 				const r = await foo()
-				if (r.err) {
+				if (r.isErr) {
 					return r
 				}
 				return Ok(true)
