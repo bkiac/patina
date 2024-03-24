@@ -41,16 +41,16 @@
 		"ts:check": "tsc"
 	},
 	"devDependencies": {
-		"@vitest/browser": "^0.34.6",
+		"@vitest/browser": "^1.4.0",
 		"husky": "^8.0.3",
 		"lint-staged": "^14.0.1",
-		"playwright": "^1.40.0",
+		"playwright": "^1.42.1",
 		"prettier": "^3.0.2",
 		"prettier-plugin-pkg": "^0.18.0",
 		"tsup": "^7.2.0",
 		"tsx": "^3.14.0",
 		"typescript": "^5.0.4",
-		"vitest": "^0.34.6"
+		"vitest": "^1.4.0"
 	},
 	"sideEffects": false,
 	"lint-staged": {
