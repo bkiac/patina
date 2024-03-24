@@ -1,5 +1,6 @@
 import {Panic} from "./panic"
 import {inspectSymbol} from "./util"
+import {Option, Some, None} from "./option"
 
 export type ResultMatcher<T, E, A, B> = {
 	Ok: (value: T) => A
@@ -15,6 +16,14 @@ export class ResultImpl<T, E> {
 		this.isOk = ok
 		this.isErr = !ok
 		this.value = value
+	}
+
+	ok(): Option<T> {
+		return this.isOk ? Some(this.value as T) : None
+	}
+
+	err(): Option<E> {
+		return this.isErr ? Some(this.value as E) : None
 	}
 
 	and<U, F>(other: Result<U, F>): Result<U, E | F> {

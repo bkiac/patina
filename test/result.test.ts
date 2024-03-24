@@ -1,5 +1,5 @@
 import {describe, it, expect, expectTypeOf, vi} from "vitest"
-import {Panic, Ok, Err, type Result, ResultError} from "../src"
+import {Panic, Ok, Err, type Result, ResultError, Some, None} from "../src"
 
 export function TestOk<T, E>(value: T): Result<T, E> {
 	return Ok(value)
@@ -54,6 +54,30 @@ describe.concurrent("basic", () => {
 			expectTypeOf(() => r.unwrap()).toEqualTypeOf<() => never>()
 			expectTypeOf(() => r.unwrapErr()).toEqualTypeOf<() => string>()
 		}
+	})
+})
+
+describe.concurrent("ok", () => {
+	it("returns the value when Ok", () => {
+		const result = TestOk<number, string>(42)
+		expect(result.ok()).toEqual(Some(42))
+	})
+
+	it("returns None when Err", () => {
+		const result = TestErr<number, string>("error")
+		expect(result.ok()).toEqual(None)
+	})
+})
+
+describe.concurrent("err", () => {
+	it("returns None when Ok", () => {
+		const result = TestOk<number, string>(42)
+		expect(result.err()).toEqual(None)
+	})
+
+	it("returns the error when Err", () => {
+		const result = TestErr<number, string>("error")
+		expect(result.err()).toEqual(Some("error"))
 	})
 })
 

@@ -133,7 +133,7 @@ describe.concurrent("flatten", () => {
 	})
 })
 
-describe.concurrent("inspect", () => {
+describe.concurrent("examine", () => {
 	it("calls the function with the value when called on a Some option", () => {
 		const option = TestSome(42)
 		const callback = vi.fn()
