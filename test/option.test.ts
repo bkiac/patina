@@ -347,35 +347,22 @@ describe.concurrent("match", () => {
 	})
 })
 
-describe.concurrent("from", () => {
+describe.concurrent("Option", () => {
 	it("returns Some when the value is not null or undefined", () => {
 		const value = "hello" as string | number | null
-		const option = Option.from(value)
+		const option = Option(value)
 		expectTypeOf(option).toEqualTypeOf<Option<string | number>>()
 		expect(option).toEqual(Some(value))
 	})
 
 	it("returns Some when the value is falsy", () => {
-		expect(Option.from(false)).toEqual(Some(false))
-		expect(Option.from(0)).toEqual(Some(0))
-		expect(Option.from("")).toEqual(Some(""))
+		expect(Option(false)).toEqual(Some(false))
+		expect(Option(0)).toEqual(Some(0))
+		expect(Option("")).toEqual(Some(""))
 	})
 
 	it("returns None when the value is null or undefined", () => {
-		expect(Option.from(null)).toEqual(None)
-		expect(Option.from(undefined)).toEqual(None)
-	})
-})
-
-describe.concurrent("into", () => {
-	it("returns Some when the value is not null or undefined", () => {
-		const some = Some(42)
-		expectTypeOf(some.into).toEqualTypeOf<() => number>()
-		expect(some.into()).toEqual(42)
-	})
-
-	it("returns None when the value is null or undefined", () => {
-		expectTypeOf(None.into).toEqualTypeOf<() => undefined>()
-		expect(None.into()).toEqual(undefined)
+		expect(Option(null)).toEqual(None)
+		expect(Option(undefined)).toEqual(None)
 	})
 })

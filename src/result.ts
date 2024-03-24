@@ -116,10 +116,6 @@ export class ResultImpl<T, E> {
 		return this.isOk ? matcher.Ok(this.value as T) : matcher.Err(this.value as E)
 	}
 
-	into(): [ok: T, err: undefined] | [ok: undefined, err: E] {
-		return this.isOk ? [this.value as T, undefined] : [undefined, this.value as E]
-	}
-
 	toObject(): {isOk: true; value: T} | {isOk: false; value: E} {
 		if (this.isOk) {
 			return {
@@ -163,7 +159,6 @@ export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
 	unwrapErr(): never
 	expect(message: string): T
 	expectErr(message: string): never
-	into(): [T, undefined]
 }
 
 export function Ok(): Ok
@@ -180,7 +175,6 @@ export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
 	unwrapErr(): E
 	expect(message: string): never
 	expectErr(message: string): E
-	into(): [undefined, E]
 }
 
 export function Err(): Err
@@ -190,12 +184,3 @@ export function Err<E>(value?: E): Err<E> {
 }
 
 export type Result<T, E> = Ok<T, E> | Err<E, T>
-
-export function Result() {}
-Result.from = <T, E>(tuple: [ok: T] | [ok: T | undefined, err: E | undefined]): Result<T, E> => {
-	const [ok, err] = tuple
-	if (err != null) {
-		return Err(err)
-	}
-	return Ok(ok) as Result<T, E>
-}

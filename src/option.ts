@@ -102,10 +102,6 @@ export class OptionImpl<T> {
 		return this.isSome ? matcher.Some(this.value as T) : matcher.None()
 	}
 
-	into() {
-		return this.value
-	}
-
 	toObject(): {some: true; value: T} | {some: false; value: null} {
 		return this.isSome ? {some: true, value: this.value as T} : {some: false, value: null}
 	}
@@ -129,7 +125,6 @@ export interface Some<T> extends OptionImpl<T> {
 	readonly value: T
 	unwrap(): T
 	expect(message: string): T
-	into(): T
 }
 
 export function Some<T>(value: T): Some<T> {
@@ -142,12 +137,12 @@ export interface None<T = never> extends OptionImpl<T> {
 	readonly value: undefined
 	unwrap(): never
 	expect(message: string): never
-	into(): undefined
 }
 
 export const None = new OptionImpl(false, undefined) as None
 
 export type Option<T> = Some<T> | None<T>
 
-export function Option() {}
-Option.from = <T>(value: T | undefined | null): Option<T> => (value == null ? None : Some(value))
+export function Option<T>(value: T | undefined | null): Option<T> {
+	return value == null ? None : Some(value)
+}
