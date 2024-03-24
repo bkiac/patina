@@ -151,10 +151,14 @@ export class ResultImpl<T, E> {
 	}
 }
 
-export interface Ok<T = undefined> extends ResultImpl<T, never> {
+export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
 	readonly isOk: true
 	readonly isErr: false
 	readonly value: T
+	unwrap(): T
+	unwrapErr(): never
+	expect(message: string): T
+	expectErr(message: string): never
 }
 
 export function Ok(): Ok
@@ -163,10 +167,14 @@ export function Ok<T>(value?: T): Ok<T> {
 	return new ResultImpl<T, never>(true, value as T) as Ok<T>
 }
 
-export interface Err<E = undefined> extends ResultImpl<never, E> {
+export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
 	readonly isOk: false
 	readonly isErr: true
 	readonly value: E
+	unwrap(): never
+	unwrapErr(): E
+	expect(message: string): never
+	expectErr(message: string): E
 }
 
 export function Err(): Err
@@ -175,12 +183,4 @@ export function Err<E>(value?: E): Err<E> {
 	return new ResultImpl<never, E>(false, value as E) as Err<E>
 }
 
-type Methods<T, E> = Omit<ResultImpl<T, E>, "ok" | "err" | "value">
-
-type _OkResult<T, E> = Ok<T> & Methods<T, E>
-export interface OkResult<T, E> extends _OkResult<T, E> {}
-
-type _ErrResult<T, E> = Err<E> & Methods<T, E>
-export interface ErrResult<T, E> extends _ErrResult<T, E> {}
-
-export type Result<T, E> = OkResult<T, E> | ErrResult<T, E>
+export type Result<T, E> = Ok<T, E> | Err<E, T>

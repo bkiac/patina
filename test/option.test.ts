@@ -20,7 +20,7 @@ describe.concurrent("basic", () => {
 		expectTypeOf(option.isSome).toEqualTypeOf<true>()
 		expectTypeOf(option.isNone).toEqualTypeOf<false>()
 		expectTypeOf(option.value).toEqualTypeOf<number>()
-		expectTypeOf(() => option.unwrap()).toEqualTypeOf<() => number>()
+		expectTypeOf(option.unwrap).toEqualTypeOf<() => number>()
 	})
 
 	it("returns a None option", () => {
@@ -33,7 +33,9 @@ describe.concurrent("basic", () => {
 		expectTypeOf(option.isSome).toEqualTypeOf<false>()
 		expectTypeOf(option.isNone).toEqualTypeOf<true>()
 		expectTypeOf(option.value).toEqualTypeOf<null>()
-		expectTypeOf(() => option.unwrap()).toEqualTypeOf<() => never>()
+
+		expectTypeOf(option.unwrap).toEqualTypeOf<() => never>()
+		expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>()
 	})
 
 	it("works with discriminated union", () => {
@@ -42,12 +44,16 @@ describe.concurrent("basic", () => {
 			expectTypeOf(option.isSome).toEqualTypeOf<true>()
 			expectTypeOf(option.isNone).toEqualTypeOf<false>()
 			expectTypeOf(option.value).toEqualTypeOf<number>()
-			expectTypeOf(() => option.unwrap()).toEqualTypeOf<() => number>()
+
+			expectTypeOf(option.unwrap).toEqualTypeOf<() => number>()
+			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => number>()
 		} else {
 			expectTypeOf(option.isSome).toEqualTypeOf<false>()
 			expectTypeOf(option.isNone).toEqualTypeOf<true>()
 			expectTypeOf(option.value).toEqualTypeOf<null>()
-			expectTypeOf(() => option.unwrap()).toEqualTypeOf<() => never>()
+
+			expectTypeOf(option.unwrap).toEqualTypeOf<() => never>()
+			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>()
 		}
 	})
 })

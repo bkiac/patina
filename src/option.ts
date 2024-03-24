@@ -114,27 +114,25 @@ export interface Some<T> extends OptionImpl<T> {
 	readonly isSome: true
 	readonly isNone: false
 	readonly value: T
+	unwrap(): T
+	expect(message: string): T
 }
+
 export function Some<T>(value: T): Some<T> {
 	return new OptionImpl(true, value) as Some<T>
 }
 
-export interface None extends OptionImpl<never> {
+export interface None<T = never> extends OptionImpl<T> {
 	readonly isSome: false
 	readonly isNone: true
 	readonly value: null
+	unwrap(): never
+	expect(message: string): never
 }
+
 export const None = new OptionImpl(false, null) as None
 
-type Methods<T> = Omit<OptionImpl<T>, "some" | "none" | "value">
-
-type _SomeOption<T> = Some<T> & Methods<T>
-export interface SomeOption<T> extends _SomeOption<T> {}
-
-type _NoneOption<T> = None & Methods<T>
-export interface NoneOption<T> extends _NoneOption<T> {}
-
-export type Option<T> = SomeOption<T> | NoneOption<T>
+export type Option<T> = Some<T> | None<T>
 export function Option() {}
 Option.from = <T>(value: T | null | undefined): Option<T> =>
 	value === null || value === undefined ? None : Some(value)
