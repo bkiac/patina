@@ -12,7 +12,7 @@ export abstract class ErrorWithTag extends Error {
 	abstract readonly tag: string
 }
 
-export abstract class ErrorWithCause<Cause extends Error> extends ErrorWithTag {
+export abstract class ErrorWithCause<Cause> extends ErrorWithTag {
 	override readonly cause: Cause
 
 	constructor(message: string, options: {cause: Cause}) {
