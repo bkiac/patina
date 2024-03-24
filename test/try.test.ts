@@ -8,10 +8,7 @@ import {
 	tryPromise,
 	tryPromiseWith,
 } from "../src"
-
-class TaggedError extends ErrorWithTag {
-	readonly tag = "MyError"
-}
+import {TaggedError} from "./util"
 
 describe.concurrent("tryFn", () => {
 	it("wraps a function call into a Result object", () => {
@@ -28,7 +25,7 @@ describe.concurrent("tryFn", () => {
 		}
 		const result = tryFn(fn)
 		expect(result.isOk).toEqual(false)
-		expect(result.unwrapErr()).toEqual(error)
+		expect(result.unwrapErr().cause).toEqual(error)
 	})
 })
 
@@ -65,7 +62,7 @@ describe.concurrent("tryPromise", () => {
 		const promise = Promise.reject(error)
 		const result = await tryPromise(promise)
 		expect(result.isOk).toEqual(false)
-		expect(result.unwrapErr()).toEqual(error)
+		expect(result.unwrapErr().cause).toEqual(error)
 	})
 })
 
@@ -102,7 +99,7 @@ describe.concurrent("tryAsyncFn", () => {
 		}
 		const result = await tryAsyncFn(fn)
 		expect(result.isOk).toEqual(false)
-		expect(result.unwrapErr()).toEqual(error)
+		expect(result.unwrapErr().cause).toEqual(error)
 	})
 })
 

@@ -1,4 +1,4 @@
-import {Panic} from "./error"
+import {Panic, ErrorWithCause} from "./error"
 import {type ErrorHandler, parseError} from "./error"
 import {Err, Ok, type Result} from "./result"
 import {ResultPromise} from "./result_promise"
@@ -14,11 +14,19 @@ function handleCaughtError(error: unknown) {
 	return parseError(handlePanic(error))
 }
 
-export function tryFn<T>(fn: () => T): Result<T, Error> {
+export class CaughtError extends ErrorWithCause<Error> {
+	readonly tag = "CaughtError"
+}
+
+export function tryFn<T>(fn: () => T): Result<T, CaughtError> {
 	try {
 		return Ok(fn())
 	} catch (error) {
-		return Err(handleCaughtError(error))
+		return Err(
+			new CaughtError("Caught error while trying function", {
+				cause: handleCaughtError(error),
+			}),
+		)
 	}
 }
 
@@ -30,11 +38,16 @@ export function tryFnWith<T, E>(fn: () => T, handleError: ErrorHandler<E>): Resu
 	}
 }
 
-export function tryPromise<T>(promise: Promise<T>): ResultPromise<T, Error> {
-	return new ResultPromise<T, Error>(
+export function tryPromise<T>(promise: Promise<T>): ResultPromise<T, CaughtError> {
+	return new ResultPromise(
 		promise.then(
 			(value) => Ok(value),
-			(error: unknown) => Err(parseError(error)),
+			(error: unknown) =>
+				Err(
+					new CaughtError("Caught error while trying promise", {
+						cause: handleCaughtError(error),
+					}),
+				),
 		),
 	)
 }
@@ -43,7 +56,7 @@ export function tryPromiseWith<T, E>(
 	promise: Promise<T>,
 	handleError: ErrorHandler<E>,
 ): ResultPromise<T, E> {
-	return new ResultPromise<T, E>(
+	return new ResultPromise(
 		promise.then(
 			(value) => Ok(value),
 			(error: unknown) => Err(handleError(handleCaughtError(error), error)),
@@ -51,7 +64,7 @@ export function tryPromiseWith<T, E>(
 	)
 }
 
-export function tryAsyncFn<T>(fn: () => Promise<T>): ResultPromise<T, Error> {
+export function tryAsyncFn<T>(fn: () => Promise<T>): ResultPromise<T, CaughtError> {
 	return tryPromise(fn())
 }
 

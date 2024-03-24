@@ -7,7 +7,7 @@ export function guard<A extends any[], T>(fn: (...args: A) => T) {
 	}
 }
 
-export function guardWith<A extends any[], T, E extends Error>(
+export function guardWith<A extends any[], T, E>(
 	fn: (...args: A) => T,
 	handleError: ErrorHandler<E>,
 ) {
@@ -22,7 +22,7 @@ export function guardAsync<A extends any[], T>(fn: (...args: A) => Promise<T>) {
 	}
 }
 
-export function guardAsyncWith<A extends any[], T, E extends Error>(
+export function guardAsyncWith<A extends any[], T, E>(
 	fn: (...args: A) => Promise<T>,
 	handleError: ErrorHandler<E>,
 ) {

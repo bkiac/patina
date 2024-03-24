@@ -9,7 +9,9 @@ import {
 	type Result,
 	tryFn,
 	ErrorWithTag,
+	CaughtError,
 } from "../src"
+import {TaggedError} from "./util"
 
 describe.concurrent("fn", () => {
 	it("returns Ok result when provided function does not throw", () => {
@@ -58,7 +60,7 @@ describe.concurrent("fn", () => {
 		it("returns correct type with function returning Result", () => {
 			const wrapped = fn((_arg: number) => tryFn(() => 1))
 			expectTypeOf(wrapped).parameter(0).toBeNumber()
-			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<number, Error>>()
+			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<number, CaughtError>>()
 		})
 
 		it("works with generics", () => {
@@ -89,10 +91,6 @@ describe.concurrent("fn", () => {
 		})
 
 		it("works with complicated result", () => {
-			class TaggedError extends ErrorWithTag {
-				readonly tag = "MyError"
-			}
-
 			type Data = {
 				id: number
 				name: string
@@ -193,7 +191,7 @@ describe.concurrent("asyncFn", () => {
 			const f = (_arg: number) => tryAsyncFn(async () => 1)
 			const wrapped = asyncFn(f)
 			expectTypeOf(wrapped).parameter(0).toBeNumber()
-			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultPromise<number, Error>>()
+			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultPromise<number, CaughtError>>()
 		})
 
 		it("returns correct type with function returning Promise<Result>", () => {
@@ -205,7 +203,7 @@ describe.concurrent("asyncFn", () => {
 			}
 			const wrapped = asyncFn(f)
 			expectTypeOf(wrapped).parameter(0).toBeNumber()
-			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultPromise<number, Error>>()
+			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultPromise<number, CaughtError>>()
 		})
 
 		it("works with generics", () => {
