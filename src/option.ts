@@ -1,4 +1,4 @@
-import {Panic} from "./panic"
+import {Panic} from "./error"
 import {inspectSymbol} from "./util"
 
 export type OptionMatch<T, A, B> = {

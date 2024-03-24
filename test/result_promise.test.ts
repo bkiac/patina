@@ -1,5 +1,5 @@
 import {describe, it, expect, expectTypeOf} from "vitest"
-import {Err, Panic, ResultPromise, Ok, Result, ResultError} from "../src"
+import {Err, Panic, ResultPromise, Ok, Result, ErrorWithTag} from "../src"
 import {TestErr, TestOk} from "./result.test"
 
 function TestOkPromise<T, E = any>(value: T) {
@@ -100,11 +100,11 @@ describe.concurrent("flatten", () => {
 	})
 
 	it("works with non-primitive value or error", () => {
-		class Foo extends ResultError {
+		class Foo extends ErrorWithTag {
 			readonly tag = "foo"
 		}
 
-		class Bar extends ResultError {
+		class Bar extends ErrorWithTag {
 			readonly tag = "bar"
 		}
 

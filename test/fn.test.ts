@@ -6,10 +6,9 @@ import {
 	Err,
 	tryAsyncFn,
 	type ResultPromise,
-	type StdError,
 	type Result,
 	tryFn,
-	ResultError,
+	ErrorWithTag,
 } from "../src"
 
 describe.concurrent("fn", () => {
@@ -59,7 +58,7 @@ describe.concurrent("fn", () => {
 		it("returns correct type with function returning Result", () => {
 			const wrapped = fn((_arg: number) => tryFn(() => 1))
 			expectTypeOf(wrapped).parameter(0).toBeNumber()
-			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<number, StdError>>()
+			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<number, Error>>()
 		})
 
 		it("works with generics", () => {
@@ -90,7 +89,7 @@ describe.concurrent("fn", () => {
 		})
 
 		it("works with complicated result", () => {
-			class MyError extends ResultError {
+			class TaggedError extends ErrorWithTag {
 				readonly tag = "MyError"
 			}
 
@@ -102,7 +101,7 @@ describe.concurrent("fn", () => {
 			}
 
 			// @ts-expect-error
-			const foo = (): Result<Data, StdError | MyError> => {}
+			const foo = (): Result<Data, TaggedError> => {}
 
 			const wrapped = fn(() => {
 				const r = foo()
@@ -111,7 +110,7 @@ describe.concurrent("fn", () => {
 				}
 				return Ok(r.value)
 			})
-			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<Data, StdError | MyError>>()
+			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<Data, TaggedError>>()
 		})
 
 		it("works with nested result", () => {
@@ -194,7 +193,7 @@ describe.concurrent("asyncFn", () => {
 			const f = (_arg: number) => tryAsyncFn(async () => 1)
 			const wrapped = asyncFn(f)
 			expectTypeOf(wrapped).parameter(0).toBeNumber()
-			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultPromise<number, StdError>>()
+			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultPromise<number, Error>>()
 		})
 
 		it("returns correct type with function returning Promise<Result>", () => {
@@ -206,7 +205,7 @@ describe.concurrent("asyncFn", () => {
 			}
 			const wrapped = asyncFn(f)
 			expectTypeOf(wrapped).parameter(0).toBeNumber()
-			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultPromise<number, StdError>>()
+			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultPromise<number, Error>>()
 		})
 
 		it("works with generics", () => {

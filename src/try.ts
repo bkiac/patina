@@ -1,5 +1,5 @@
-import {Panic} from "./panic"
-import {type ErrorHandler, StdError} from "./result_error"
+import {Panic} from "./error"
+import {type ErrorHandler, parseError} from "./error"
 import {Err, Ok, type Result} from "./result"
 import {ResultPromise} from "./result_promise"
 
@@ -10,27 +10,31 @@ function handlePanic(error: unknown) {
 	return error
 }
 
-export function tryFn<T>(f: () => T): Result<T, StdError> {
+function handleCaughtError(error: unknown) {
+	return parseError(handlePanic(error))
+}
+
+export function tryFn<T>(fn: () => T): Result<T, Error> {
 	try {
-		return Ok(f())
+		return Ok(fn())
 	} catch (error) {
-		return Err(new StdError(error))
+		return Err(handleCaughtError(error))
 	}
 }
 
-export function tryFnWith<T, E>(f: () => T, handleError: ErrorHandler<E>): Result<T, E> {
+export function tryFnWith<T, E>(fn: () => T, handleError: ErrorHandler<E>): Result<T, E> {
 	try {
-		return Ok(f())
+		return Ok(fn())
 	} catch (error) {
-		return Err(handleError(handlePanic(error)))
+		return Err(handleError(handleCaughtError(error), error))
 	}
 }
 
-export function tryPromise<T>(promise: Promise<T>): ResultPromise<T, StdError> {
-	return new ResultPromise<T, StdError>(
+export function tryPromise<T>(promise: Promise<T>): ResultPromise<T, Error> {
+	return new ResultPromise<T, Error>(
 		promise.then(
 			(value) => Ok(value),
-			(error: unknown) => Err(new StdError(error)),
+			(error: unknown) => Err(parseError(error)),
 		),
 	)
 }
@@ -42,18 +46,18 @@ export function tryPromiseWith<T, E>(
 	return new ResultPromise<T, E>(
 		promise.then(
 			(value) => Ok(value),
-			(error: unknown) => Err(handleError(handlePanic(error))),
+			(error: unknown) => Err(handleError(handleCaughtError(error), error)),
 		),
 	)
 }
 
-export function tryAsyncFn<T>(f: () => Promise<T>): ResultPromise<T, StdError> {
-	return tryPromise(f())
+export function tryAsyncFn<T>(fn: () => Promise<T>): ResultPromise<T, Error> {
+	return tryPromise(fn())
 }
 
 export function tryAsyncFnWith<T, E>(
-	f: () => Promise<T>,
+	fn: () => Promise<T>,
 	handleError: ErrorHandler<E>,
 ): ResultPromise<T, E> {
-	return tryPromiseWith(f(), handleError)
+	return tryPromiseWith(fn(), handleError)
 }
