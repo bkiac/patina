@@ -55,7 +55,7 @@ describe.concurrent("expect", () => {
 
 	it("throws Panic when called on a None option", async () => {
 		const option = promiseNone()
-		await expect(option.expect("msg")).rejects.toEqual(new Panic({message: "msg"}))
+		await expect(option.expect("msg")).rejects.toEqual(new Panic("msg"))
 	})
 })
 

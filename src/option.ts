@@ -36,7 +36,7 @@ export class OptionImpl<T> {
 		if (this.isSome) {
 			return this.value as T
 		}
-		throw new Panic({message, cause: this})
+		throw new Panic(message, {cause: this})
 	}
 
 	filter(f: (value: T) => boolean): Option<T> {
@@ -71,7 +71,7 @@ export class OptionImpl<T> {
 		if (this.isSome) {
 			return this.value as T
 		}
-		throw new Panic({message: `called "unwrap()" on ${this.toString()}`, cause: this})
+		throw new Panic(`called "unwrap()" on ${this.toString()}`, {cause: this})
 	}
 
 	unwrapOr<U>(defaultValue: U): T | U {

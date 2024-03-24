@@ -52,14 +52,14 @@ export class ResultImpl<T, E> {
 		if (this.isOk) {
 			return this.value as T
 		}
-		throw new Panic({message, cause: this})
+		throw new Panic(message, {cause: this})
 	}
 
 	expectErr(message: string): E {
 		if (this.isErr) {
 			return this.value as E
 		}
-		throw new Panic({message, cause: this})
+		throw new Panic(message, {cause: this})
 	}
 
 	flatten<U, F>(this: Result<ResultImpl<U, F>, E>): Result<U, E | F> {
@@ -94,14 +94,14 @@ export class ResultImpl<T, E> {
 		if (this.isOk) {
 			return this.value as T
 		}
-		throw new Panic({message: `called "unwrap()" on ${this.toString()}`, cause: this})
+		throw new Panic(`called "unwrap()" on ${this.toString()}`, {cause: this})
 	}
 
 	unwrapErr(): E {
 		if (this.isErr) {
 			return this.value as E
 		}
-		throw new Panic({message: `called "unwrapErr()" on ${this.toString()}`, cause: this})
+		throw new Panic(`called "unwrapErr()" on ${this.toString()}`, {cause: this})
 	}
 
 	unwrapOr<U>(defaultValue: U): T | U {
