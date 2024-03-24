@@ -1,5 +1,5 @@
 import {describe, expect, expectTypeOf, it, vi} from "vitest"
-import {Panic, None, Some, Option} from "../src"
+import {Panic, None, Some, Option, Ok, Err} from "../src"
 
 function TestSome<T>(value: T): Option<T> {
 	return Some(value) as Option<T>
@@ -28,11 +28,11 @@ describe.concurrent("core", () => {
 
 		expect(option.isSome).toEqual(false)
 		expect(option.isNone).toEqual(true)
-		expect(option.value).toEqual(null)
+		expect(option.value).toEqual(undefined)
 
 		expectTypeOf(option.isSome).toEqualTypeOf<false>()
 		expectTypeOf(option.isNone).toEqualTypeOf<true>()
-		expectTypeOf(option.value).toEqualTypeOf<null>()
+		expectTypeOf(option.value).toEqualTypeOf<undefined>()
 
 		expectTypeOf(option.unwrap).toEqualTypeOf<() => never>()
 		expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>()
@@ -50,11 +50,35 @@ describe.concurrent("core", () => {
 		} else {
 			expectTypeOf(option.isSome).toEqualTypeOf<false>()
 			expectTypeOf(option.isNone).toEqualTypeOf<true>()
-			expectTypeOf(option.value).toEqualTypeOf<null>()
+			expectTypeOf(option.value).toEqualTypeOf<undefined>()
 
 			expectTypeOf(option.unwrap).toEqualTypeOf<() => never>()
 			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>()
 		}
+	})
+})
+
+describe.concurrent("okOr", () => {
+	it("returns the value when called on a Some option", () => {
+		const option = TestSome(42)
+		expect(option.okOr("error")).toEqual(Ok(42))
+	})
+
+	it("returns the error value when called on a None option", () => {
+		const option = TestNone<string>()
+		expect(option.okOr("error")).toEqual(Err("error"))
+	})
+})
+
+describe.concurrent("okOrElse", () => {
+	it("returns the value when called on a Some option", () => {
+		const option = TestSome(42)
+		expect(option.okOrElse(() => "error")).toEqual(Ok(42))
+	})
+
+	it("returns the error value when called on a None option", () => {
+		const option = TestNone<string>()
+		expect(option.okOrElse(() => "error")).toEqual(Err("error"))
 	})
 })
 
@@ -325,7 +349,10 @@ describe.concurrent("match", () => {
 
 describe.concurrent("from", () => {
 	it("returns Some when the value is not null or undefined", () => {
-		expect(Option.from(42)).toEqual(Some(42))
+		const value = "hello" as string | number | null
+		const option = Option.from(value)
+		expectTypeOf(option).toEqualTypeOf<Option<string | number>>()
+		expect(option).toEqual(Some(value))
 	})
 
 	it("returns Some when the value is falsy", () => {
@@ -337,5 +364,18 @@ describe.concurrent("from", () => {
 	it("returns None when the value is null or undefined", () => {
 		expect(Option.from(null)).toEqual(None)
 		expect(Option.from(undefined)).toEqual(None)
+	})
+})
+
+describe.concurrent("into", () => {
+	it("returns Some when the value is not null or undefined", () => {
+		const some = Some(42)
+		expectTypeOf(some.into).toEqualTypeOf<() => number>()
+		expect(some.into()).toEqual(42)
+	})
+
+	it("returns None when the value is null or undefined", () => {
+		expectTypeOf(None.into).toEqualTypeOf<() => undefined>()
+		expect(None.into()).toEqual(undefined)
 	})
 })

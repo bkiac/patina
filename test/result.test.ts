@@ -1,5 +1,6 @@
 import {describe, it, expect, expectTypeOf, vi} from "vitest"
-import {Panic, Ok, Err, type Result, Some, None, ErrorWithTag} from "../src"
+import {Panic, Ok, Err, Result, Some, None, ErrorWithTag} from "../src"
+import {test} from "vitest"
 
 export function TestOk<T, E>(value: T): Result<T, E> {
 	return Ok(value)
@@ -168,24 +169,24 @@ describe.concurrent("flatten", () => {
 	it("works with an Ok<Ok> result", () => {
 		const inner = TestOk<number, string>(42)
 		const result = TestOk<Result<number, string>, boolean>(inner)
-		const result2 = result.flatten()
-		expectTypeOf(result2).toEqualTypeOf<Result<number, string | boolean>>()
-		expect(result2).toEqual(inner)
+		const flattened = result.flatten()
+		expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>()
+		expect(flattened).toEqual(inner)
 	})
 
 	it("works with an Ok<Err> result", () => {
 		const inner = TestErr<number, string>("error")
 		const result = TestOk<Result<number, string>, boolean>(inner)
-		const result2 = result.flatten()
-		expectTypeOf(result2).toEqualTypeOf<Result<number, string | boolean>>()
-		expect(result2).toEqual(inner)
+		const flattened = result.flatten()
+		expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>()
+		expect(flattened).toEqual(inner)
 	})
 
 	it("works with an Err result", () => {
 		const result = TestErr<Result<number, string>, boolean>(true)
-		const result2 = result.flatten()
-		expectTypeOf(result2).toEqualTypeOf<Result<number, string | boolean>>()
-		expect(result2).toEqual(result)
+		const flattened = result.flatten()
+		expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>()
+		expect(flattened).toEqual(result)
 	})
 
 	it("works with non-primitive value or error", () => {
@@ -413,5 +414,51 @@ describe.concurrent("match", () => {
 			Err: () => 0,
 		})
 		expect(output).toEqual(0)
+	})
+})
+
+describe.concurrent("into", () => {
+	it("returns tuple with value for an Ok result", () => {
+		const result = TestOk<number, string>(42)
+		const tuple = result.into()
+		expect(tuple).toEqual([42, undefined])
+	})
+
+	it("returns tuple with error for an Err result", () => {
+		const result = TestErr<number, string>("error")
+		const tuple = result.into()
+		expect(tuple).toEqual([undefined, "error"])
+	})
+
+	test("control flow", () => {
+		const result = TestOk<number, Error>(42)
+		const [value, error] = result.into()
+
+		if (value !== undefined) {
+			expectTypeOf(error).toEqualTypeOf<undefined>()
+		} else {
+			expectTypeOf(error).toEqualTypeOf<Error>()
+		}
+
+		if (error) {
+			expectTypeOf(value).toEqualTypeOf<undefined>()
+		} else {
+			expectTypeOf(value).toEqualTypeOf<number>()
+		}
+	})
+})
+
+describe.concurrent("from", () => {
+	it("returns an Ok result from a value", () => {
+		const result = Result.from([42])
+		expect(result).toEqual(Ok(42))
+
+		const result2 = Result.from([42, undefined])
+		expect(result2).toEqual(Ok(42))
+	})
+
+	it("returns an Err result from an error", () => {
+		const result = Result.from([undefined, "error"])
+		expect(result).toEqual(Err("error"))
 	})
 })

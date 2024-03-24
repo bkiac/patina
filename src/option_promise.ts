@@ -1,3 +1,4 @@
+import {ResultPromise} from "."
 import type {Option, OptionMatch} from "./option"
 
 export class OptionPromise<T> implements PromiseLike<Option<T>> {
@@ -25,6 +26,14 @@ export class OptionPromise<T> implements PromiseLike<Option<T>> {
 				throw reason
 			},
 		)
+	}
+
+	okOr<E>(err: E): ResultPromise<T, E> {
+		return new ResultPromise(this.then((option) => option.okOr(err)))
+	}
+
+	okOrElse<E>(err: () => E): ResultPromise<T, E> {
+		return new ResultPromise(this.then((option) => option.okOrElse(err)))
 	}
 
 	and<U>(other: OptionPromise<U>): OptionPromise<U> {

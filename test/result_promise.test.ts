@@ -1,5 +1,5 @@
 import {describe, it, expect, expectTypeOf} from "vitest"
-import {Err, Panic, ResultPromise, Ok, Result, ErrorWithTag} from "../src"
+import {Err, Panic, ResultPromise, Ok, Result, ErrorWithTag, Some, None} from "../src"
 import {TestErr, TestOk} from "./result.test"
 
 function TestOkPromise<T, E = any>(value: T) {
@@ -9,6 +9,20 @@ function TestOkPromise<T, E = any>(value: T) {
 function TestErrPromise<E, T = any>(error: E) {
 	return new ResultPromise<T, E>(Promise.resolve(Err<E>(error)))
 }
+
+describe.concurrent("ok", () => {
+	it("returns the value when called on an Ok result", async () => {
+		const result = TestOkPromise(42)
+		const option = result.ok()
+		await expect(option).resolves.toEqual(Some(42))
+	})
+
+	it("returns None when called on an Err result", async () => {
+		const result = TestErrPromise("error")
+		const option = result.ok()
+		await expect(option).resolves.toEqual(None)
+	})
+})
 
 describe.concurrent("and", () => {
 	it("returns the error when Ok and Err", async () => {

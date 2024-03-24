@@ -1,5 +1,5 @@
 import {describe, it, expect, vi} from "vitest"
-import {Panic, OptionPromise, Some, None} from "../src"
+import {Panic, OptionPromise, Some, None, Ok, Err} from "../src"
 
 function promiseSome<T>(value: T) {
 	return new OptionPromise<T>(Promise.resolve(Some<T>(value)))
@@ -8,6 +8,34 @@ function promiseSome<T>(value: T) {
 function promiseNone() {
 	return new OptionPromise<any>(Promise.resolve(None))
 }
+
+describe.concurrent("okOr", () => {
+	it("returns the option when Some", async () => {
+		const option = promiseSome(42)
+		const err = "error"
+		await expect(option.okOr(err)).resolves.toEqual(Ok(42))
+	})
+
+	it("returns the error when None", async () => {
+		const option = promiseNone()
+		const err = "error"
+		await expect(option.okOr(err)).resolves.toEqual(Err(err))
+	})
+})
+
+describe.concurrent("okOrElse", () => {
+	it("returns the option when Some", async () => {
+		const option = promiseSome(42)
+		const err = "error"
+		await expect(option.okOrElse(() => err)).resolves.toEqual(Ok(42))
+	})
+
+	it("returns the error when None", async () => {
+		const option = promiseNone()
+		const err = "error"
+		await expect(option.okOrElse(() => err)).resolves.toEqual(Err(err))
+	})
+})
 
 describe.concurrent("and", () => {
 	it("returns the other option when Some and None", async () => {
