@@ -42,14 +42,14 @@ export class ResultImpl<T, E> {
 		return this.isOk ? f(this.value as T) : defaultValue(this.value as E)
 	}
 
-	examine(f: (value: T) => void): Result<T, E> {
+	inspect(f: (value: T) => void): Result<T, E> {
 		if (this.isOk) {
 			f(this.value as T)
 		}
 		return this as unknown as Result<T, E>
 	}
 
-	examineErr(f: (error: E) => void): Result<T, E> {
+	inspectErr(f: (error: E) => void): Result<T, E> {
 		if (this.isErr) {
 			f(this.value as E)
 		}

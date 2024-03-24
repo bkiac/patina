@@ -60,12 +60,12 @@ export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 		return new ResultPromise(this.then((result) => result.flatten()))
 	}
 
-	examine(f: (value: T) => void): ResultPromise<T, E> {
-		return new ResultPromise(this.then((result) => result.examine(f)))
+	inspect(f: (value: T) => void): ResultPromise<T, E> {
+		return new ResultPromise(this.then((result) => result.inspect(f)))
 	}
 
-	examineErr(f: (error: E) => void): ResultPromise<T, E> {
-		return new ResultPromise(this.then((result) => result.examineErr(f)))
+	inspectErr(f: (error: E) => void): ResultPromise<T, E> {
+		return new ResultPromise(this.then((result) => result.inspectErr(f)))
 	}
 
 	map<U>(f: (value: T) => U): ResultPromise<U, E> {

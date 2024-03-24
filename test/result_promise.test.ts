@@ -136,11 +136,11 @@ describe.concurrent("flatten", () => {
 	})
 })
 
-describe.concurrent("examine", async () => {
+describe.concurrent("inspect", async () => {
 	it("returns result and calls closure on Ok result", async () => {
 		let counter = 0
 		const result = new ResultPromise(Promise.resolve(Ok(42)))
-		const result2 = result.examine((value) => {
+		const result2 = result.inspect((value) => {
 			counter += value
 		})
 		const awaitedResult = await result
@@ -151,7 +151,7 @@ describe.concurrent("examine", async () => {
 	it("returns result and does not call closure on Err result", async () => {
 		let counter = 0
 		const result = new ResultPromise(Promise.resolve(Err()))
-		const result2 = result.examine(() => {
+		const result2 = result.inspect(() => {
 			counter += 1
 		})
 		const awaitedResult = await result
@@ -160,11 +160,11 @@ describe.concurrent("examine", async () => {
 	})
 })
 
-describe.concurrent("examineErr", async () => {
+describe.concurrent("inspectErr", async () => {
 	it("returns result and does not call closure on Ok result", async () => {
 		let counter = 0
 		const result = new ResultPromise(Promise.resolve(Ok()))
-		const result2 = result.examineErr((error) => {
+		const result2 = result.inspectErr((error) => {
 			counter += 1
 			expect(error).toEqual(undefined)
 		})
@@ -176,7 +176,7 @@ describe.concurrent("examineErr", async () => {
 	it("returns result and calls closure on Err result", async () => {
 		let counter = 0
 		const result = new ResultPromise(Promise.resolve(Err("foo")))
-		const result2 = result.examineErr((error) => {
+		const result2 = result.inspectErr((error) => {
 			counter += 1
 			expect(error).toEqual("foo")
 		})

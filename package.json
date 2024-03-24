@@ -41,6 +41,7 @@
 		"ts:check": "tsc"
 	},
 	"devDependencies": {
+		"@types/node": "^20.11.30",
 		"@vitest/browser": "^1.4.0",
 		"husky": "^8.0.3",
 		"lint-staged": "^14.0.1",

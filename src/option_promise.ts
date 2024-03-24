@@ -46,8 +46,8 @@ export class OptionPromise<T> implements PromiseLike<Option<T>> {
 		return new OptionPromise(this.then((option) => option.andThen((value) => f(value))))
 	}
 
-	examine(f: (value: T) => void): OptionPromise<T> {
-		return new OptionPromise(this.then((option) => option.examine(f)))
+	inspect(f: (value: T) => void): OptionPromise<T> {
+		return new OptionPromise(this.then((option) => option.inspect(f)))
 	}
 
 	async expect(message: string): Promise<T> {

@@ -212,11 +212,11 @@ describe.concurrent("flatten", () => {
 	})
 })
 
-describe.concurrent("examine", () => {
+describe.concurrent("inspect", () => {
 	it("returns this and calls closure on Ok result", () => {
 		const f = vi.fn()
 		const result = TestOk<number, string>(42)
-		const result2 = result.examine(f)
+		const result2 = result.inspect(f)
 		expect(f).toHaveBeenCalled()
 		expect(result2).toEqual(result)
 	})
@@ -224,17 +224,17 @@ describe.concurrent("examine", () => {
 	it("returns this and does not call closure on Err result", () => {
 		const f = vi.fn()
 		const result = TestErr<number, string>("")
-		const result2 = result.examine(f)
+		const result2 = result.inspect(f)
 		expect(f).not.toHaveBeenCalled()
 		expect(result2).toEqual(result)
 	})
 })
 
-describe.concurrent("examineErr", () => {
+describe.concurrent("inspectErr", () => {
 	it("returns this and does not call closure on Ok result", () => {
 		const f = vi.fn()
 		const result = TestOk<number, string>(42)
-		const result2 = result.examineErr(f)
+		const result2 = result.inspectErr(f)
 		expect(f).not.toHaveBeenCalled()
 		expect(result2).toEqual(result)
 	})
@@ -242,7 +242,7 @@ describe.concurrent("examineErr", () => {
 	it("returns this and calls closure on Err result", () => {
 		const f = vi.fn()
 		const result = TestErr<number, string>("")
-		const result2 = result.examineErr(f)
+		const result2 = result.inspectErr(f)
 		expect(f).toHaveBeenCalled()
 		expect(result2).toEqual(result)
 	})

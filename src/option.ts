@@ -44,7 +44,7 @@ export class OptionImpl<T> {
 		return (this.isSome ? new OptionImpl(true, f(this.value as T)) : None) as Option<U>
 	}
 
-	examine(f: (value: T) => void): this {
+	inspect(f: (value: T) => void): this {
 		if (this.isSome) {
 			f(this.value as T)
 		}

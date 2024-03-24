@@ -163,18 +163,18 @@ describe.concurrent("flatten", () => {
 	})
 })
 
-describe.concurrent("examine", () => {
+describe.concurrent("inspect", () => {
 	it("calls the function with the value when called on a Some option", () => {
 		const option = TestSome(42)
 		const callback = vi.fn()
-		expect(option.examine(callback)).toEqual(option)
+		expect(option.inspect(callback)).toEqual(option)
 		expect(callback).toHaveBeenCalledWith(42)
 	})
 
 	it("does not call the function when called on a None option", () => {
 		const option = TestNone<string>()
 		const callback = vi.fn()
-		expect(option.examine(callback)).toEqual(option)
+		expect(option.inspect(callback)).toEqual(option)
 		expect(callback).not.toHaveBeenCalled()
 	})
 })
