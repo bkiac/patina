@@ -2,7 +2,7 @@ import {Panic} from "./panic"
 import {inspectSymbol} from "./util"
 import {Option, Some, None} from "./option"
 
-export type ResultMatcher<T, E, A, B> = {
+export type ResultMatch<T, E, A, B> = {
 	Ok: (value: T) => A
 	Err: (error: E) => B
 }
@@ -48,18 +48,18 @@ export class ResultImpl<T, E> {
 		return this as unknown as Result<T, E>
 	}
 
-	expect(panic: string): T {
+	expect(message: string): T {
 		if (this.isOk) {
 			return this.value as T
 		}
-		throw new Panic({message: panic, cause: this})
+		throw new Panic({message, cause: this})
 	}
 
-	expectErr(panic: string): E {
+	expectErr(message: string): E {
 		if (this.isErr) {
 			return this.value as E
 		}
-		throw new Panic({message: panic, cause: this})
+		throw new Panic({message, cause: this})
 	}
 
 	flatten<U, F>(this: Result<ResultImpl<U, F>, E>): Result<U, E | F> {
@@ -112,7 +112,7 @@ export class ResultImpl<T, E> {
 		return this.isOk ? (this.value as T) : defaultValue(this.value as E)
 	}
 
-	match<A, B>(matcher: ResultMatcher<T, E, A, B>): A | B {
+	match<A, B>(matcher: ResultMatch<T, E, A, B>): A | B {
 		return this.isOk ? matcher.Ok(this.value as T) : matcher.Err(this.value as E)
 	}
 

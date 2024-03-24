@@ -1,4 +1,4 @@
-import type {Result, ResultImpl, ResultMatcher} from "./result"
+import type {Result, ResultImpl, ResultMatch} from "./result"
 
 export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 	constructor(
@@ -39,12 +39,12 @@ export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 		return new ResultPromise(this.then((result) => result.andThen((value) => f(value))))
 	}
 
-	async expect(panic: string): Promise<T> {
-		return (await this).expect(panic)
+	async expect(message: string): Promise<T> {
+		return (await this).expect(message)
 	}
 
-	async expectErr(panic: string): Promise<E> {
-		return (await this).expectErr(panic)
+	async expectErr(message: string): Promise<E> {
+		return (await this).expectErr(message)
 	}
 
 	flatten<U, F>(this: ResultPromise<ResultImpl<U, F>, E>): ResultPromise<U, E | F> {
@@ -101,7 +101,7 @@ export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 		return (await this).unwrapOrElse(defaultValue)
 	}
 
-	async match<A, B>(matcher: ResultMatcher<T, E, A, B>): Promise<A | B> {
+	async match<A, B>(matcher: ResultMatch<T, E, A, B>): Promise<A | B> {
 		return (await this).match(matcher)
 	}
 }

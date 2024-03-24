@@ -1,7 +1,7 @@
 import {Panic} from "./panic"
 import {inspectSymbol} from "./util"
 
-export type OptionMatcher<T, A, B> = {
+export type OptionMatch<T, A, B> = {
 	Some: (value: T) => A
 	None: () => B
 }
@@ -32,11 +32,11 @@ export class OptionImpl<T> {
 		return this
 	}
 
-	expect(panic: string): T {
+	expect(message: string): T {
 		if (this.isSome) {
 			return this.value as T
 		}
-		throw new Panic({message: panic, cause: this})
+		throw new Panic({message, cause: this})
 	}
 
 	filter(f: (value: T) => boolean): Option<T> {
@@ -89,7 +89,7 @@ export class OptionImpl<T> {
 		return (other.isSome ? other : None) as Option<T | U>
 	}
 
-	match<A, B>(matcher: OptionMatcher<T, A, B>): A | B {
+	match<A, B>(matcher: OptionMatch<T, A, B>): A | B {
 		return this.isSome ? matcher.Some(this.value as T) : matcher.None()
 	}
 

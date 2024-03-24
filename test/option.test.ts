@@ -9,7 +9,7 @@ function TestNone<T>(): Option<T> {
 	return None as Option<T>
 }
 
-describe.concurrent("basic", () => {
+describe.concurrent("core", () => {
 	it("returns a Some option", () => {
 		const option = Some(42)
 

@@ -1,4 +1,4 @@
-import type {Option, OptionMatcher} from "./option"
+import type {Option, OptionMatch} from "./option"
 
 export class OptionPromise<T> implements PromiseLike<Option<T>> {
 	constructor(readonly promise: Promise<Option<T>> | PromiseLike<Option<T>>) {}
@@ -41,8 +41,8 @@ export class OptionPromise<T> implements PromiseLike<Option<T>> {
 		return new OptionPromise(this.then((option) => option.examine(f)))
 	}
 
-	async expect(panic: string): Promise<T> {
-		return (await this).expect(panic)
+	async expect(message: string): Promise<T> {
+		return (await this).expect(message)
 	}
 
 	filter(f: (value: T) => boolean): OptionPromise<T> {
@@ -93,7 +93,7 @@ export class OptionPromise<T> implements PromiseLike<Option<T>> {
 		)
 	}
 
-	async match<A, B>(matcher: OptionMatcher<T, A, B>): Promise<A | B> {
+	async match<A, B>(matcher: OptionMatch<T, A, B>): Promise<A | B> {
 		return (await this).match(matcher)
 	}
 }

@@ -9,7 +9,7 @@ export function TestErr<T, E>(value: E): Result<T, E> {
 	return Err(value)
 }
 
-describe.concurrent("basic", () => {
+describe.concurrent("core", () => {
 	it("returns an Ok result", () => {
 		const r = Ok(42)
 
