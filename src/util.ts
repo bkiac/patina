@@ -1,24 +1,4 @@
-import type {Err, Ok, Result} from "./result"
-
-export const inspectSymbol = Symbol.for("nodejs.util.inspect.custom")
-
-/**
- * Tries to replace the stack trace to include the subclass error name.
- *
- * May not work in every environment, since `stack` property is implementation-dependent and isn't standardized,
- *
- * meaning different JavaScript engines might produce different stack traces.
- *
- * See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/stack
- */
-export function replaceStack(name: string, causeName: string, stack?: string) {
-	const r = new RegExp(`^${causeName}`)
-	return stack?.replace(r, name)
-}
-
-export function formatErrorString(name: string, message = "") {
-	return name + (message ? ": " + message : "")
-}
+import type {Ok, Err, Result} from "."
 
 export type InferOk<T> = T extends Ok<infer O, any> ? O : never
 

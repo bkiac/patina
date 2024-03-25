@@ -1,6 +1,6 @@
 import {Panic} from "./error"
 import {Err, Ok, type Result} from "./result"
-import {inspectSymbol} from "./util"
+import {inspectSymbol} from "./util_internal"
 
 export type OptionMatch<T, A, B> = {
 	Some: (value: T) => A
