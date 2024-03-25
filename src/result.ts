@@ -7,9 +7,6 @@ export type ResultMatch<T, E, A, B> = {
 	Err: (error: E) => B
 }
 
-/**
- * Implements the `Result` type, which is a type that represents either success (`Ok`) or failure (`Err`).
- */
 export class ResultImpl<T, E> {
 	readonly isOk: boolean
 	readonly isErr: boolean
@@ -83,7 +80,7 @@ export class ResultImpl<T, E> {
 	 * assert.strictEqual(y.mapOr(42, (v) => v.length), 42);
 	 * ```
 	 */
-	mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B {
+	mapOr<U>(defaultValue: U, f: (value: T) => U): U {
 		return this.isOk ? f(this.value as T) : defaultValue
 	}
 
@@ -420,9 +417,6 @@ export class ResultImpl<T, E> {
 	}
 }
 
-/**
- * Contains the success value.
- */
 export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
 	readonly isOk: true
 	readonly isErr: false
@@ -434,7 +428,7 @@ export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
 }
 
 /**
- * Creates a `Result` containing an `Ok` value.
+ * Contains the success value.
  */
 export function Ok(): Ok
 export function Ok<T>(value: T): Ok<T>
@@ -442,9 +436,6 @@ export function Ok<T>(value?: T): Ok<T> {
 	return new ResultImpl<T, never>(true, value as T) as Ok<T>
 }
 
-/**
- * Contains the error value.
- */
 export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
 	readonly isOk: false
 	readonly isErr: true
@@ -456,7 +447,7 @@ export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
 }
 
 /**
- * Creates a `Result` containing an `Err` value.
+ * Contains the error value.
  */
 export function Err(): Err
 export function Err<E>(value: E): Err<E>
@@ -465,6 +456,10 @@ export function Err<E>(value?: E): Err<E> {
 }
 
 /**
- * Is a discriminated union of `Ok` and `Err` variants.
+ * `Result` is a type that represents either success (`Ok`) or failure (`Err`).
+ *
+ * `Result<T, E>` is the type used for returning errors. It is a discriminated union with the variants, `Ok<T>`, representing success and containing a value, and `Err<E>`, representing error and containing an error value.
+ *
+ * Functions return `Result` whenever errors are expected and recoverable.
  */
 export type Result<T, E> = Ok<T, E> | Err<E, T>
