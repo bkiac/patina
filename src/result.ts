@@ -80,12 +80,12 @@ export class ResultImpl<T, E> {
 	 * assert.strictEqual(y.mapOr(42, (v) => v.length), 42);
 	 * ```
 	 */
-	mapOr<U>(defaultValue: U, f: (value: T) => U): U {
+	mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B {
 		return this.isOk ? f(this.value as T) : defaultValue
 	}
 
 	/**
-	 * Maps a `Result<T, E>` to `U` by applying fallback function `defaultValue` to a contained `Err` value, or function `f` to a contained `Ok` value.
+	 * Maps a `Result<T, E>` to `A | B` by applying fallback function `defaultValue` to a contained `Err` value, or function `f` to a contained `Ok` value.
 	 *
 	 * **Examples**
 	 *
@@ -99,7 +99,7 @@ export class ResultImpl<T, E> {
 	 * assert.strictEqual(x.mapOrElse(() => k * 2, (v) => v.length), 42)
 	 * ```
 	 */
-	mapOrElse<U>(defaultValue: (error: E) => U, f: (value: T) => U): U {
+	mapOrElse<A, B>(defaultValue: (error: E) => A, f: (value: T) => B): A | B {
 		return this.isOk ? f(this.value as T) : defaultValue(this.value as E)
 	}
 
