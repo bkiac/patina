@@ -1,5 +1,4 @@
-import {type ErrorHandler} from "./error"
-import {tryAsyncFn, tryAsyncFnWith, tryFn, tryFnWith} from "./try"
+import {CaughtError, tryAsyncFn, tryFn, tryPromise} from "./try"
 
 export function guard<A extends any[], T>(fn: (...args: A) => T) {
 	return function (...args: A) {
@@ -9,10 +8,10 @@ export function guard<A extends any[], T>(fn: (...args: A) => T) {
 
 export function guardWith<A extends any[], T, E>(
 	fn: (...args: A) => T,
-	handleError: ErrorHandler<E>,
+	mapErr: (error: CaughtError) => E,
 ) {
 	return function (...args: A) {
-		return tryFnWith<T, E>(() => fn(...args), handleError)
+		return tryFn<T>(() => fn(...args)).mapErr(mapErr)
 	}
 }
 
@@ -24,9 +23,9 @@ export function guardAsync<A extends any[], T>(fn: (...args: A) => Promise<T>) {
 
 export function guardAsyncWith<A extends any[], T, E>(
 	fn: (...args: A) => Promise<T>,
-	handleError: ErrorHandler<E>,
+	mapErr: (error: CaughtError) => E,
 ) {
 	return function (...args: A) {
-		return tryAsyncFnWith<T, E>(() => fn(...args), handleError)
+		return tryPromise<T>(fn(...args)).mapErr(mapErr)
 	}
 }

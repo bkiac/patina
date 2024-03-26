@@ -1,5 +1,4 @@
 export * from "./fn"
-export * from "./group"
 export * from "./guard"
 export * from "./option_promise"
 export * from "./option"

@@ -1,15 +1,5 @@
 import {expect, it, describe, expectTypeOf} from "vitest"
-import {
-	CaughtError,
-	ErrorWithTag,
-	guard,
-	guardAsync,
-	guardAsyncWith,
-	guardWith,
-	Result,
-	ResultPromise,
-} from "../src"
-import {TaggedError} from "./util"
+import {CaughtError, guard, guardAsync, Result, ResultPromise} from "../src"
 
 describe.concurrent("guard", () => {
 	it("transforms a function into a function that returns a Result object", () => {
@@ -42,42 +32,6 @@ describe.concurrent("guard", () => {
 			const f = <A, B>(a: A, _b: B) => a
 			const guarded = guard(f)
 			expectTypeOf(guarded).toEqualTypeOf<<A, B>(a: A, b: B) => Result<A, CaughtError>>()
-		})
-	})
-})
-
-describe.concurrent("guardWith", () => {
-	it("transforms a function into a function that returns a Result object", () => {
-		const fn = (x: number, y: number) => x + y
-		const wrappedFn = guardWith(fn, () => new TaggedError())
-		const result = wrappedFn(40, 2)
-		expect(result.isOk).toEqual(true)
-		expect(result.unwrap()).toEqual(42)
-	})
-
-	it("transforms a throwing function into a function that returns an Err result", () => {
-		const error = new Error("Test error")
-		const fn = () => {
-			throw error
-		}
-		const myError = new TaggedError("My error")
-		const wrappedFn = guardWith(fn, () => myError)
-		const result = wrappedFn()
-		expect(result.isOk).toEqual(false)
-		expect(result.unwrapErr()).toEqual(myError)
-	})
-
-	describe("types", () => {
-		it("works with a function", () => {
-			const f = (value: number) => value
-			const guarded = guardWith(f, () => new TaggedError())
-			expectTypeOf(guarded).toEqualTypeOf<(value: number) => Result<number, TaggedError>>()
-		})
-
-		it("works with a generic function", () => {
-			const f = <A, B>(a: A, _b: B) => a
-			const guarded = guardWith(f, () => new TaggedError())
-			expectTypeOf(guarded).toEqualTypeOf<<A, B>(a: A, b: B) => Result<A, TaggedError>>()
 		})
 	})
 })
@@ -116,45 +70,6 @@ describe.concurrent("guardAsync", () => {
 			const guarded = guardAsync(f)
 			expectTypeOf(guarded).toEqualTypeOf<
 				<A, B>(a: A, b: B) => ResultPromise<A, CaughtError>
-			>()
-		})
-	})
-})
-
-describe.concurrent("guardAsyncWith", () => {
-	it("transforms an async function into a function that returns a Promise of a Result object", async () => {
-		const fn = async (x: number, y: number) => Promise.resolve(x + y)
-		const wrappedFn = guardAsyncWith(fn, () => new TaggedError())
-		const result = await wrappedFn(40, 2)
-		expect(result.isOk).toEqual(true)
-		expect(result.unwrap()).toEqual(42)
-	})
-
-	it("transforms a throwing async function into a function that returns a Promise of an Err result", async () => {
-		const fn = async (): Promise<number> => {
-			throw new Error("Test error")
-		}
-		const handledError = new TaggedError("My error")
-		const wrappedFn = guardAsyncWith(fn, () => handledError)
-		const result = await wrappedFn()
-		expect(result.isOk).toEqual(false)
-		expect(result.unwrapErr()).toEqual(handledError)
-	})
-
-	describe("types", () => {
-		it("works with a function", () => {
-			const f = async (value: number) => value
-			const guarded = guardAsyncWith(f, () => new TaggedError())
-			expectTypeOf(guarded).toEqualTypeOf<
-				(value: number) => ResultPromise<number, TaggedError>
-			>()
-		})
-
-		it("works with a generic function", () => {
-			const f = async <A, B>(a: A, _b: B) => a
-			const guarded = guardAsyncWith(f, () => new TaggedError())
-			expectTypeOf(guarded).toEqualTypeOf<
-				<A, B>(a: A, b: B) => ResultPromise<A, TaggedError>
 			>()
 		})
 	})

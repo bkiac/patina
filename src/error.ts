@@ -49,5 +49,3 @@ export function parseError(error: unknown): Error {
 	}
 	return new TypeError(`Unexpected error type: "${String(error)}"`, {cause: error})
 }
-
-export type ErrorHandler<E> = (error: Error, raw: unknown) => E

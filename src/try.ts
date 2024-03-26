@@ -1,5 +1,5 @@
 import {Panic, ErrorWithCause} from "./error"
-import {type ErrorHandler, parseError} from "./error"
+import {parseError} from "./error"
 import {Err, Ok, type Result} from "./result"
 import {ResultPromise} from "./result_promise"
 
@@ -56,30 +56,6 @@ export function tryFn<T>(fn: () => T): Result<T, CaughtError> {
 }
 
 /**
- * Tries to execute a function and transforms the caught error using the provided `handleError` function.
- *
- * **Examples**
- *
- * ```
- * // const result: Result<number, string>
- * const result = tryFnWith(() => {
- *  if (Math.random() > 0.5) {
- *     return 42
- *   } else {
- *     throw new Error("random error")
- *   }
- *  }, (error) => error.message)
- * ```
- */
-export function tryFnWith<T, E>(fn: () => T, handleError: ErrorHandler<E>): Result<T, E> {
-	try {
-		return Ok(fn())
-	} catch (error) {
-		return Err(handleError(handleCaughtError(error), error))
-	}
-}
-
-/**
  * Tries to resolve a promise and returns the result as a `ResultPromise`.
  *
  * If the promise rejects, the error is caught and wrapped in a `CaughtError`.
@@ -106,28 +82,6 @@ export function tryPromise<T>(promise: Promise<T>): ResultPromise<T, CaughtError
 }
 
 /**
- * Tries to resolve a promise and transforms the caught error using the provided `handleError` function.
- *
- * **Examples**
- *
- * ```
- * // const result: ResultPromise<number, string>
- * const result = tryPromiseWith(Promise.resolve(42), (error) => error.message)
- * ```
- */
-export function tryPromiseWith<T, E>(
-	promise: Promise<T>,
-	handleError: ErrorHandler<E>,
-): ResultPromise<T, E> {
-	return new ResultPromise(
-		promise.then(
-			(value) => Ok(value),
-			(error: unknown) => Err(handleError(handleCaughtError(error), error)),
-		),
-	)
-}
-
-/**
  * Tries to execute an async function and returns the result as a `ResultPromise`.
  *
  * If the function throws an error, it is caught and wrapped in a `CaughtError`.
@@ -147,27 +101,4 @@ export function tryPromiseWith<T, E>(
  */
 export function tryAsyncFn<T>(fn: () => Promise<T>): ResultPromise<T, CaughtError> {
 	return tryPromise(fn())
-}
-
-/**
- * Tries to execute an async function and transforms the caught error using the provided `handleError` function.
- *
- * **Examples**
- *
- * ```
- * // const result: ResultPromise<number, string>
- * const result = tryAsyncFnWith(() => {
- * if (Math.random() > 0.5) {
- *   return Promise.resolve(42)
- * } else {
- *  throw new Error("random error")
- * }
- * }, (error) => error.message)
- * ```
- */
-export function tryAsyncFnWith<T, E>(
-	fn: () => Promise<T>,
-	handleError: ErrorHandler<E>,
-): ResultPromise<T, E> {
-	return tryPromiseWith(fn(), handleError)
 }
