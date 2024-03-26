@@ -138,6 +138,24 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
+	 * Maps a `Result<T, E>` to `ResultPromise<T, F>` by applying an async function to a contained `Err` value, leaving an `Ok` value untouched.
+	 *
+	 * **Examples**
+	 *
+	 * ```
+	 * const x = Err("error")
+	 * const mapped = x.mapErrAsync((s) => Promise.resolve(s.length))
+	 * assert.strictEqual(await mapped.unwrapErr(), 5)
+	 * ```
+	 */
+	mapErrAsync<F>(f: (error: E) => Promise<F>): ResultPromise<T, F> {
+		const promise = this.isErr
+			? f(this.value as E).then((v) => new ResultImpl<T, F>(false, v))
+			: Promise.resolve(this)
+		return new ResultPromise<T, F>(promise as Promise<Result<T, F>>)
+	}
+
+	/**
 	 * Calls the provided function with the contained value (if `Ok`).
 	 *
 	 * **Examples**

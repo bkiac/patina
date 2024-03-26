@@ -122,6 +122,13 @@ export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 	}
 
 	/**
+	 * Async version of `Result#mapErrAsync`.
+	 */
+	mapErrAsync<F>(f: (error: E) => Promise<F>): ResultPromise<T, F> {
+		return new ResultPromise(this.then((result) => result.mapErrAsync(f)))
+	}
+
+	/**
 	 * Async version of `Result#mapOr`.
 	 */
 	async mapOr<A, B>(defaultValue: A, f: (value: T) => B): Promise<A | B> {
