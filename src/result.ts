@@ -1,6 +1,7 @@
 import {Panic} from "./error"
 import {inspectSymbol} from "./util_internal"
 import {Option, Some, None} from "./option"
+import {ResultPromise} from "./result_promise"
 
 export type ResultMatch<T, E, A, B> = {
 	Ok: (value: T) => A
@@ -65,6 +66,24 @@ export class ResultImpl<T, E> {
 	 */
 	map<U>(f: (value: T) => U): Result<U, E> {
 		return (this.isOk ? new ResultImpl<U, E>(true, f(this.value as T)) : this) as Result<U, E>
+	}
+
+	/**
+	 * Maps a `Result<T, E>` to `ResultPromise<U, E>` by applying an async function to a contained `Ok` value, leaving an `Err` value untouched.
+	 *
+	 * **Examples**
+	 *
+	 * ```
+	 * const x = Ok(10)
+	 * const mapped = x.mapAsync((n) => Promise.resolve(`number ${n}`))
+	 * assert.strictEqual(await mapped.unwrap(), "number 10")
+	 * ```
+	 */
+	mapAsync<U>(f: (value: T) => Promise<U>): ResultPromise<U, E> {
+		const promise = this.isOk
+			? f(this.value as T).then((v) => new ResultImpl<U, E>(true, v))
+			: Promise.resolve(this)
+		return new ResultPromise<U, E>(promise as Promise<Result<U, E>>)
 	}
 
 	/**

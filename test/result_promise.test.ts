@@ -202,6 +202,21 @@ describe.concurrent("map", () => {
 	})
 })
 
+describe.concurrent("mapAsync", () => {
+	it("returns the mapped value for an Ok result", async () => {
+		const a = new ResultPromise(Promise.resolve(Ok(42)))
+		const b = a.mapAsync(async (value) => value * 2)
+		await expect(b).resolves.toEqual(Ok(84))
+	})
+
+	it("returns the original Err for an Err result", async () => {
+		const a = new ResultPromise<number, string>(Promise.resolve(Err("error")))
+		const b = a.map((value) => value * 2)
+		const awaitedResult = await a
+		await expect(b).resolves.toEqual(awaitedResult)
+	})
+})
+
 describe.concurrent("mapErr", () => {
 	it("returns the mapped error for an Err result", async () => {
 		const error = new Error("Test error")
