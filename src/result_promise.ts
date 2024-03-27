@@ -66,6 +66,13 @@ export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 	}
 
 	/**
+	 * Async version of `Result#andThenAsync`.
+	 */
+	andThenAsync<U, F>(f: (value: T) => Promise<Result<U, F>>): ResultPromise<U, E | F> {
+		return new ResultPromise(this.then((result) => result.andThenAsync((value) => f(value))))
+	}
+
+	/**
 	 * Async version of `Result#expect`.
 	 */
 	async expect(message: string): Promise<T> {
@@ -170,6 +177,15 @@ export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 	 */
 	orElse<U, F>(f: (error: E) => Result<U, F>): ResultPromise<T | U, F> {
 		return new ResultPromise(this.then((thisResult) => thisResult.orElse((error) => f(error))))
+	}
+
+	/**
+	 * Async version of `Result#orElseAsync`.
+	 */
+	orElseAsync<U, F>(f: (error: E) => Promise<Result<U, F>>): ResultPromise<T | U, F> {
+		return new ResultPromise(
+			this.then((thisResult) => thisResult.orElseAsync((error) => f(error))),
+		)
 	}
 
 	/**

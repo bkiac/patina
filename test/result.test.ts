@@ -136,6 +136,18 @@ describe.concurrent("andThen", () => {
 	})
 })
 
+describe.concurrent("andThenAsync", () => {
+	it("returns the mapped value for an Ok result", async () => {
+		const a = TestOk<number, string>(0)
+		await expect(a.andThenAsync(async (value) => Ok(value + 1))).resolves.toEqual(Ok(1))
+	})
+
+	it("returns the result for an Err result", async () => {
+		const a = TestErr<number, string>("early error")
+		await expect(a.andThenAsync(async (value) => Ok(value + 1))).resolves.toEqual(a)
+	})
+})
+
 describe.concurrent("expect", () => {
 	it("returns the value when called on an Ok result", () => {
 		const result = TestOk<number, string>(42)
@@ -401,6 +413,20 @@ describe.concurrent("orElse", () => {
 	it("returns the mapped value for an Err result", () => {
 		const a = TestErr<number, string>("early error")
 		expect(a.orElse(() => Ok(1))).toEqual(Ok(1))
+		expect(a.orElse(() => Err(1))).toEqual(Err(1))
+	})
+})
+
+describe.concurrent("orElseAsync", () => {
+	it("returns the result for an Ok result", async () => {
+		const a = TestOk<number, string>(0)
+		await expect(a.orElseAsync(async () => Ok(1))).resolves.toEqual(a)
+	})
+
+	it("returns the mapped value for an Err result", async () => {
+		const a = TestErr<number, string>("early error")
+		await expect(a.orElseAsync(async () => Ok(1))).resolves.toEqual(Ok(1))
+		await expect(a.orElseAsync(async () => Err(1))).resolves.toEqual(Err(1))
 	})
 })
 

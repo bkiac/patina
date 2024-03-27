@@ -340,6 +340,26 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
+	 * Calls `f` if the result is `Ok`, otherwise returns `this` (as `Err`).
+	 *
+	 * **Examples**
+	 *
+	 * ```
+	 * let x: Result<number, string> = Ok(2)
+	 * assert.deepStrictEqual(x.andThenAsync((n) => Promise.resolve(Ok(n * 2))), Ok(4))
+	 *
+	 * let y: Result<string, string> = Err("late error")
+	 * assert.deepStrictEqual(y.andThenAsync((n) => Promise.resolve(Ok(n * 2))), Err("late error"))
+	 * ```
+	 */
+	andThenAsync<U, F>(
+		f: (value: T) => ResultPromise<U, F> | Promise<Result<U, F>>,
+	): ResultPromise<U, E | F> {
+		const promise = this.isOk ? f(this.value as T) : Promise.resolve(this)
+		return new ResultPromise<U, E | F>(promise as Promise<Result<U, F>>)
+	}
+
+	/**
 	 * Returns `other` if the result is `Err`, otherwise returns `this` (as `Ok`).
 	 *
 	 * **Examples**
@@ -370,6 +390,26 @@ export class ResultImpl<T, E> {
 	 */
 	orElse<U, F>(f: (error: E) => Result<U, F>): Result<T | U, F> {
 		return (this.isOk ? this : f(this.value as E)) as Result<T | U, F>
+	}
+
+	/**
+	 * Calls `f` if the result is `Err`, otherwise returns `this` (as `Ok`).
+	 *
+	 * **Examples**
+	 *
+	 * ```
+	 * let x: Result<number, string> = Ok(2)
+	 * assert.deepStrictEqual(x.orElseAsync((e) => Promise.resolve(Err(e + "bar"))), Ok(2))
+	 *
+	 * let y: Result<number, string> = Err("foo")
+	 * assert.deepStrictEqual(y.orElseAsync((e) => Promise.resolve(Err(e + "bar"))), Err("foobar"))
+	 * ```
+	 */
+	orElseAsync<U, F>(
+		f: (error: E) => ResultPromise<U, F> | Promise<Result<U, F>>,
+	): ResultPromise<T | U, F> {
+		const promise = this.isErr ? f(this.value as E) : Promise.resolve(this)
+		return new ResultPromise<T | U, F>(promise as Promise<Result<T | U, F>>)
 	}
 
 	/**
