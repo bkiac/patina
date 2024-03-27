@@ -94,10 +94,24 @@ export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 	}
 
 	/**
+	 * Async version of `Result#inspectAsync`.
+	 */
+	inspectAsync(f: (value: T) => Promise<void>): ResultPromise<T, E> {
+		return new ResultPromise(this.then((result) => result.inspectAsync(f)))
+	}
+
+	/**
 	 * Async version of `Result#inspectErr`.
 	 */
 	inspectErr(f: (error: E) => void): ResultPromise<T, E> {
 		return new ResultPromise(this.then((result) => result.inspectErr(f)))
+	}
+
+	/**
+	 * Async version of `Result#inspectErrAsync`.
+	 */
+	inspectErrAsync(f: (error: E) => Promise<void>): ResultPromise<T, E> {
+		return new ResultPromise(this.then((result) => result.inspectErrAsync(f)))
 	}
 
 	/**

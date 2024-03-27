@@ -1,6 +1,7 @@
 import {describe, it, expect, expectTypeOf} from "vitest"
 import {Err, Panic, ResultPromise, Ok, Result, ErrorWithTag, Some, None} from "../src"
 import {TestErr, TestOk} from "./result.test"
+import {vi} from "vitest"
 
 function TestOkPromise<T, E = any>(value: T) {
 	return new ResultPromise<T, E>(Promise.resolve(Ok<T>(value)))
@@ -160,6 +161,20 @@ describe.concurrent("inspect", async () => {
 	})
 })
 
+describe.concurrent("inspectAsync", () => {
+	it("calls closure on Ok result", async () => {
+		const f = vi.fn().mockResolvedValue("mocked value")
+		await TestOkPromise(42).inspectAsync(f)
+		expect(f).toHaveBeenCalled()
+	})
+
+	it("does not call closure on Err result", async () => {
+		const f = vi.fn().mockResolvedValue("mocked value")
+		await TestErrPromise<number, string>(0).inspectAsync(f)
+		expect(f).not.toHaveBeenCalled()
+	})
+})
+
 describe.concurrent("inspectErr", async () => {
 	it("returns result and does not call closure on Ok result", async () => {
 		let counter = 0
@@ -183,6 +198,20 @@ describe.concurrent("inspectErr", async () => {
 		const awaitedResult = await result
 		await expect(result2).resolves.toEqual(awaitedResult)
 		expect(counter).toEqual(1)
+	})
+})
+
+describe.concurrent("inspectErrAsync", () => {
+	it("does not call closure on Ok result", async () => {
+		const f = vi.fn().mockResolvedValue("mocked value")
+		await TestOkPromise<number, string>(0).inspectErrAsync(f)
+		expect(f).not.toHaveBeenCalled()
+	})
+
+	it("calls closure on Ok result", async () => {
+		const f = vi.fn().mockResolvedValue("mocked value")
+		await TestErrPromise(42).inspectErrAsync(f)
+		expect(f).toHaveBeenCalled()
 	})
 })
 

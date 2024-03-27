@@ -230,6 +230,20 @@ describe.concurrent("inspect", () => {
 	})
 })
 
+describe.concurrent("inspectAsync", () => {
+	it("calls closure on Ok result", async () => {
+		const f = vi.fn().mockResolvedValue("mocked value")
+		await TestOk<number, string>(42).inspectAsync(f)
+		expect(f).toHaveBeenCalled()
+	})
+
+	it("does not call closure on Err result", async () => {
+		const f = vi.fn().mockResolvedValue("mocked value")
+		await TestErr<number, string>("").inspectAsync(f)
+		expect(f).not.toHaveBeenCalled()
+	})
+})
+
 describe.concurrent("inspectErr", () => {
 	it("returns this and does not call closure on Ok result", () => {
 		const f = vi.fn()
@@ -245,6 +259,20 @@ describe.concurrent("inspectErr", () => {
 		const result2 = result.inspectErr(f)
 		expect(f).toHaveBeenCalled()
 		expect(result2).toEqual(result)
+	})
+})
+
+describe.concurrent("inspectErrAsync", () => {
+	it("calls closure on Err result", async () => {
+		const f = vi.fn().mockResolvedValue("mocked value")
+		await TestOk<number, string>(42).inspectErrAsync(f)
+		expect(f).not.toHaveBeenCalled()
+	})
+
+	it("does not call closure on Ok result", async () => {
+		const f = vi.fn().mockResolvedValue("mocked value")
+		await TestErr<number, string>("").inspectErrAsync(f)
+		expect(f).toHaveBeenCalled()
 	})
 })
 

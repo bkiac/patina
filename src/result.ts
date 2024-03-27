@@ -173,6 +173,21 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
+	 * Calls the provided async function with the contained value (if `Ok`).
+	 *
+	 * **Examples**
+	 *
+	 * ```
+	 * const x = Ok(2)
+	 * x.inspectAsync((v) => Promise.resolve(console.log(v)))
+	 * ```
+	 */
+	inspectAsync(f: (value: T) => Promise<void>): ResultPromise<T, E> {
+		const promise = this.isOk ? f(this.value as T).then(() => this) : Promise.resolve(this)
+		return new ResultPromise<T, E>(promise as unknown as Promise<Result<T, E>>)
+	}
+
+	/**
 	 * Calls the provided function with the contained error (if `Err`).
 	 *
 	 * **Examples**
@@ -187,6 +202,21 @@ export class ResultImpl<T, E> {
 			f(this.value as E)
 		}
 		return this as unknown as Result<T, E>
+	}
+
+	/**
+	 * Calls the provided async function with the contained error (if `Err`).
+	 *
+	 * **Examples**
+	 *
+	 * ```
+	 * const x = Err("error")
+	 * x.inspectErrAsync((e) => Promise.resolve(console.error(e)))
+	 * ```
+	 */
+	inspectErrAsync(f: (error: E) => Promise<void>): ResultPromise<T, E> {
+		const promise = this.isErr ? f(this.value as E).then(() => this) : Promise.resolve(this)
+		return new ResultPromise<T, E>(promise as unknown as Promise<Result<T, E>>)
 	}
 
 	/**
