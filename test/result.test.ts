@@ -38,7 +38,8 @@ describe.concurrent("core", () => {
 
 		expectTypeOf(r.isOk).toEqualTypeOf<false>()
 		expectTypeOf(r.isErr).toEqualTypeOf<true>()
-		expectTypeOf(r.value).toEqualTypeOf<string>()
+		expectTypeOf(r.value).toEqualTypeOf<never>()
+		expectTypeOf(r.error).toEqualTypeOf<string>()
 
 		expectTypeOf(r.unwrap).toEqualTypeOf<() => never>()
 		expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>()

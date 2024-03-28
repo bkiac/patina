@@ -10,13 +10,16 @@ export type ResultMatch<T, E, A, B> = {
 
 export class ResultImpl<T, E> {
 	readonly isOk: boolean
+	readonly value: T
+
 	readonly isErr: boolean
-	readonly value: T | E
+	readonly error: E
 
 	constructor(ok: boolean, value: T | E) {
 		this.isOk = ok
 		this.isErr = !ok
-		this.value = value
+		this.value = value as T
+		this.error = value as E
 	}
 
 	/**
@@ -50,7 +53,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	err(): Option<E> {
-		return this.isErr ? Some(this.value as E) : None
+		return this.isErr ? Some(this.error as E) : None
 	}
 
 	/**
@@ -119,7 +122,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	mapOrElse<A, B>(defaultValue: (error: E) => A, f: (value: T) => B): A | B {
-		return this.isOk ? f(this.value as T) : defaultValue(this.value as E)
+		return this.isOk ? f(this.value as T) : defaultValue(this.error as E)
 	}
 
 	/**
@@ -134,7 +137,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	mapErr<F>(f: (error: E) => F): Result<T, F> {
-		return (this.isOk ? this : new ResultImpl<T, F>(false, f(this.value as E))) as Result<T, F>
+		return (this.isOk ? this : new ResultImpl<T, F>(false, f(this.error as E))) as Result<T, F>
 	}
 
 	/**
@@ -150,7 +153,7 @@ export class ResultImpl<T, E> {
 	 */
 	mapErrAsync<F>(f: (error: E) => Promise<F>): ResultPromise<T, F> {
 		const promise = this.isErr
-			? f(this.value as E).then((v) => new ResultImpl<T, F>(false, v))
+			? f(this.error as E).then((v) => new ResultImpl<T, F>(false, v))
 			: Promise.resolve(this)
 		return new ResultPromise<T, F>(promise as Promise<Result<T, F>>)
 	}
@@ -199,7 +202,7 @@ export class ResultImpl<T, E> {
 	 */
 	inspectErr(f: (error: E) => void): Result<T, E> {
 		if (this.isErr) {
-			f(this.value as E)
+			f(this.error as E)
 		}
 		return this as unknown as Result<T, E>
 	}
@@ -215,7 +218,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	inspectErrAsync(f: (error: E) => Promise<void>): ResultPromise<T, E> {
-		const promise = this.isErr ? f(this.value as E).then(() => this) : Promise.resolve(this)
+		const promise = this.isErr ? f(this.error as E).then(() => this) : Promise.resolve(this)
 		return new ResultPromise<T, E>(promise as unknown as Promise<Result<T, E>>)
 	}
 
@@ -271,7 +274,7 @@ export class ResultImpl<T, E> {
 	 */
 	expectErr(message: string): E {
 		if (this.isErr) {
-			return this.value as E
+			return this.error as E
 		}
 		throw new Panic(message, {cause: this})
 	}
@@ -290,7 +293,7 @@ export class ResultImpl<T, E> {
 	 */
 	unwrapErr(): E {
 		if (this.isErr) {
-			return this.value as E
+			return this.error as E
 		}
 		throw new Panic(`called "unwrapErr()" on ${this.toString()}`, {cause: this})
 	}
@@ -389,7 +392,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	orElse<U, F>(f: (error: E) => Result<U, F>): Result<T | U, F> {
-		return (this.isOk ? this : f(this.value as E)) as Result<T | U, F>
+		return (this.isOk ? this : f(this.error as E)) as Result<T | U, F>
 	}
 
 	/**
@@ -408,7 +411,7 @@ export class ResultImpl<T, E> {
 	orElseAsync<U, F>(
 		f: (error: E) => ResultPromise<U, F> | Promise<Result<U, F>>,
 	): ResultPromise<T | U, F> {
-		const promise = this.isErr ? f(this.value as E) : Promise.resolve(this)
+		const promise = this.isErr ? f(this.error as E) : Promise.resolve(this)
 		return new ResultPromise<T | U, F>(promise as Promise<Result<T | U, F>>)
 	}
 
@@ -443,7 +446,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	unwrapOrElse<U>(defaultValue: (error: E) => U): T | U {
-		return this.isOk ? (this.value as T) : defaultValue(this.value as E)
+		return this.isOk ? (this.value as T) : defaultValue(this.error as E)
 	}
 
 	/**
@@ -486,7 +489,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	match<A, B>(match: ResultMatch<T, E, A, B>): A | B {
-		return this.isOk ? match.Ok(this.value as T) : match.Err(this.value as E)
+		return this.isOk ? match.Ok(this.value as T) : match.Err(this.error as E)
 	}
 
 	toObject(): {isOk: true; value: T} | {isOk: false; value: E} {
@@ -498,11 +501,11 @@ export class ResultImpl<T, E> {
 		}
 		return {
 			isOk: false,
-			value: this.value as E,
+			value: this.error as E,
 		}
 	}
 
-	toJSON(): {meta: "Ok"; value: T} | {meta: "Err"; value: E} {
+	toJSON(): {meta: "Ok"; value: T} | {meta: "Err"; error: E} {
 		if (this.isOk) {
 			return {
 				meta: "Ok",
@@ -511,12 +514,12 @@ export class ResultImpl<T, E> {
 		}
 		return {
 			meta: "Err",
-			value: this.value as E,
+			error: this.error as E,
 		}
 	}
 
 	toString(): `Ok(${string})` | `Err(${string})` {
-		return this.isOk ? `Ok(${this.value})` : `Err(${this.value})`
+		return this.isOk ? `Ok(${String(this.value)})` : `Err(${String(this.value)})`
 	}
 
 	[inspectSymbol](): ReturnType<ResultImpl<T, E>["toString"]> {
@@ -527,7 +530,6 @@ export class ResultImpl<T, E> {
 export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
 	readonly isOk: true
 	readonly isErr: false
-	readonly value: T
 	unwrap(): T
 	unwrapErr(): never
 	expect(message: string): T
@@ -546,7 +548,6 @@ export function Ok<T>(value?: T): Ok<T> {
 export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
 	readonly isOk: false
 	readonly isErr: true
-	readonly value: E
 	unwrap(): never
 	unwrapErr(): E
 	expect(message: string): never
