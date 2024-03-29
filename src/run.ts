@@ -6,9 +6,9 @@ function isResult<T, E>(value: any): value is Result<T, E> {
 	return value instanceof ResultImpl
 }
 
-export function run<T extends Result<any, any>>(
-	fn: () => Generator<T, InferOk<T>, any>,
-): Result<InferOk<T>, InferErr<T>> {
+export function run<T extends Result<any, any>, U>(
+	fn: () => Generator<T, U, any>,
+): Result<U, InferErr<T>> {
 	const gen = fn()
 	let done = false
 	let returnResult = Ok()
@@ -40,9 +40,9 @@ async function toPromiseResult<T, E>(value: TODO): Promise<Result<T, E>> {
 	return Ok(awaited)
 }
 
-export function runAsync<T extends ResultPromise<any, any> | Result<any, any>>(
-	fn: () => AsyncGenerator<T, InferOk<Awaited<T>>, any>,
-): ResultPromise<InferOk<Awaited<T>>, InferErr<Awaited<T>>> {
+export function runAsync<T extends ResultPromise<any, any> | Result<any, any>, U>(
+	fn: () => AsyncGenerator<T, U, any>,
+): ResultPromise<U, InferErr<Awaited<T>>> {
 	async function exec(): Promise<Result<any, any>> {
 		const gen = fn()
 		return new ResultPromise<any, any>(Promise.resolve(Ok())).then(

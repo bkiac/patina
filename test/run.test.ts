@@ -23,6 +23,16 @@ describe("run", () => {
 		expect(result.unwrap()).toEqual(43)
 	})
 
+	it("should handle transformed return type", () => {
+		const result = run(function* () {
+			const x = yield* Ok(42)
+			const y = yield* Ok(1)
+			return x.toString() + y.toString()
+		})
+		expectTypeOf(result).toEqualTypeOf<Result<string, never>>()
+		expect(result.unwrap()).toEqual("421")
+	})
+
 	it("works with function call", () => {
 		function fn() {
 			return run(function* () {
@@ -72,6 +82,35 @@ describe("runAsync", () => {
 		})
 		expectTypeOf(result).toEqualTypeOf<ResultPromise<number, string>>()
 		await expect(result.unwrapErr()).resolves.toEqual("error")
+	})
+
+	it("works with function call", async () => {
+		function fn() {
+			return runAsync(async function* () {
+				const x = yield* Ok(1)
+				const y = yield* new ResultPromise(Promise.resolve(Ok(1)))
+				return x + y
+			})
+		}
+
+		const result = runAsync(async function* () {
+			const x = yield* Ok(1)
+			const y = yield* fn()
+			return x + y
+		})
+
+		expectTypeOf(result).toEqualTypeOf<ResultPromise<number, never>>()
+		await expect(result.unwrap()).resolves.toEqual(3)
+	})
+
+	it("should handle transformed return type", async () => {
+		const result = runAsync(async function* () {
+			const x = yield* Ok(42)
+			const y = yield* new ResultPromise(Promise.resolve(Ok(1)))
+			return x.toString() + y.toString()
+		})
+		expectTypeOf(result).toEqualTypeOf<ResultPromise<string, never>>()
+		await expect(result.unwrap()).resolves.toEqual("421")
 	})
 
 	it(
