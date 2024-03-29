@@ -1,6 +1,6 @@
 import {ResultPromise} from "./result_promise"
 import {type Result, Ok, ResultImpl} from "./result"
-import type {InferErr, InferOk} from "./util"
+import type {InferErr} from "./util"
 
 function isResult<T, E>(value: any): value is Result<T, E> {
 	return value instanceof ResultImpl
