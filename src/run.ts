@@ -43,22 +43,20 @@ async function toPromiseResult<T, E>(value: TODO): Promise<Result<T, E>> {
 export function runAsync<T extends ResultPromise<any, any> | Result<any, any>, U>(
 	fn: () => AsyncGenerator<T, U, any>,
 ): ResultPromise<U, InferErr<Awaited<T>>> {
-	async function exec(): Promise<Result<any, any>> {
-		const gen = fn()
-		return new ResultPromise<any, any>(Promise.resolve(Ok())).then(
-			async function andThen(value): Promise<ResultPromise<any, any> | Result<any, any>> {
-				const iter = await gen.next(value.unwrap())
-				const result = await toPromiseResult(iter.value)
-				if (iter.done) {
-					return result
-				}
-				if (result.isErr) {
-					gen.return?.(iter.value as any)
-					return result
-				}
-				return new ResultPromise(Promise.resolve(result)).then(andThen)
-			},
-		)
-	}
-	return new ResultPromise(exec())
+	const gen = fn()
+	const promise = Promise.resolve<Result<any, any>>(Ok()).then(
+		async function fulfill(value): Promise<Result<any, any>> {
+			const iter = await gen.next(value.unwrap())
+			const result = await toPromiseResult(iter.value)
+			if (iter.done) {
+				return result
+			}
+			if (result.isErr) {
+				gen.return?.(iter.value as any)
+				return result
+			}
+			return Promise.resolve(result).then(fulfill)
+		},
+	)
+	return new ResultPromise(promise)
 }
