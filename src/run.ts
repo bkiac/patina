@@ -12,21 +12,16 @@ export function run<T extends Result<any, any>, U>(
 	let done = false
 	let returnResult = Ok()
 	while (!done) {
-		try {
-			const iter = gen.next(returnResult.unwrap())
-			if (isResult(iter.value)) {
-				if (iter.value.isErr) {
-					done = true
-					gen.return?.(iter.value as any)
-				}
-				returnResult = iter.value as any
-			} else {
-				done = iter.done ?? false
-				returnResult = Ok(iter.value) as any
+		const iter = gen.next(returnResult.unwrap())
+		if (isResult(iter.value)) {
+			if (iter.value.isErr) {
+				done = true
+				gen.return?.(iter.value as any)
 			}
-		} catch (error) {
+			returnResult = iter.value as any
+		} else {
 			done = true
-			returnResult = Err(error) as any
+			returnResult = Ok(iter.value) as any
 		}
 	}
 	return returnResult as any
