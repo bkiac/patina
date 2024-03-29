@@ -79,9 +79,9 @@ describe("runAsync", () => {
 		async () => {
 			const duration = 1000
 
-			async function shouldNotBlock() {
+			function shouldNotBlock() {
 				return runAsync(async function* () {
-					const x = yield* Ok(42)
+					const x = yield* Ok(1)
 					await wait(duration)
 					const y = yield* new ResultPromise(Promise.resolve(Ok(1)))
 					return x + y
@@ -93,7 +93,8 @@ describe("runAsync", () => {
 				expect(Date.now() - start).toBeLessThan(duration)
 			}, duration / 2)
 
-			await shouldNotBlock()
+			const result = await shouldNotBlock()
+			expect(result.unwrap()).toEqual(2)
 		},
 		60 * 1000,
 	)
