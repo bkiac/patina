@@ -1,3 +1,4 @@
+import {ResultPromise} from "."
 import {type Result, Ok, Err, ResultImpl} from "./result"
 import type {InferErr} from "./util"
 
@@ -25,4 +26,39 @@ export function run<T extends Result<any, any>, U>(
 		}
 	}
 	return returnResult as any
+}
+
+type TODO = any
+
+async function toPromiseResult<T, E>(value: TODO): Promise<Result<T, E>> {
+	const awaited = await value
+	if (isResult(awaited)) {
+		return awaited as any
+	} else if (awaited instanceof ResultPromise) {
+		return awaited.promise
+	}
+	return Ok(awaited)
+}
+
+export function runAsync<T extends ResultPromise<any, any> | Result<any, any>, U>(
+	fn: () => Generator<T, U, any>,
+): ResultPromise<U, InferErr<Awaited<T>>> {
+	async function exec(): Promise<Result<any, any>> {
+		const gen = fn()
+		return new ResultPromise<any, any>(Promise.resolve(Ok())).then(
+			async function andThen(value): Promise<ResultPromise<any, any> | Result<any, any>> {
+				const iter = gen.next(value)
+				const result = await toPromiseResult(iter.value)
+				if (iter.done) {
+					return result
+				}
+				if (result.isErr) {
+					gen.return?.(iter.value as any)
+					return result
+				}
+				return new ResultPromise(Promise.resolve(result)).then(andThen)
+			},
+		)
+	}
+	return new ResultPromise(exec())
 }

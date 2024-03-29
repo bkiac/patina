@@ -11,6 +11,10 @@ export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 		readonly promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>> | ResultPromise<T, E>,
 	) {}
 
+	*[Symbol.iterator](): Iterator<ResultPromise<T, E>, T, any> {
+		return yield this
+	}
+
 	then<A, B>(
 		successCallback?: (res: Result<T, E>) => A | PromiseLike<A>,
 		failureCallback?: (reason: unknown) => B | PromiseLike<B>,
