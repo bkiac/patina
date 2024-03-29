@@ -41,7 +41,7 @@ async function toPromiseResult<T, E>(value: TODO): Promise<Result<T, E>> {
 }
 
 export function runAsync<T extends ResultPromise<any, any> | Result<any, any>>(
-	fn: () => AsyncGenerator<T, InferOk<Awaited<T>>, any>, // TODO: Should this be AsyncGenerator ?
+	fn: () => AsyncGenerator<T, InferOk<Awaited<T>>, any>,
 ): ResultPromise<InferOk<Awaited<T>>, InferErr<Awaited<T>>> {
 	async function exec(): Promise<Result<any, any>> {
 		const gen = fn()
