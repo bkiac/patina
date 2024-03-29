@@ -1,14 +1,14 @@
-import {ResultPromise} from "."
-import {type Result, Ok, Err, ResultImpl} from "./result"
-import type {InferErr} from "./util"
+import {ResultPromise} from "./result_promise"
+import {type Result, Ok, ResultImpl} from "./result"
+import type {InferErr, InferOk} from "./util"
 
 function isResult<T, E>(value: any): value is Result<T, E> {
 	return value instanceof ResultImpl
 }
 
-export function run<T extends Result<any, any>, U>(
-	fn: () => Generator<T, U, any>,
-): Result<U, InferErr<T>> {
+export function run<T extends Result<any, any>>(
+	fn: () => Generator<T, InferOk<T>, any>,
+): Result<InferOk<T>, InferErr<T>> {
 	const gen = fn()
 	let done = false
 	let returnResult = Ok()
@@ -41,13 +41,13 @@ async function toPromiseResult<T, E>(value: TODO): Promise<Result<T, E>> {
 }
 
 export function runAsync<T extends ResultPromise<any, any> | Result<any, any>, U>(
-	fn: () => Generator<T, U, any>,
+	fn: () => Generator<T, U, any>, // TODO: Should this be AsyncGenerator ?
 ): ResultPromise<U, InferErr<Awaited<T>>> {
 	async function exec(): Promise<Result<any, any>> {
 		const gen = fn()
 		return new ResultPromise<any, any>(Promise.resolve(Ok())).then(
 			async function andThen(value): Promise<ResultPromise<any, any> | Result<any, any>> {
-				const iter = gen.next(value)
+				const iter = gen.next(value.unwrap())
 				const result = await toPromiseResult(iter.value)
 				if (iter.done) {
 					return result

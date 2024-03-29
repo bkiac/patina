@@ -527,6 +527,11 @@ export class ResultImpl<T, E> {
 	[inspectSymbol](): ReturnType<ResultImpl<T, E>["toString"]> {
 		return this.toString()
 	}
+
+	// TODO: Maybe not use toString here?
+	equals<U, F>(other: Result<U, F>): boolean {
+		return this.toString() === other.toString()
+	}
 }
 
 export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {

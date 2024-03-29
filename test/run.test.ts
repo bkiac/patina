@@ -8,7 +8,7 @@ import {run, Ok, Err, Result, runAsync, ResultPromise} from "../src"
 // 	expect(Err()).not.toEqual(Err(1))
 // })
 
-it("should run  with all Oks", () => {
+it("should run with all Oks", () => {
 	const result = run(function* () {
 		const x = yield* Ok(42)
 		const y = yield* Ok(1)
@@ -16,6 +16,25 @@ it("should run  with all Oks", () => {
 	})
 	expectTypeOf(result).toEqualTypeOf<Result<number, never>>()
 	expect(result.unwrap()).toEqual(43)
+})
+
+it("works with function call", () => {
+	function fn() {
+		return run(function* () {
+			const x = yield* Ok(1)
+			const y = yield* Ok(1)
+			return x + y
+		})
+	}
+
+	const result = run(function* () {
+		const x = yield* Ok(1)
+		const y = yield* fn()
+		return x + y
+	})
+
+	expectTypeOf(result).toEqualTypeOf<Result<number, never>>()
+	expect(result.unwrap()).toEqual(3)
 })
 
 it("should run with early Err", () => {
@@ -31,13 +50,10 @@ it("should run with early Err", () => {
 it("should run async with all Oks", async () => {
 	const result = runAsync(function* () {
 		const x = yield* Ok(42)
-		console.log({x})
 		const y = yield* new ResultPromise(Promise.resolve(Ok(1)))
-		console.log({y})
 		return x + y
 	})
 	expectTypeOf(result).toEqualTypeOf<ResultPromise<number, never>>()
-	console.log({unwrapped: await result.unwrap()})
 	await expect(result.unwrap()).resolves.toEqual(43)
 })
 
