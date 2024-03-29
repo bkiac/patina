@@ -28,14 +28,10 @@ export function run<T extends Result<any, any>, U>(
 	return returnResult as any
 }
 
-type TODO = any
-
-async function toPromiseResult<T, E>(value: TODO): Promise<Result<T, E>> {
+async function toPromiseResult<T, E>(value: any): Promise<Result<T, E>> {
 	const awaited = await value
 	if (isResult(awaited)) {
 		return awaited as any
-	} else if (awaited instanceof ResultPromise) {
-		return awaited.promise
 	}
 	return Ok(awaited)
 }
@@ -44,9 +40,9 @@ export function runAsync<T extends ResultPromise<any, any> | Result<any, any>, U
 	fn: () => AsyncGenerator<T, U, any>,
 ): ResultPromise<U, InferErr<Awaited<T>>> {
 	const gen = fn()
-	const promise = Promise.resolve<Result<any, any>>(Ok()).then(
-		async function fulfill(value): Promise<Result<any, any>> {
-			const iter = await gen.next(value.unwrap())
+	const yieldedResultChain = Promise.resolve<Result<any, any>>(Ok()).then(
+		async function fulfill(nextResult): Promise<Result<any, any>> {
+			const iter = await gen.next(nextResult.unwrap())
 			const result = await toPromiseResult(iter.value)
 			if (iter.done) {
 				return result
@@ -58,5 +54,5 @@ export function runAsync<T extends ResultPromise<any, any> | Result<any, any>, U
 			return Promise.resolve(result).then(fulfill)
 		},
 	)
-	return new ResultPromise(promise)
+	return new ResultPromise(yieldedResultChain)
 }
