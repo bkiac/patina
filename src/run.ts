@@ -40,14 +40,14 @@ async function toPromiseResult<T, E>(value: TODO): Promise<Result<T, E>> {
 	return Ok(awaited)
 }
 
-export function runAsync<T extends ResultPromise<any, any> | Result<any, any>, U>(
-	fn: () => Generator<T, U, any>, // TODO: Should this be AsyncGenerator ?
-): ResultPromise<U, InferErr<Awaited<T>>> {
+export function runAsync<T extends ResultPromise<any, any> | Result<any, any>>(
+	fn: () => AsyncGenerator<T, InferOk<Awaited<T>>, any>, // TODO: Should this be AsyncGenerator ?
+): ResultPromise<InferOk<Awaited<T>>, InferErr<Awaited<T>>> {
 	async function exec(): Promise<Result<any, any>> {
 		const gen = fn()
 		return new ResultPromise<any, any>(Promise.resolve(Ok())).then(
 			async function andThen(value): Promise<ResultPromise<any, any> | Result<any, any>> {
-				const iter = gen.next(value.unwrap())
+				const iter = await gen.next(value.unwrap())
 				const result = await toPromiseResult(iter.value)
 				if (iter.done) {
 					return result
