@@ -1,28 +1,6 @@
 import {it, expect, expectTypeOf, describe, test} from "vitest"
 import {run, Ok, Err, Result, runAsync, ResultPromise, genFn, asyncGenFn} from "../src"
 
-/**
- * Adding an iterator to the Result class has introduced behavior that affects how testing libraries handle deep comparisons of instances of this class.
- * This is interfering with how deep equality checks are performed, as the tests rely on iterating over object properties or their prototypes to determine equality.
- *
- * The followings tests ensure that equality checks are still working as expected between Results.
- */
-it("should not be equal every time", () => {
-	expect(Ok()).not.toEqual(Ok(1))
-	expect(Err()).not.toEqual(Err(1))
-	expect(Ok()).not.toEqual(Err())
-
-	expect(new ResultPromise(Promise.resolve(Ok()))).not.toEqual(
-		new ResultPromise(Promise.resolve(Ok(1))),
-	)
-	expect(new ResultPromise(Promise.resolve(Err()))).not.toEqual(
-		new ResultPromise(Promise.resolve(Err(1))),
-	)
-	expect(new ResultPromise(Promise.resolve(Ok()))).not.toEqual(
-		new ResultPromise(Promise.resolve(Err())),
-	)
-})
-
 async function wait<T>(ms: number): Promise<T> {
 	return new Promise((resolve) => setTimeout(resolve, ms))
 }

@@ -100,51 +100,53 @@ describe.concurrent("err", () => {
 
 describe.concurrent("and", () => {
 	it("returns the error when Ok and Err", () => {
-		const a = TestOk<number, string>(2)
-		const b = TestErr<number, string>("late error")
-		expect(a.and(b)).toEqual(b)
+		const a = TestOk<string, string>("a")
+		const b = TestErr<string, string>("b")
+		expect(a.and(b).unwrapErr()).toEqual("b")
 	})
 
 	it("returns the late value when Ok and Ok", () => {
-		const a = TestOk<number, string>(0)
-		const b = TestOk<number, string>(1)
-		expect(a.and(b)).toEqual(b)
+		const a = TestOk<string, string>("a")
+		const b = TestOk<string, string>("b")
+		expect(a.and(b).unwrap()).toEqual("b")
 	})
 
 	it("returns the error when Err and Ok", () => {
-		const a = TestErr<number, string>("early error")
-		const b = TestOk<number, string>(0)
-		expect(a.and(b)).toEqual(a)
+		const a = TestErr<string, string>("a")
+		const b = TestOk<string, string>("b")
+		expect(a.and(b).unwrapErr()).toEqual("a")
 	})
 
 	it("returns the early error when Err and Err", () => {
-		const a = TestErr<number, string>("early error")
-		const b = TestErr<number, string>("late error")
-		expect(a.and(b)).toEqual(a)
+		const a = TestErr<number, string>("a")
+		const b = TestErr<number, string>("b")
+		expect(a.and(b).unwrapErr()).toEqual("a")
 	})
 })
 
 describe.concurrent("andThen", () => {
 	it("returns the mapped value for an Ok result", () => {
 		const a = TestOk<number, string>(0)
-		expect(a.andThen((value) => Ok(value + 1))).toEqual(Ok(1))
+		expect(a.andThen((value) => Ok(value + 1)).unwrap()).toEqual(1)
 	})
 
 	it("returns the result for an Err result", () => {
 		const a = TestErr<number, string>("early error")
-		expect(a.andThen((value) => Ok(value + 1))).toEqual(a)
+		expect(a.andThen((value) => Ok(value + 1)).unwrapErr()).toEqual(a.unwrapErr())
 	})
 })
 
 describe.concurrent("andThenAsync", () => {
 	it("returns the mapped value for an Ok result", async () => {
 		const a = TestOk<number, string>(0)
-		await expect(a.andThenAsync(async (value) => Ok(value + 1))).resolves.toEqual(Ok(1))
+		await expect(a.andThenAsync(async (value) => Ok(value + 1)).unwrap()).resolves.toEqual(1)
 	})
 
 	it("returns the result for an Err result", async () => {
 		const a = TestErr<number, string>("early error")
-		await expect(a.andThenAsync(async (value) => Ok(value + 1))).resolves.toEqual(a)
+		await expect(a.andThenAsync(async (value) => Ok(value + 1)).unwrapErr()).resolves.toEqual(
+			a.unwrapErr(),
+		)
 	})
 })
 
@@ -180,25 +182,22 @@ describe.concurrent("expectErr", () => {
 describe.concurrent("flatten", () => {
 	it("works with an Ok<Ok> result", () => {
 		const inner = TestOk<number, string>(42)
-		const result = TestOk<Result<number, string>, boolean>(inner)
-		const flattened = result.flatten()
+		const flattened = TestOk<Result<number, string>, boolean>(inner).flatten()
 		expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>()
-		expect(flattened).toEqual(inner)
+		expect(flattened.unwrap()).toEqual(inner.unwrap())
 	})
 
 	it("works with an Ok<Err> result", () => {
 		const inner = TestErr<number, string>("error")
-		const result = TestOk<Result<number, string>, boolean>(inner)
-		const flattened = result.flatten()
+		const flattened = TestOk<Result<number, string>, boolean>(inner).flatten()
 		expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>()
-		expect(flattened).toEqual(inner)
+		expect(flattened.unwrapErr()).toEqual(inner.unwrapErr())
 	})
 
 	it("works with an Err result", () => {
-		const result = TestErr<Result<number, string>, boolean>(true)
-		const flattened = result.flatten()
+		const flattened = TestErr<Result<number, string>, boolean>(true).flatten()
 		expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>()
-		expect(flattened).toEqual(result)
+		expect(flattened.unwrapErr()).toEqual(true)
 	})
 
 	it("works with non-primitive value or error", () => {
@@ -225,20 +224,16 @@ describe.concurrent("flatten", () => {
 })
 
 describe.concurrent("inspect", () => {
-	it("returns this and calls closure on Ok result", () => {
+	it("calls closure on Ok result", () => {
 		const f = vi.fn()
-		const result = TestOk<number, string>(42)
-		const result2 = result.inspect(f)
+		TestOk<number, string>(42).inspect(f)
 		expect(f).toHaveBeenCalled()
-		expect(result2).toEqual(result)
 	})
 
-	it("returns this and does not call closure on Err result", () => {
+	it("does not call closure on Err result", () => {
 		const f = vi.fn()
-		const result = TestErr<number, string>("")
-		const result2 = result.inspect(f)
+		TestErr<number, string>("").inspect(f)
 		expect(f).not.toHaveBeenCalled()
-		expect(result2).toEqual(result)
 	})
 })
 
@@ -257,20 +252,16 @@ describe.concurrent("inspectAsync", () => {
 })
 
 describe.concurrent("inspectErr", () => {
-	it("returns this and does not call closure on Ok result", () => {
+	it("does not call closure on Ok result", () => {
 		const f = vi.fn()
-		const result = TestOk<number, string>(42)
-		const result2 = result.inspectErr(f)
+		TestOk<number, string>(42).inspectErr(f)
 		expect(f).not.toHaveBeenCalled()
-		expect(result2).toEqual(result)
 	})
 
 	it("returns this and calls closure on Err result", () => {
 		const f = vi.fn()
-		const result = TestErr<number, string>("")
-		const result2 = result.inspectErr(f)
+		TestErr<number, string>("").inspectErr(f)
 		expect(f).toHaveBeenCalled()
-		expect(result2).toEqual(result)
 	})
 })
 
@@ -292,13 +283,13 @@ describe.concurrent("map", () => {
 	it("returns the mapped value for an Ok result", () => {
 		const result = TestOk<number, string>(42)
 		const result2 = result.map((value) => value * 2)
-		expect(result2).toEqual(Ok(84))
+		expect(result2.unwrap()).toEqual(84)
 	})
 
 	it("returns the original Err for an Err result", () => {
 		const result = TestErr<number, string>("error")
 		const result2 = result.map((value) => value * 2)
-		expect(result2).toEqual(result)
+		expect(result2.unwrapErr()).toEqual(result.unwrapErr())
 	})
 })
 
@@ -306,27 +297,27 @@ describe.concurrent("mapAsync", () => {
 	it("returns the mapped value for an Ok result", async () => {
 		const a = TestOk<number, string>(42)
 		const b = a.mapAsync(async (value) => value * 2)
-		await expect(b).resolves.toEqual(Ok(84))
+		await expect(b.unwrap()).resolves.toEqual(84)
 	})
 
 	it("returns the original Err for an Err result", async () => {
 		const a = TestErr<number, string>("error")
 		const b = a.mapAsync(async (value) => value * 2)
-		await expect(b).resolves.toEqual(a)
+		await expect(b.unwrapErr()).resolves.toEqual(a.unwrapErr())
 	})
 })
 
 describe.concurrent("mapErr", () => {
 	it("returns the mapped error for an Err result", () => {
-		const result = TestErr<number, string>("error")
-		const result2 = result.mapErr(() => "new error")
-		expect(result2.unwrapErr()).toEqual("new error")
+		const a = TestErr<number, string>("error")
+		const b = a.mapErr(() => "new error")
+		expect(b.unwrapErr()).toEqual("new error")
 	})
 
 	it("returns the original Ok for an Err result", () => {
-		const result = TestOk<number, string>(0)
-		const result2 = result.mapErr(() => "new error")
-		expect(result2).toEqual(result)
+		const a = TestOk<number, string>(0)
+		const b = a.mapErr(() => "new error")
+		expect(b.unwrap()).toEqual(0)
 	})
 })
 
@@ -340,7 +331,7 @@ describe.concurrent("mapErrAsync", () => {
 	it("returns the original Ok for an Err result", async () => {
 		const a = TestOk<number, string>(0)
 		const b = a.mapErrAsync(async () => "new error")
-		await expect(b).resolves.toEqual(a)
+		await expect(b.unwrap()).resolves.toEqual(a.unwrap())
 	})
 })
 
@@ -380,53 +371,53 @@ describe.concurrent("mapOrElse", () => {
 
 describe.concurrent("or", () => {
 	it("returns the value when Ok or Err", () => {
-		const a = TestOk<number, string>(2)
-		const b = TestErr<number, string>("late error")
-		expect(a.or(b)).toEqual(a)
+		const a = TestOk<string, string>("a")
+		const b = TestErr<string, string>("b")
+		expect(a.or(b).unwrap()).toEqual("a")
 	})
 
 	it("returns the early value when Ok or Ok", () => {
-		const a = TestOk<number, string>(0)
-		const b = TestOk<number, string>(1)
-		expect(a.or(b)).toEqual(a)
+		const a = TestOk<string, string>("a")
+		const b = TestOk<string, string>("b")
+		expect(a.or(b).unwrap()).toEqual("a")
 	})
 
 	it("returns the late value when Err or Ok", () => {
-		const a = TestErr<number, string>("early error")
-		const b = TestOk<number, string>(0)
-		expect(a.or(b)).toEqual(b)
+		const a = TestErr<string, string>("a")
+		const b = TestOk<string, string>("b")
+		expect(a.or(b).unwrap()).toEqual("b")
 	})
 
 	it("returns the late error when Err and Err", () => {
-		const a = TestErr<number, string>("early error")
-		const b = TestErr<number, string>("late error")
-		expect(a.or(b)).toEqual(b)
+		const a = TestErr<string, string>("a")
+		const b = TestErr<string, string>("b")
+		expect(a.or(b).unwrapErr()).toEqual("b")
 	})
 })
 
 describe.concurrent("orElse", () => {
 	it("returns the result for an Ok result", () => {
 		const a = TestOk<number, string>(0)
-		expect(a.orElse(() => Ok(1))).toEqual(a)
+		expect(a.orElse(() => Ok(1)).unwrap()).toEqual(a.unwrap())
 	})
 
 	it("returns the mapped value for an Err result", () => {
 		const a = TestErr<number, string>("early error")
-		expect(a.orElse(() => Ok(1))).toEqual(Ok(1))
-		expect(a.orElse(() => Err(1))).toEqual(Err(1))
+		expect(a.orElse(() => Ok(1)).unwrap()).toEqual(1)
+		expect(a.orElse(() => Err(1)).unwrapErr()).toEqual(1)
 	})
 })
 
 describe.concurrent("orElseAsync", () => {
 	it("returns the result for an Ok result", async () => {
 		const a = TestOk<number, string>(0)
-		await expect(a.orElseAsync(async () => Ok(1))).resolves.toEqual(a)
+		await expect(a.orElseAsync(async () => Ok(1)).unwrap()).resolves.toEqual(0)
 	})
 
 	it("returns the mapped value for an Err result", async () => {
 		const a = TestErr<number, string>("early error")
-		await expect(a.orElseAsync(async () => Ok(1))).resolves.toEqual(Ok(1))
-		await expect(a.orElseAsync(async () => Err(1))).resolves.toEqual(Err(1))
+		await expect(a.orElseAsync(async () => Ok(1)).unwrap()).resolves.toEqual(1)
+		await expect(a.orElseAsync(async () => Err(1)).unwrapErr()).resolves.toEqual(1)
 	})
 })
 

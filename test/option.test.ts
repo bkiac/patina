@@ -61,24 +61,24 @@ describe.concurrent("core", () => {
 describe.concurrent("okOr", () => {
 	it("returns the value when called on a Some option", () => {
 		const option = TestSome(42)
-		expect(option.okOr("error")).toEqual(Ok(42))
+		expect(option.okOr("error").unwrap()).toEqual(42)
 	})
 
 	it("returns the error value when called on a None option", () => {
 		const option = TestNone<string>()
-		expect(option.okOr("error")).toEqual(Err("error"))
+		expect(option.okOr("error").unwrapErr()).toEqual("error")
 	})
 })
 
 describe.concurrent("okOrElse", () => {
 	it("returns the value when called on a Some option", () => {
 		const option = TestSome(42)
-		expect(option.okOrElse(() => "error")).toEqual(Ok(42))
+		expect(option.okOrElse(() => "error").unwrap()).toEqual(42)
 	})
 
 	it("returns the error value when called on a None option", () => {
 		const option = TestNone<string>()
-		expect(option.okOrElse(() => "error")).toEqual(Err("error"))
+		expect(option.okOrElse(() => "error").unwrapErr()).toEqual("error")
 	})
 })
 
