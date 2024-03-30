@@ -131,21 +131,3 @@ describe("runAsync", () => {
 		60 * 1000,
 	)
 })
-
-test("genFn", () => {
-	const fn = genFn(function* () {
-		const x = yield* Ok(42)
-		const y = yield* Err("error")
-		return x + y
-	})
-	expectTypeOf(fn).toEqualTypeOf<() => Result<number, string>>()
-})
-
-test("asyncGenFn", () => {
-	const fn = asyncGenFn(async function* () {
-		const x = yield* new ResultPromise(Promise.resolve(Ok(42)))
-		const y = yield* new ResultPromise(Promise.resolve(Err("string")))
-		return x + y
-	})
-	expectTypeOf(fn).toEqualTypeOf<() => ResultPromise<number, string>>()
-})

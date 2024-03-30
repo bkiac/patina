@@ -1,14 +1,15 @@
-import {describe, expect, it, expectTypeOf} from "vitest"
+import {describe, expect, it, expectTypeOf, test} from "vitest"
 import {
 	asyncFn,
 	fn,
 	Ok,
 	Err,
 	tryAsyncFn,
-	type ResultPromise,
+	ResultPromise,
 	type Result,
 	tryFn,
-	ErrorWithTag,
+	genFn,
+	asyncGenFn,
 	CaughtError,
 } from "../src"
 import {TaggedError} from "./util"
@@ -233,4 +234,24 @@ describe.concurrent("asyncFn", () => {
 			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultPromise<boolean, string>>()
 		})
 	})
+})
+
+test("genFn", () => {
+	const fn = genFn(function* (arg: number) {
+		const x = yield* Ok(arg)
+		const y = yield* Err(1)
+		const z = yield* Err("error")
+		return x + y
+	})
+	expectTypeOf(fn).toEqualTypeOf<(arg: number) => Result<number, number | string>>()
+})
+
+test("asyncGenFn", () => {
+	const fn = asyncGenFn(async function* (arg: number) {
+		const x = yield* new ResultPromise(Promise.resolve(Ok(arg)))
+		const y = yield* new ResultPromise(Promise.resolve(Err(1)))
+		const z = yield* new ResultPromise(Promise.resolve(Err("error")))
+		return x + y
+	})
+	expectTypeOf(fn).toEqualTypeOf<(arg: number) => ResultPromise<number, number | string>>()
 })
