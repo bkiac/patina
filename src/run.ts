@@ -6,7 +6,7 @@ function isResult<T, E>(value: any): value is Result<T, E> {
 	return value instanceof ResultImpl
 }
 
-export function run<T extends Result<any, any>, U>(
+function _run<T extends Result<any, any>, U>(
 	fn: () => Generator<T, U, any>,
 ): Result<U, InferErr<T>> {
 	const gen = fn()
@@ -28,6 +28,12 @@ export function run<T extends Result<any, any>, U>(
 	return returnResult as any
 }
 
+export function run<T extends Result<any, any>, U>(fn: () => Generator<T, U, any>) {
+	// Variable assignment helps with type inference
+	const result = _run(fn)
+	return result
+}
+
 async function toPromiseResult<T, E>(value: any): Promise<Result<T, E>> {
 	const awaited = await value
 	if (isResult(awaited)) {
@@ -36,7 +42,7 @@ async function toPromiseResult<T, E>(value: any): Promise<Result<T, E>> {
 	return Ok(awaited)
 }
 
-export function runAsync<T extends ResultPromise<any, any> | Result<any, any>, U>(
+function _runAsync<T extends ResultPromise<any, any> | Result<any, any>, U>(
 	fn: () => AsyncGenerator<T, U, any>,
 ): ResultPromise<U, InferErr<Awaited<T>>> {
 	const gen = fn()
@@ -55,4 +61,32 @@ export function runAsync<T extends ResultPromise<any, any> | Result<any, any>, U
 		},
 	)
 	return new ResultPromise(yieldedResultChain)
+}
+
+export function runAsync<T extends ResultPromise<any, any> | Result<any, any>, U>(
+	fn: () => AsyncGenerator<T, U, any>,
+) {
+	// Variable assignment helps with type inference
+	const result = _runAsync(fn)
+	return result
+}
+
+export function genFn<A extends any[], R extends Result<any, any>, T>(
+	fn: (...args: A) => Generator<R, T, any>,
+): (...args: A) => Result<T, InferErr<R>> {
+	return function (...args: any[]) {
+		return run(() => fn(...(args as A)))
+	}
+}
+
+export function asyncGenFn<
+	A extends any[],
+	R extends ResultPromise<any, any> | Result<any, any>,
+	T,
+>(
+	fn: (...args: A) => AsyncGenerator<R, T, any>,
+): (...args: A) => ResultPromise<T, InferErr<Awaited<R>>> {
+	return function (...args: any[]) {
+		return runAsync(() => fn(...(args as A)))
+	}
 }
