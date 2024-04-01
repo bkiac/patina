@@ -2,10 +2,6 @@ import {ResultPromise} from "./result_promise"
 import {type Result, Ok, ResultImpl} from "./result"
 import type {InferErr} from "./util"
 
-function isResult<T, E>(value: any): value is Result<T, E> {
-	return value instanceof ResultImpl
-}
-
 function _run<T extends Result<any, any>, U>(
 	fn: () => Generator<T, U, any>,
 ): Result<U, InferErr<T>> {
@@ -14,7 +10,7 @@ function _run<T extends Result<any, any>, U>(
 	let returnResult = Ok()
 	while (!done) {
 		const iter = gen.next(returnResult.unwrap())
-		if (isResult(iter.value)) {
+		if (iter.value instanceof ResultImpl) {
 			if (iter.value.isErr) {
 				done = true
 				gen.return?.(iter.value as any)
@@ -55,7 +51,7 @@ export function run<T extends Result<any, any>, U>(fn: () => Generator<T, U, any
 
 async function toPromiseResult<T, E>(value: any): Promise<Result<T, E>> {
 	const awaited = await value
-	if (isResult(awaited)) {
+	if (value instanceof ResultImpl) {
 		return awaited as any
 	}
 	return Ok(awaited)
