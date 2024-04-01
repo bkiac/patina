@@ -13,13 +13,13 @@ describe.concurrent("okOr", () => {
 	it("returns the option when Some", async () => {
 		const option = promiseSome(42)
 		const err = "error"
-		await expect(option.okOr(err)).resolves.toEqual(Ok(42))
+		await expect(option.okOr(err).unwrap()).resolves.toEqual(42)
 	})
 
 	it("returns the error when None", async () => {
 		const option = promiseNone()
 		const err = "error"
-		await expect(option.okOr(err)).resolves.toEqual(Err(err))
+		await expect(option.okOr(err).unwrapErr()).resolves.toEqual(err)
 	})
 })
 
@@ -27,13 +27,13 @@ describe.concurrent("okOrElse", () => {
 	it("returns the option when Some", async () => {
 		const option = promiseSome(42)
 		const err = "error"
-		await expect(option.okOrElse(() => err)).resolves.toEqual(Ok(42))
+		await expect(option.okOrElse(() => err).unwrap()).resolves.toEqual(42)
 	})
 
 	it("returns the error when None", async () => {
 		const option = promiseNone()
 		const err = "error"
-		await expect(option.okOrElse(() => err)).resolves.toEqual(Err(err))
+		await expect(option.okOrElse(() => err).unwrapErr()).resolves.toEqual(err)
 	})
 })
 
@@ -41,37 +41,37 @@ describe.concurrent("and", () => {
 	it("returns the other option when Some and None", async () => {
 		const a = promiseSome(2)
 		const b = promiseNone()
-		expect(a.and(b)).toEqual(b)
+		await expect(a.and(b).unwrapOr(0)).resolves.toEqual(0)
 	})
 
 	it("returns the other option when Some and Some", async () => {
 		const a = promiseSome(2)
 		const b = promiseSome("str")
-		expect(a.and(b)).toEqual(b)
+		await expect(a.and(b).unwrap()).resolves.toEqual("str")
 	})
 
 	it("returns None when None and Some", async () => {
 		const a = promiseNone()
 		const b = promiseSome("foo")
-		expect(a.and(b)).toEqual(a)
+		await expect(a.and(b).unwrapOr(0)).resolves.toEqual(0)
 	})
 
 	it("returns None when None and None", async () => {
 		const a = promiseNone()
 		const b = promiseNone()
-		expect(a.and(b)).toEqual(a)
+		await expect(a.and(b).unwrapOr(0)).resolves.toEqual(0)
 	})
 })
 
 describe.concurrent("andThen", () => {
 	it("returns the mapped value for a Some option", async () => {
 		const a = promiseSome(0)
-		await expect(a.andThen((value) => Some(value + 1))).resolves.toEqual(Some(1))
+		await expect(a.andThen((value) => Some(value + 1)).unwrap()).resolves.toEqual(1)
 	})
 
 	it("returns None for a None option", async () => {
 		const a = promiseNone()
-		expect(a.andThen((value) => Some(value + 1))).toEqual(a)
+		await expect(a.andThen((value) => Some(value + 1)).unwrapOr(0)).resolves.toEqual(0)
 	})
 })
 
@@ -90,7 +90,7 @@ describe.concurrent("expect", () => {
 describe.concurrent("filter", () => {
 	it("returns the option when the predicate returns true", async () => {
 		const option = promiseSome(42)
-		await expect(option.filter((value) => value === 42)).resolves.toEqual(Some(42))
+		await expect(option.filter((value) => value === 42).unwrap()).resolves.toEqual(42)
 	})
 
 	it("returns None when the predicate returns false", async () => {

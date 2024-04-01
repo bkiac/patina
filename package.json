@@ -30,6 +30,7 @@
 		"result-type"
 	],
 	"scripts": {
+		"benchmark": "tsx ./scripts/benchmark.ts",
 		"build": "tsup --config ./cfg/tsup.config.ts && pnpm build:ts",
 		"build:ts": "tsc --p ./cfg/tsconfig.types.json",
 		"format": "prettier --write .",

@@ -19,6 +19,11 @@ export class ResultImpl<T, E> {
 		this.value = value
 	}
 
+	*[Symbol.iterator](): Iterator<Result<T, E>, T, any> {
+		const self = this as unknown as Result<T, E>
+		return yield self
+	}
+
 	/**
 	 * Converts from `Result<T, E>` to `Option<T>`.
 	 *
