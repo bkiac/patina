@@ -2,6 +2,7 @@ import {Panic} from "./error"
 import {inspectSymbol} from "./util_internal"
 import {Option, Some, None} from "./option"
 import {ResultPromise} from "./result_promise"
+import type {InferErr, InferOk} from "./util"
 
 export type ResultMatch<T, E, A, B> = {
 	Ok: (value: T) => A
@@ -340,8 +341,10 @@ export class ResultImpl<T, E> {
 	 * assert.deepStrictEqual(y.andThen((n) => Ok(n * 2)), Err("late error"))
 	 * ```
 	 */
-	andThen<U, F>(f: (value: T) => Result<U, F>): Result<U, E | F> {
-		return (this.isOk ? f(this.value as T) : this) as Result<U, E | F>
+	andThen<F extends (value: T) => Result<any, any>>(
+		f: F,
+	): Result<InferOk<ReturnType<F>>, E | InferErr<ReturnType<F>>> {
+		return (this.isOk ? f(this.value as T) : this) as any
 	}
 
 	/**
