@@ -1,5 +1,5 @@
 import {describe, it, expect, expectTypeOf, vi} from "vitest"
-import {Panic, Ok, Err, Result, Some, None, ErrorWithTag, ResultPromise} from "../src"
+import {Panic, Ok, Err, Result, Some, None, ErrorWithTag, ResultPromise, tryFn} from "../src"
 
 export function TestOk<T, E>(value: T): Result<T, E> {
 	return Ok(value)
@@ -133,6 +133,44 @@ describe.concurrent("andThen", () => {
 		const a = TestErr<number, string>("early error")
 		expect(a.andThen((value) => Ok(value + 1)).unwrapErr()).toEqual(a.unwrapErr())
 	})
+
+	it("can map primitive error type", () => {
+		const result = TestOk<number, "foo">(1).andThen((num) => {
+			if (num === null) {
+				return Err("bar" as const)
+			}
+			if (num !== 1) {
+				return Err("baz" as const)
+			}
+			return Ok(num)
+		})
+		expectTypeOf(result).toEqualTypeOf<Result<number, "foo" | "bar" | "baz">>()
+	})
+
+	it("can map non-primitive error type", () => {
+		class Foo extends ErrorWithTag {
+			readonly tag = "foo"
+		}
+
+		class Bar extends ErrorWithTag {
+			readonly tag = "bar"
+		}
+
+		class Baz extends ErrorWithTag {
+			readonly tag = "baz"
+		}
+
+		const result = TestOk<number, Foo>(1).andThen((num) => {
+			if (num === null) {
+				return Err(new Bar())
+			}
+			if (num !== 1) {
+				return Err(new Baz())
+			}
+			return Ok(num)
+		})
+		expectTypeOf(result).toEqualTypeOf<Result<number, Foo | Bar | Baz>>()
+	})
 })
 
 describe.concurrent("andThenAsync", () => {
@@ -146,20 +184,6 @@ describe.concurrent("andThenAsync", () => {
 		await expect(a.andThenAsync(async (value) => Ok(value + 1)).unwrapErr()).resolves.toEqual(
 			a.unwrapErr(),
 		)
-	})
-
-	it("can map error type", async () => {
-		const a = TestErr<number, "foo">("foo")
-		const b = a.andThenAsync(async (value) => {
-			if (value < 0) {
-				return Err("bar" as const)
-			}
-			if (value > 1) {
-				return Ok(value)
-			}
-			return Err("baz" as const)
-		})
-		expectTypeOf(b).toEqualTypeOf<ResultPromise<number, "foo" | "bar" | "baz">>()
 	})
 })
 

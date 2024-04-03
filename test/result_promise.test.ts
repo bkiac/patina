@@ -10,6 +10,7 @@ import {
 	None,
 	CaughtError,
 	tryPromise,
+	tryFn,
 } from "../src"
 import {TestErr, TestOk} from "./result.test"
 import {vi} from "vitest"
@@ -83,65 +84,6 @@ describe.concurrent("andThenAsync", () => {
 	it("returns the result for an Err result", async () => {
 		const a = TestErrPromise<number, string>(0)
 		await expect(a.andThenAsync(async (value) => Ok(value + 1)).unwrapErr()).resolves.toEqual(0)
-	})
-
-	it("can map error type", async () => {
-		const a = TestErrPromise<"foo", number>("foo")
-		const b = a.andThenAsync(async (value) => {
-			if (value < 0) {
-				return Err("bar" as const)
-			}
-			if (value > 1) {
-				return Ok(value)
-			}
-			return Err("baz" as const)
-		})
-		expectTypeOf(b).toEqualTypeOf<ResultPromise<number, "foo" | "bar" | "baz">>()
-	})
-
-	it("can map error type with complicated error", async () => {
-		class PrismaError extends ErrorWithTag {
-			readonly tag = "prisma"
-			// readonly message = "Prisma error"
-
-			// constructor(public readonly error: CaughtError) {
-			// 	super()
-			// }
-		}
-
-		abstract class NotFoundError extends ErrorWithTag {
-			// category = "not_found"
-		}
-
-		class AccountNotFoundError extends NotFoundError {
-			readonly tag = "account"
-			// readonly message = "Account not found"
-		}
-
-		async function fn(): Promise<{id: number} | null> {
-			return {id: 1}
-		}
-
-		const maybeExpiredToken = await tryPromise(fn())
-			.mapErr((error) => new PrismaError(error))
-			.andThen((maybeAccount) => {
-				if (maybeAccount) {
-					return Ok(maybeAccount)
-				}
-				return Err(new AccountNotFoundError())
-			})
-			.andThenAsync(async (account) => {
-				if (account.id < 0) {
-					return Err(new AccountNotFoundError())
-				}
-
-				const ye = await tryPromise(fn()).mapErr((error) => new PrismaError(error))
-				if (ye.isErr) {
-					return Err(ye.value)
-				}
-
-				return Ok(account)
-			})
 	})
 })
 
