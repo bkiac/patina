@@ -72,7 +72,9 @@ export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 	/**
 	 * Async version of `Result#andThenAsync`.
 	 */
-	andThenAsync<U, F>(f: (value: T) => Promise<Result<U, F>>): ResultPromise<U, E | F> {
+	andThenAsync<U, F>(
+		f: (value: T) => ResultPromise<U, F> | Promise<Result<U, F>>,
+	): ResultPromise<U, E | F> {
 		return new ResultPromise(this.then((result) => result.andThenAsync((value) => f(value))))
 	}
 
