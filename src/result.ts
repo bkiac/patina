@@ -2,7 +2,7 @@ import {Panic} from "./error";
 import {inspectSymbol} from "./util_internal";
 import {Option, Some, None} from "./option";
 import {AsyncResult} from "./async_result";
-import {Variant, Value} from "./common";
+import {variant, value} from "./common";
 
 export type ResultMatch<T, E, A, B> = {
 	Ok: (value: T) => A;
@@ -15,12 +15,12 @@ export type ResultMatchAsync<T, E, A, B> = {
 };
 
 export class ResultImpl<T, E> {
-	private readonly [Variant]: boolean;
-	private readonly [Value]: T | E;
+	private readonly [variant]: boolean;
+	private readonly [value]: T | E;
 
 	constructor(ok: boolean, x: T | E) {
-		this[Variant] = ok;
-		this[Value] = x;
+		this[variant] = ok;
+		this[value] = x;
 	}
 
 	private unwrapFailed(message: string): never {
@@ -28,19 +28,19 @@ export class ResultImpl<T, E> {
 	}
 
 	get isOk(): boolean {
-		return this[Variant];
+		return this[variant];
 	}
 
 	get isErr(): boolean {
-		return !this[Variant];
+		return !this[variant];
 	}
 
 	get value(): T | undefined {
-		return this.isOk ? (this[Value] as T) : undefined;
+		return this.isOk ? (this[value] as T) : undefined;
 	}
 
 	get error(): E | undefined {
-		return this.isErr ? (this[Value] as E) : undefined;
+		return this.isErr ? (this[value] as E) : undefined;
 	}
 
 	*[Symbol.iterator](): Iterator<Result<T, E>, T, any> {

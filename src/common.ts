@@ -1,2 +1,2 @@
-export const Variant = Symbol("n");
-export const Value = Symbol("x");
+export const variant = Symbol("variant");
+export const value = Symbol("value");
