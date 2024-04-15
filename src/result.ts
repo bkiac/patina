@@ -68,11 +68,11 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	match<A, B>(pattern: ResultMatch<T, E, A, B>): A | B {
-		return this.isOk ? pattern.Ok(this.value as T) : pattern.Err(this.value as E);
+		return this.isOk ? pattern.Ok(this.value as T) : pattern.Err(this.error as E);
 	}
 
 	matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A | B> {
-		return this.isOk ? pattern.Ok(this.value as T) : pattern.Err(this.value as E);
+		return this.isOk ? pattern.Ok(this.value as T) : pattern.Err(this.error as E);
 	}
 
 	/**

@@ -19,9 +19,9 @@ export class OptionImpl<T> {
 	private readonly [Variant]: boolean;
 	private readonly [Value]: T | undefined;
 
-	constructor(isSome: boolean, value: T) {
-		this[Variant] = isSome;
-		this[Value] = value;
+	constructor(some: boolean, x: T) {
+		this[Variant] = some;
+		this[Value] = x;
 	}
 
 	private unwrapFailed(message: string): never {
