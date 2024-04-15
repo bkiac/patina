@@ -1,5 +1,5 @@
 import {it, expect, expectTypeOf, describe, test} from "vitest";
-import {run, Ok, Err, Result, runAsync, ResultPromise, genFn, asyncGenFn} from "../src";
+import {run, Ok, Err, Result, runAsync, AsyncResult, genFn, asyncGenFn} from "../src";
 
 async function wait<T>(ms: number): Promise<T> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
@@ -60,20 +60,20 @@ describe("runAsync", () => {
 	it("should run async with all Oks", async () => {
 		const result = runAsync(async function* () {
 			const x = yield* Ok(42);
-			const y = yield* new ResultPromise(Promise.resolve(Ok(1)));
+			const y = yield* new AsyncResult(Promise.resolve(Ok(1)));
 			return x + y;
 		});
-		expectTypeOf(result).toEqualTypeOf<ResultPromise<number, never>>();
+		expectTypeOf(result).toEqualTypeOf<AsyncResult<number, never>>();
 		await expect(result.unwrap()).resolves.toEqual(43);
 	});
 
 	it("should run async with early Err", async () => {
 		const result = runAsync(async function* () {
 			const x = yield* Ok(42);
-			const y = yield* new ResultPromise(Promise.resolve(Err("error")));
+			const y = yield* new AsyncResult(Promise.resolve(Err("error")));
 			return x + y;
 		});
-		expectTypeOf(result).toEqualTypeOf<ResultPromise<number, string>>();
+		expectTypeOf(result).toEqualTypeOf<AsyncResult<number, string>>();
 		await expect(result.unwrapErr()).resolves.toEqual("error");
 	});
 
@@ -81,7 +81,7 @@ describe("runAsync", () => {
 		function fn() {
 			return runAsync(async function* () {
 				const x = yield* Ok(1);
-				const y = yield* new ResultPromise(Promise.resolve(Ok(1)));
+				const y = yield* new AsyncResult(Promise.resolve(Ok(1)));
 				return x + y;
 			});
 		}
@@ -92,17 +92,17 @@ describe("runAsync", () => {
 			return x + y;
 		});
 
-		expectTypeOf(result).toEqualTypeOf<ResultPromise<number, never>>();
+		expectTypeOf(result).toEqualTypeOf<AsyncResult<number, never>>();
 		await expect(result.unwrap()).resolves.toEqual(3);
 	});
 
 	it("should handle transformed return type", async () => {
 		const result = runAsync(async function* () {
 			const x = yield* Ok(42);
-			const y = yield* new ResultPromise(Promise.resolve(Ok(1)));
+			const y = yield* new AsyncResult(Promise.resolve(Ok(1)));
 			return x.toString() + y.toString();
 		});
-		expectTypeOf(result).toEqualTypeOf<ResultPromise<string, never>>();
+		expectTypeOf(result).toEqualTypeOf<AsyncResult<string, never>>();
 		await expect(result.unwrap()).resolves.toEqual("421");
 	});
 
@@ -115,7 +115,7 @@ describe("runAsync", () => {
 				return runAsync(async function* () {
 					const x = yield* Ok(1);
 					await wait(duration);
-					const y = yield* new ResultPromise(Promise.resolve(Ok(1)));
+					const y = yield* new AsyncResult(Promise.resolve(Ok(1)));
 					return x + y;
 				});
 			}

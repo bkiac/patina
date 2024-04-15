@@ -1,7 +1,7 @@
 import {Panic} from "./error";
 import {inspectSymbol} from "./util_internal";
 import {Option, Some, None} from "./option";
-import {ResultPromise} from "./result_promise";
+import {AsyncResult} from "./async_result";
 import {Variant, Value} from "./common";
 
 export type ResultMatch<T, E, A, B> = {
@@ -134,7 +134,7 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Maps a `Result<T, E>` to `ResultPromise<U, E>` by applying an async function to a contained `Ok` value, leaving an `Err` value untouched.
+	 * Maps a `Result<T, E>` to `AsyncResult<U, E>` by applying an async function to a contained `Ok` value, leaving an `Err` value untouched.
 	 *
 	 * **Examples**
 	 *
@@ -144,8 +144,8 @@ export class ResultImpl<T, E> {
 	 * assert.strictEqual(await mapped.unwrap(), "number 10")
 	 * ```
 	 */
-	mapAsync<U>(f: (value: T) => Promise<U>): ResultPromise<U, E> {
-		return new ResultPromise(
+	mapAsync<U>(f: (value: T) => Promise<U>): AsyncResult<U, E> {
+		return new AsyncResult(
 			this.matchAsync({
 				Ok: (t) => f(t).then((v) => Ok(v)),
 				Err: (e) => Promise.resolve(Err(e)),
@@ -231,7 +231,7 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Maps a `Result<T, E>` to `ResultPromise<T, F>` by applying an async function to a contained `Err` value, leaving an `Ok` value untouched.
+	 * Maps a `Result<T, E>` to `AsyncResult<T, F>` by applying an async function to a contained `Err` value, leaving an `Ok` value untouched.
 	 *
 	 * **Examples**
 	 *
@@ -241,8 +241,8 @@ export class ResultImpl<T, E> {
 	 * assert.strictEqual(await mapped.unwrapErr(), 5)
 	 * ```
 	 */
-	mapErrAsync<F>(f: (error: E) => Promise<F>): ResultPromise<T, F> {
-		return new ResultPromise(
+	mapErrAsync<F>(f: (error: E) => Promise<F>): AsyncResult<T, F> {
+		return new AsyncResult(
 			this.matchAsync({
 				Ok: (t) => Promise.resolve(Ok(t)),
 				Err: (e) => f(e).then((v) => Err(v)),
@@ -280,8 +280,8 @@ export class ResultImpl<T, E> {
 	 * x.inspectAsync((v) => Promise.resolve(console.log(v)))
 	 * ```
 	 */
-	inspectAsync(f: (value: T) => Promise<void>): ResultPromise<T, E> {
-		return new ResultPromise(
+	inspectAsync(f: (value: T) => Promise<void>): AsyncResult<T, E> {
+		return new AsyncResult(
 			this.matchAsync({
 				Ok: (t) => f(t).then(() => Ok(t)),
 				Err: (e) => Promise.resolve(Err(e)),
@@ -319,8 +319,8 @@ export class ResultImpl<T, E> {
 	 * x.inspectErrAsync((e) => Promise.resolve(console.error(e)))
 	 * ```
 	 */
-	inspectErrAsync(f: (error: E) => Promise<void>): ResultPromise<T, E> {
-		return new ResultPromise(
+	inspectErrAsync(f: (error: E) => Promise<void>): AsyncResult<T, E> {
+		return new AsyncResult(
 			this.matchAsync({
 				Ok: (t) => Promise.resolve(Ok(t)),
 				Err: (e) => f(e).then(() => Err(e)),
@@ -462,9 +462,9 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	andThenAsync<U, F>(
-		f: (value: T) => ResultPromise<U, F> | Promise<Result<U, F>>,
-	): ResultPromise<U, E | F> {
-		return new ResultPromise(
+		f: (value: T) => AsyncResult<U, F> | Promise<Result<U, F>>,
+	): AsyncResult<U, E | F> {
+		return new AsyncResult(
 			this.matchAsync({
 				Ok: (t) => f(t) as Promise<Result<U, F>>,
 				Err: (e) => Promise.resolve(Err(e)),
@@ -525,9 +525,9 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	orElseAsync<U, F>(
-		f: (error: E) => ResultPromise<U, F> | Promise<Result<U, F>>,
-	): ResultPromise<T | U, F> {
-		return new ResultPromise(
+		f: (error: E) => AsyncResult<U, F> | Promise<Result<U, F>>,
+	): AsyncResult<T | U, F> {
+		return new AsyncResult(
 			this.matchAsync({
 				Ok: (t) => Promise.resolve(Ok(t)),
 				Err: (e) => f(e) as Promise<Result<U, F>>,
