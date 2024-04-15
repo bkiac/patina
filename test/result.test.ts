@@ -495,3 +495,18 @@ describe.concurrent("match", () => {
 		expect(output).toEqual(0);
 	});
 });
+
+describe("iterator", () => {
+	it("works with regular yield", () => {
+		function* gen() {
+			yield Ok(1);
+			yield Err("error");
+			return Ok(2);
+		}
+
+		const result = gen();
+		expect(result.next().value.unwrap()).toEqual(1);
+		expect(result.next().value.unwrapErr()).toEqual("error");
+		expect(result.next().value.unwrap()).toEqual(2);
+	});
+});
