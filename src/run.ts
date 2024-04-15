@@ -1,4 +1,4 @@
-import {ResultPromise} from "./result_promise";
+import {AsyncResult} from "./async_result";
 import {type Result, Ok, ResultImpl} from "./result";
 import type {InferErr} from "./util";
 
@@ -57,9 +57,9 @@ async function toPromiseResult<T, E>(value: any): Promise<Result<T, E>> {
 	return Ok(awaited);
 }
 
-function _runAsync<T extends ResultPromise<any, any> | Result<any, any>, U>(
+function _runAsync<T extends AsyncResult<any, any> | Result<any, any>, U>(
 	fn: () => AsyncGenerator<T, U, any>,
-): ResultPromise<U, InferErr<Awaited<T>>> {
+): AsyncResult<U, InferErr<Awaited<T>>> {
 	const gen = fn();
 	const yieldedResultChain = Promise.resolve<Result<any, any>>(Ok()).then(
 		async function fulfill(nextResult): Promise<Result<any, any>> {
@@ -75,20 +75,20 @@ function _runAsync<T extends ResultPromise<any, any> | Result<any, any>, U>(
 			return Promise.resolve(result).then(fulfill);
 		},
 	);
-	return new ResultPromise(yieldedResultChain);
+	return new AsyncResult(yieldedResultChain);
 }
 
 /**
- * Runs an async generator function that returns a `Result` and infers its return type as `ResultPromise<T, E>`.
+ * Runs an async generator function that returns a `Result` and infers its return type as `AsyncResult<T, E>`.
  *
- * `yield*` must be used to yield the result of a `ResultPromise` or `Result`.
+ * `yield*` must be used to yield the result of a `AsyncResult` or `Result`.
  *
  * **Examples**
  *
  * ```ts
- * const okOne = () => new ResultPromise(Promise.resolve(Ok(1)))
+ * const okOne = () => new AsyncResult(Promise.resolve(Ok(1)))
  *
- * // $ExpectType ResultPromise<number, string>
+ * // $ExpectType AsyncResult<number, string>
  * const result = runAsync(async function* () {
  *   const a = yield* okOne()
  *   const random = Math.random()
@@ -99,7 +99,7 @@ function _runAsync<T extends ResultPromise<any, any> | Result<any, any>, U>(
  * })
  * ```
  */
-export function runAsync<T extends ResultPromise<any, any> | Result<any, any>, U>(
+export function runAsync<T extends AsyncResult<any, any> | Result<any, any>, U>(
 	fn: () => AsyncGenerator<T, U, any>,
 ) {
 	// Variable assignment helps with type inference

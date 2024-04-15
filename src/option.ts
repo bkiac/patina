@@ -1,5 +1,5 @@
-import {OptionPromise} from "./option_promise";
-import {ResultPromise} from "./result_promise";
+import {AsyncOption} from "./async_option";
+import {AsyncResult} from "./async_result";
 import {Variant, Value} from "./common";
 import {Panic} from "./error";
 import {Err, Ok, type Result} from "./result";
@@ -157,8 +157,8 @@ export class OptionImpl<T> {
 		});
 	}
 
-	mapAsync<U>(f: (value: T) => Promise<U>): OptionPromise<U> {
-		return new OptionPromise(
+	mapAsync<U>(f: (value: T) => Promise<U>): AsyncOption<U> {
+		return new AsyncOption(
 			this.matchAsync({
 				Some: (t) => f(t).then(Some),
 				None: () => Promise.resolve(None),
@@ -185,8 +185,8 @@ export class OptionImpl<T> {
 		});
 	}
 
-	inspectAsync(f: (value: T) => Promise<void>): OptionPromise<T> {
-		return new OptionPromise(
+	inspectAsync(f: (value: T) => Promise<void>): AsyncOption<T> {
+		return new AsyncOption(
 			this.matchAsync({
 				Some: (t) => f(t).then(() => Some(t)),
 				None: () => Promise.resolve(None),
@@ -273,8 +273,8 @@ export class OptionImpl<T> {
 		});
 	}
 
-	okOrElseAsync<E>(err: () => Promise<E>): ResultPromise<T, E> {
-		return new ResultPromise(
+	okOrElseAsync<E>(err: () => Promise<E>): AsyncResult<T, E> {
+		return new AsyncResult(
 			this.matchAsync({
 				Some: (t) => Promise.resolve(Ok(t)),
 				None: () => err().then(Err),
@@ -319,8 +319,8 @@ export class OptionImpl<T> {
 		});
 	}
 
-	andThenAsync<U>(f: (value: T) => Promise<Option<U>> | OptionPromise<U>): OptionPromise<U> {
-		return new OptionPromise(
+	andThenAsync<U>(f: (value: T) => Promise<Option<U>> | AsyncOption<U>): AsyncOption<U> {
+		return new AsyncOption(
 			this.matchAsync({
 				Some: (t) => f(t) as Promise<Option<U>>,
 				None: () => Promise.resolve(None),
@@ -386,8 +386,8 @@ export class OptionImpl<T> {
 		});
 	}
 
-	orElseAsync<U>(f: () => Promise<Option<U>> | OptionPromise<U>): OptionPromise<T | U> {
-		return new OptionPromise(
+	orElseAsync<U>(f: () => Promise<Option<U>> | AsyncOption<U>): AsyncOption<T | U> {
+		return new AsyncOption(
 			this.matchAsync({
 				Some: (t) => Promise.resolve(Some(t)),
 				None: () => f() as Promise<Option<U>>,

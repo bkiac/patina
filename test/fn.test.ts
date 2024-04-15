@@ -5,7 +5,7 @@ import {
 	Ok,
 	Err,
 	tryAsyncFn,
-	ResultPromise,
+	AsyncResult,
 	type Result,
 	tryFn,
 	genFn,
@@ -169,7 +169,7 @@ describe.concurrent("asyncFn", () => {
 			const wrapped = asyncFn(f);
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
 			expectTypeOf(wrapped).returns.toEqualTypeOf<
-				ResultPromise<number | string, number | string>
+				AsyncResult<number | string, number | string>
 			>();
 		});
 
@@ -177,21 +177,21 @@ describe.concurrent("asyncFn", () => {
 			const f = async (_arg: number) => Ok(1);
 			const wrapped = asyncFn(f);
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
-			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultPromise<number, never>>();
+			expectTypeOf(wrapped).returns.toEqualTypeOf<AsyncResult<number, never>>();
 		});
 
 		it("returns correct type with function returning Promise<Err>", () => {
 			const f = async (_arg: number) => Err(1);
 			const wrapped = asyncFn(f);
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
-			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultPromise<never, number>>();
+			expectTypeOf(wrapped).returns.toEqualTypeOf<AsyncResult<never, number>>();
 		});
 
-		it("returns correct type with function returning ResultPromise", () => {
+		it("returns correct type with function returning AsyncResult", () => {
 			const f = (_arg: number) => tryAsyncFn(async () => 1);
 			const wrapped = asyncFn(f);
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
-			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultPromise<number, Error>>();
+			expectTypeOf(wrapped).returns.toEqualTypeOf<AsyncResult<number, Error>>();
 		});
 
 		it("returns correct type with function returning Promise<Result>", () => {
@@ -203,7 +203,7 @@ describe.concurrent("asyncFn", () => {
 			};
 			const wrapped = asyncFn(f);
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
-			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultPromise<number, Error>>();
+			expectTypeOf(wrapped).returns.toEqualTypeOf<AsyncResult<number, Error>>();
 		});
 
 		it("works with generics", () => {
@@ -213,7 +213,7 @@ describe.concurrent("asyncFn", () => {
 				}
 				return Err(b);
 			});
-			expectTypeOf(wrapped).toEqualTypeOf<<A, B>(a: A, b: B) => ResultPromise<A, B>>();
+			expectTypeOf(wrapped).toEqualTypeOf<<A, B>(a: A, b: B) => AsyncResult<A, B>>();
 		});
 
 		it("works with short-circuit return", () => {
@@ -230,7 +230,7 @@ describe.concurrent("asyncFn", () => {
 				}
 				return Ok(true);
 			});
-			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultPromise<boolean, string>>();
+			expectTypeOf(wrapped).returns.toEqualTypeOf<AsyncResult<boolean, string>>();
 		});
 	});
 });
@@ -247,10 +247,10 @@ test("genFn", () => {
 
 test("asyncGenFn", () => {
 	const fn = asyncGenFn(async function* (arg: number) {
-		const x = yield* new ResultPromise(Promise.resolve(Ok(arg)));
-		const y = yield* new ResultPromise(Promise.resolve(Err(1)));
-		const z = yield* new ResultPromise(Promise.resolve(Err("error")));
+		const x = yield* new AsyncResult(Promise.resolve(Ok(arg)));
+		const y = yield* new AsyncResult(Promise.resolve(Err(1)));
+		const z = yield* new AsyncResult(Promise.resolve(Err("error")));
 		return x + y;
 	});
-	expectTypeOf(fn).toEqualTypeOf<(arg: number) => ResultPromise<number, number | string>>();
+	expectTypeOf(fn).toEqualTypeOf<(arg: number) => AsyncResult<number, number | string>>();
 });

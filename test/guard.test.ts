@@ -1,5 +1,5 @@
 import {expect, it, describe, expectTypeOf} from "vitest";
-import {guard, guardAsync, Result, ResultPromise} from "../src";
+import {guard, guardAsync, Result, AsyncResult} from "../src";
 
 describe.concurrent("guard", () => {
 	it("transforms a function into a function that returns a Result object", () => {
@@ -60,13 +60,13 @@ describe.concurrent("guardAsync", () => {
 		it("works with a function", () => {
 			const f = async (value: number) => value;
 			const guarded = guardAsync(f);
-			expectTypeOf(guarded).toEqualTypeOf<(value: number) => ResultPromise<number, Error>>();
+			expectTypeOf(guarded).toEqualTypeOf<(value: number) => AsyncResult<number, Error>>();
 		});
 
 		it("works with a generic function", () => {
 			const f = async <A, B>(a: A, _b: B) => a;
 			const guarded = guardAsync(f);
-			expectTypeOf(guarded).toEqualTypeOf<<A, B>(a: A, b: B) => ResultPromise<A, Error>>();
+			expectTypeOf(guarded).toEqualTypeOf<<A, B>(a: A, b: B) => AsyncResult<A, Error>>();
 		});
 	});
 });

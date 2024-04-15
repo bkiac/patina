@@ -1,12 +1,12 @@
 import {describe, it, expect, vi} from "vitest";
-import {Panic, OptionPromise, Some, None, Ok, Err} from "../src";
+import {Panic, AsyncOption, Some, None, Ok, Err} from "../src";
 
 function promiseSome<T>(value: T) {
-	return new OptionPromise<T>(Promise.resolve(Some<T>(value)));
+	return new AsyncOption<T>(Promise.resolve(Some<T>(value)));
 }
 
 function promiseNone() {
-	return new OptionPromise<any>(Promise.resolve(None));
+	return new AsyncOption<any>(Promise.resolve(None));
 }
 
 describe.concurrent("okOr", () => {

@@ -1,7 +1,7 @@
 import {Panic} from "./error";
 import {parseError} from "./error";
 import {Err, Ok, type Result} from "./result";
-import {ResultPromise} from "./result_promise";
+import {AsyncResult} from "./async_result";
 
 function handlePanic(error: unknown) {
 	if (error instanceof Panic) {
@@ -39,17 +39,17 @@ export function tryFn<T>(fn: () => T): Result<T, Error> {
 }
 
 /**
- * Tries to resolve a promise and returns the result as a `ResultPromise`.
+ * Tries to resolve a promise and returns the result as a `AsyncResult`.
  *
  * **Examples**
  *
  * ```
- * // const result: ResultPromise<number, Error>
+ * // const result: AsyncResult<number, Error>
  * const result = tryPromise(Promise.resolve(42))
  * ```
  */
-export function tryPromise<T>(promise: Promise<T>): ResultPromise<T, Error> {
-	return new ResultPromise(
+export function tryPromise<T>(promise: Promise<T>): AsyncResult<T, Error> {
+	return new AsyncResult(
 		promise.then(
 			(value) => Ok(value),
 			(error: unknown) => Err(handleCaughtError(error)),
@@ -58,12 +58,12 @@ export function tryPromise<T>(promise: Promise<T>): ResultPromise<T, Error> {
 }
 
 /**
- * Tries to execute an async function and returns the result as a `ResultPromise`.
+ * Tries to execute an async function and returns the result as a `AsyncResult`.
  *
  * **Examples**
  *
  * ```
- * // const result: ResultPromise<number, CaughtError>
+ * // const result: AsyncResult<number, CaughtError>
  * const result = tryAsyncFn(() => {
  *  if (Math.random() > 0.5) {
  *    return Promise.resolve(42)
@@ -73,6 +73,6 @@ export function tryPromise<T>(promise: Promise<T>): ResultPromise<T, Error> {
  * })
  * ```
  */
-export function tryAsyncFn<T>(fn: () => Promise<T>): ResultPromise<T, Error> {
+export function tryAsyncFn<T>(fn: () => Promise<T>): AsyncResult<T, Error> {
 	return tryPromise(fn());
 }
