@@ -1,5 +1,5 @@
 import {expect, it, describe, expectTypeOf} from "vitest";
-import {CaughtError, guard, guardAsync, Result, ResultPromise} from "../src";
+import {guard, guardAsync, Result, ResultPromise} from "../src";
 
 describe.concurrent("guard", () => {
 	it("transforms a function into a function that returns a Result object", () => {
@@ -18,20 +18,20 @@ describe.concurrent("guard", () => {
 		const wrappedFn = guard(fn);
 		const result = wrappedFn();
 		expect(result.isOk).toEqual(false);
-		expect(result.unwrapErr().cause).toEqual(error);
+		expect(result.unwrapErr()).toEqual(error);
 	});
 
 	describe("types", () => {
 		it("works with a function", () => {
 			const f = (value: number) => value;
 			const guarded = guard(f);
-			expectTypeOf(guarded).toEqualTypeOf<(value: number) => Result<number, CaughtError>>();
+			expectTypeOf(guarded).toEqualTypeOf<(value: number) => Result<number, Error>>();
 		});
 
 		it("works with a generic function", () => {
 			const f = <A, B>(a: A, _b: B) => a;
 			const guarded = guard(f);
-			expectTypeOf(guarded).toEqualTypeOf<<A, B>(a: A, b: B) => Result<A, CaughtError>>();
+			expectTypeOf(guarded).toEqualTypeOf<<A, B>(a: A, b: B) => Result<A, Error>>();
 		});
 	});
 });
@@ -53,24 +53,20 @@ describe.concurrent("guardAsync", () => {
 		const wrappedFn = guardAsync(fn);
 		const result = await wrappedFn();
 		expect(result.isOk).toEqual(false);
-		expect(result.unwrapErr().cause).toEqual(error);
+		expect(result.unwrapErr()).toEqual(error);
 	});
 
 	describe("types", () => {
 		it("works with a function", () => {
 			const f = async (value: number) => value;
 			const guarded = guardAsync(f);
-			expectTypeOf(guarded).toEqualTypeOf<
-				(value: number) => ResultPromise<number, CaughtError>
-			>();
+			expectTypeOf(guarded).toEqualTypeOf<(value: number) => ResultPromise<number, Error>>();
 		});
 
 		it("works with a generic function", () => {
 			const f = async <A, B>(a: A, _b: B) => a;
 			const guarded = guardAsync(f);
-			expectTypeOf(guarded).toEqualTypeOf<
-				<A, B>(a: A, b: B) => ResultPromise<A, CaughtError>
-			>();
+			expectTypeOf(guarded).toEqualTypeOf<<A, B>(a: A, b: B) => ResultPromise<A, Error>>();
 		});
 	});
 });
