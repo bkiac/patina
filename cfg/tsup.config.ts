@@ -4,7 +4,7 @@ export default defineConfig({
 	bundle: true,
 	clean: true,
 	dts: false,
-	entry: ["src/index.ts", "src/internal.ts"],
+	entry: ["src/index.ts"],
 	format: ["esm", "cjs"],
 	keepNames: true,
 	minify: false,
@@ -18,7 +18,7 @@ export default defineConfig({
 		};
 	},
 	platform: "neutral",
-	sourcemap: false,
+	sourcemap: true,
 	splitting: true,
 	target: "es2022",
 	treeshake: true,
