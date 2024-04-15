@@ -1,4 +1,4 @@
-import {n, x} from "./common";
+import {Variant, Value} from "./common";
 import {Panic} from "./error";
 import {Err, Ok, type Result} from "./result";
 import {inspectSymbol} from "./util_internal";
@@ -9,24 +9,24 @@ export type OptionMatch<T, A, B> = {
 };
 
 export class OptionImpl<T> {
-	private readonly [n]: boolean;
-	private readonly [x]: T | undefined;
+	private readonly [Variant]: boolean;
+	private readonly [Value]: T | undefined;
 
 	constructor(isSome: boolean, value: T) {
-		this[n] = isSome;
-		this[x] = value;
+		this[Variant] = isSome;
+		this[Value] = value;
 	}
 
 	get isSome(): boolean {
-		return this[n];
+		return this[Variant];
 	}
 
 	get isNone(): boolean {
-		return !this[n];
+		return !this[Variant];
 	}
 
 	get value(): T | undefined {
-		return this[x];
+		return this[Value];
 	}
 
 	/**
