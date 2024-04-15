@@ -14,7 +14,7 @@ describe.concurrent("tryFn", () => {
 			throw error;
 		};
 		const result = tryFn(fn);
-		expect(result.unwrapErr().cause).toEqual(error);
+		expect(result.unwrapErr()).toEqual(error);
 	});
 });
 
@@ -29,7 +29,7 @@ describe.concurrent("tryPromise", () => {
 		const error = new Error("Test error");
 		const promise = Promise.reject(error);
 		const result = await tryPromise(promise);
-		expect(result.unwrapErr().cause).toEqual(error);
+		expect(result.unwrapErr()).toEqual(error);
 	});
 });
 
@@ -46,6 +46,6 @@ describe.concurrent("tryAsyncFn", () => {
 			throw error;
 		};
 		const result = await tryAsyncFn(fn);
-		expect(result.unwrapErr().cause).toEqual(error);
+		expect(result.unwrapErr()).toEqual(error);
 	});
 });
