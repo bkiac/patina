@@ -1,7 +1,7 @@
-import {type Result} from "./result"
-import {ResultPromise} from "./result_promise"
-import {run, runAsync} from "./run"
-import type {InferErr, InferOk} from "./util"
+import {type Result} from "./result";
+import {ResultPromise} from "./result_promise";
+import {run, runAsync} from "./run";
+import type {InferErr, InferOk} from "./util";
 
 /**
  * Wraps a function that returns any shape of `Result<any, any>` and infers its return type as `Result<T, E>`.
@@ -19,7 +19,7 @@ import type {InferErr, InferOk} from "./util"
 export function fn<A extends any[], R extends Result<any, any>>(
 	f: (...args: A) => R,
 ): (...args: A) => Result<InferOk<R>, InferErr<R>> {
-	return f
+	return f;
 }
 
 /**
@@ -39,14 +39,14 @@ export function fn<A extends any[], R extends Result<any, any>>(
  */
 export function asyncFn<A extends any[], R extends ResultPromise<any, any>>(
 	f: (...args: A) => R,
-): (...args: A) => ResultPromise<InferOk<Awaited<R>>, InferErr<Awaited<R>>>
+): (...args: A) => ResultPromise<InferOk<Awaited<R>>, InferErr<Awaited<R>>>;
 export function asyncFn<A extends any[], R extends Promise<Result<any, any>>>(
 	f: (...args: A) => R,
-): (...args: A) => ResultPromise<InferOk<Awaited<R>>, InferErr<Awaited<R>>>
+): (...args: A) => ResultPromise<InferOk<Awaited<R>>, InferErr<Awaited<R>>>;
 export function asyncFn(f: any): any {
 	return function (...args: any[]) {
-		return new ResultPromise(f(...args))
-	}
+		return new ResultPromise(f(...args));
+	};
 }
 
 /**
@@ -71,8 +71,8 @@ export function genFn<A extends any[], R extends Result<any, any>, T>(
 	fn: (...args: A) => Generator<R, T, any>,
 ): (...args: A) => Result<T, InferErr<R>> {
 	return function (...args: any[]) {
-		return run(() => fn(...(args as A)))
-	}
+		return run(() => fn(...(args as A)));
+	};
 }
 
 /**
@@ -101,6 +101,6 @@ export function asyncGenFn<
 	fn: (...args: A) => AsyncGenerator<R, T, any>,
 ): (...args: A) => ResultPromise<T, InferErr<Awaited<R>>> {
 	return function (...args: any[]) {
-		return runAsync(() => fn(...(args as A)))
-	}
+		return runAsync(() => fn(...(args as A)));
+	};
 }

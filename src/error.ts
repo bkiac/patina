@@ -6,12 +6,12 @@
  * Use this error when you want to indicate that the program should stop executing.
  */
 export class Panic extends Error {
-	override readonly name = "Panic"
-	override readonly cause?: unknown
+	override readonly name = "Panic";
+	override readonly cause?: unknown;
 
 	constructor(message?: string, options?: {cause?: unknown}) {
-		super(message, options)
-		this.cause = options?.cause
+		super(message, options);
+		this.cause = options?.cause;
 	}
 }
 
@@ -21,7 +21,7 @@ export class Panic extends Error {
  * Adding a discriminant field can be beneficial for distinguishing between different types of errors during error handling. It also prevents TypeScript from unifying types, ensuring that each error is treated uniquely based on its discriminant value.
  */
 export abstract class ErrorWithTag extends Error {
-	abstract readonly tag: string
+	abstract readonly tag: string;
 }
 
 /**
@@ -30,11 +30,11 @@ export abstract class ErrorWithTag extends Error {
  * This class is useful for errors that have a cause, which is another error that caused the current error to occur.
  */
 export abstract class ErrorWithCause<Cause> extends ErrorWithTag {
-	override readonly cause: Cause
+	override readonly cause: Cause;
 
 	constructor(message: string, options: {cause: Cause}) {
-		super(message)
-		this.cause = options.cause
+		super(message);
+		this.cause = options.cause;
 	}
 }
 
@@ -45,7 +45,7 @@ export abstract class ErrorWithCause<Cause> extends ErrorWithTag {
  */
 export function parseError(error: unknown): Error {
 	if (error instanceof Error) {
-		return error
+		return error;
 	}
-	return new TypeError(`Unexpected error type: "${String(error)}"`, {cause: error})
+	return new TypeError(`Unexpected error type: "${String(error)}"`, {cause: error});
 }

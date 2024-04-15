@@ -1,21 +1,21 @@
-import {Panic} from "./error"
-import {Err, Ok, type Result} from "./result"
-import {inspectSymbol} from "./util_internal"
+import {Panic} from "./error";
+import {Err, Ok, type Result} from "./result";
+import {inspectSymbol} from "./util_internal";
 
 export type OptionMatch<T, A, B> = {
-	Some: (value: T) => A
-	None: () => B
-}
+	Some: (value: T) => A;
+	None: () => B;
+};
 
 export class OptionImpl<T> {
-	readonly isSome: boolean
-	readonly isNone: boolean
-	readonly value: T | undefined
+	readonly isSome: boolean;
+	readonly isNone: boolean;
+	readonly value: T | undefined;
 
 	constructor(some: boolean, value: T) {
-		this.isSome = some
-		this.isNone = !some
-		this.value = value
+		this.isSome = some;
+		this.isNone = !some;
+		this.value = value;
 	}
 
 	/**
@@ -32,9 +32,9 @@ export class OptionImpl<T> {
 	 */
 	expect(message: string): T {
 		if (this.isSome) {
-			return this.value as T
+			return this.value as T;
 		}
-		throw new Panic(message, {cause: this})
+		throw new Panic(message, {cause: this});
 	}
 
 	/**
@@ -51,9 +51,9 @@ export class OptionImpl<T> {
 	 */
 	unwrap(): T {
 		if (this.isSome) {
-			return this.value as T
+			return this.value as T;
 		}
-		throw new Panic(`called "unwrap()" on ${this.toString()}`, {cause: this})
+		throw new Panic(`called "unwrap()" on ${this.toString()}`, {cause: this});
 	}
 
 	/**
@@ -69,7 +69,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	unwrapOr<U>(defaultValue: U): T | U {
-		return this.isSome ? (this.value as T) : defaultValue
+		return this.isSome ? (this.value as T) : defaultValue;
 	}
 
 	/**
@@ -85,7 +85,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	unwrapOrElse<U>(defaultValue: () => U): T | U {
-		return this.isSome ? (this.value as T) : defaultValue()
+		return this.isSome ? (this.value as T) : defaultValue();
 	}
 
 	/**
@@ -99,7 +99,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	map<U>(f: (value: T) => U): Option<U> {
-		return (this.isSome ? new OptionImpl(true, f(this.value as T)) : None) as Option<U>
+		return (this.isSome ? new OptionImpl(true, f(this.value as T)) : None) as Option<U>;
 	}
 
 	/**
@@ -113,9 +113,9 @@ export class OptionImpl<T> {
 	 */
 	inspect(f: (value: T) => void): this {
 		if (this.isSome) {
-			f(this.value as T)
+			f(this.value as T);
 		}
-		return this
+		return this;
 	}
 
 	/**
@@ -129,7 +129,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B {
-		return this.isSome ? f(this.value as T) : defaultValue
+		return this.isSome ? f(this.value as T) : defaultValue;
 	}
 
 	/**
@@ -144,7 +144,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	mapOrElse<A, B>(defaultValue: () => A, f: (value: T) => B): A | B {
-		return this.isSome ? f(this.value as T) : defaultValue()
+		return this.isSome ? f(this.value as T) : defaultValue();
 	}
 
 	/**
@@ -158,7 +158,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	okOr<E>(err: E): Result<T, E> {
-		return this.isSome ? Ok(this.value as T) : Err(err)
+		return this.isSome ? Ok(this.value as T) : Err(err);
 	}
 
 	/**
@@ -172,7 +172,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	okOrElse<E>(err: () => E): Result<T, E> {
-		return this.isSome ? Ok(this.value as T) : Err(err())
+		return this.isSome ? Ok(this.value as T) : Err(err());
 	}
 
 	/**
@@ -188,7 +188,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	and<U>(other: Option<U>): Option<U> {
-		return this.isSome ? other : None
+		return this.isSome ? other : None;
 	}
 
 	/**
@@ -203,7 +203,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	andThen<U>(f: (value: T) => Option<U>): Option<U> {
-		return this.isSome ? f(this.value as T) : None
+		return this.isSome ? f(this.value as T) : None;
 	}
 
 	/**
@@ -220,7 +220,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	filter(predicate: (value: T) => boolean): Option<T> {
-		return (this.isSome && predicate(this.value as T) ? this : None) as Option<T>
+		return (this.isSome && predicate(this.value as T) ? this : None) as Option<T>;
 	}
 
 	/**
@@ -236,7 +236,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	or<U>(other: Option<U>): Option<T | U> {
-		return (this.isSome ? this : other) as Option<T | U>
+		return (this.isSome ? this : other) as Option<T | U>;
 	}
 
 	/**
@@ -252,7 +252,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	orElse<U>(f: () => Option<U>): Option<T | U> {
-		return (this.isSome ? this : f()) as Option<T | U>
+		return (this.isSome ? this : f()) as Option<T | U>;
 	}
 
 	/**
@@ -269,9 +269,9 @@ export class OptionImpl<T> {
 	 */
 	xor<U>(other: Option<U>): Option<T | U> {
 		if (this.isSome) {
-			return (other.isSome ? None : this) as Option<T | U>
+			return (other.isSome ? None : this) as Option<T | U>;
 		}
-		return (other.isSome ? other : None) as Option<T | U>
+		return (other.isSome ? other : None) as Option<T | U>;
 	}
 
 	/**
@@ -285,7 +285,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	flatten<U>(this: Option<Option<U>>): Option<U> {
-		return (this.isSome ? (this.value as Option<U>) : None) as Option<U>
+		return (this.isSome ? (this.value as Option<U>) : None) as Option<U>;
 	}
 
 	/**
@@ -301,59 +301,59 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	match<A, B>(matcher: OptionMatch<T, A, B>): A | B {
-		return this.isSome ? matcher.Some(this.value as T) : matcher.None()
+		return this.isSome ? matcher.Some(this.value as T) : matcher.None();
 	}
 
 	toObject(): {some: true; value: T} | {some: false; value: null} {
-		return this.isSome ? {some: true, value: this.value as T} : {some: false, value: null}
+		return this.isSome ? {some: true, value: this.value as T} : {some: false, value: null};
 	}
 
 	toJSON(): {meta: "Some"; value: T} | {meta: "None"; value: null} {
-		return this.isSome ? {meta: "Some", value: this.value as T} : {meta: "None", value: null}
+		return this.isSome ? {meta: "Some", value: this.value as T} : {meta: "None", value: null};
 	}
 
 	toString(): `Some(${string})` | "None" {
-		return this.isSome ? `Some(${this.value})` : "None"
+		return this.isSome ? `Some(${this.value})` : "None";
 	}
 
 	[inspectSymbol](): ReturnType<OptionImpl<T>["toString"]> {
-		return this.toString()
+		return this.toString();
 	}
 }
 
 export interface Some<T> extends OptionImpl<T> {
-	readonly isSome: true
-	readonly isNone: false
-	readonly value: T
-	unwrap(): T
-	expect(message: string): T
+	readonly isSome: true;
+	readonly isNone: false;
+	readonly value: T;
+	unwrap(): T;
+	expect(message: string): T;
 }
 
 /**
  * Some value of type `T`.
  */
 export function Some<T>(value: T): Some<T> {
-	return new OptionImpl(true, value) as Some<T>
+	return new OptionImpl(true, value) as Some<T>;
 }
 
 export interface None<T = never> extends OptionImpl<T> {
-	readonly isSome: false
-	readonly isNone: true
-	readonly value: undefined
-	unwrap(): never
-	expect(message: string): never
+	readonly isSome: false;
+	readonly isNone: true;
+	readonly value: undefined;
+	unwrap(): never;
+	expect(message: string): never;
 }
 
 /**
  * No value.
  */
-export const None = new OptionImpl(false, undefined) as None
+export const None = new OptionImpl(false, undefined) as None;
 
 /**
  * `Option` represents an optional value: every `Option` is either `Some` and contains a value, or `None`, and does not.
  */
-export type Option<T> = Some<T> | None<T>
+export type Option<T> = Some<T> | None<T>;
 
 export function Option<T>(value: T | undefined | null): Option<T> {
-	return value == null ? None : Some(value)
+	return value == null ? None : Some(value);
 }

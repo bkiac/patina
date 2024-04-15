@@ -1,5 +1,5 @@
-import {OptionPromise} from "./option_promise"
-import type {Result, ResultImpl, ResultMatch} from "./result"
+import {OptionPromise} from "./option_promise";
+import type {Result, ResultImpl, ResultMatch} from "./result";
 
 /**
  * A promise that resolves to a `Result`.
@@ -12,45 +12,45 @@ export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 	) {}
 
 	*[Symbol.iterator](): Iterator<ResultPromise<T, E>, T, any> {
-		return yield this
+		return yield this;
 	}
 
 	then<A, B>(
 		successCallback?: (res: Result<T, E>) => A | PromiseLike<A>,
 		failureCallback?: (reason: unknown) => B | PromiseLike<B>,
 	): PromiseLike<A | B> {
-		return this.promise.then(successCallback, failureCallback)
+		return this.promise.then(successCallback, failureCallback);
 	}
 
 	catch<B>(rejectionCallback?: (reason: unknown) => B | PromiseLike<B>): PromiseLike<B> {
-		return this.promise.then(undefined, rejectionCallback)
+		return this.promise.then(undefined, rejectionCallback);
 	}
 
 	finally(callback: () => void): PromiseLike<Result<T, E>> {
 		return this.then(
 			(value) => {
-				callback()
-				return value
+				callback();
+				return value;
 			},
 			(reason) => {
-				callback()
-				throw reason
+				callback();
+				throw reason;
 			},
-		)
+		);
 	}
 
 	/**
 	 * Async version of `Result#ok`.
 	 */
 	ok(): OptionPromise<T> {
-		return new OptionPromise(this.then((result) => result.ok()))
+		return new OptionPromise(this.then((result) => result.ok()));
 	}
 
 	/**
 	 * Async version of `Result#err`.
 	 */
 	err(): OptionPromise<E> {
-		return new OptionPromise(this.then((result) => result.err()))
+		return new OptionPromise(this.then((result) => result.err()));
 	}
 
 	/**
@@ -59,112 +59,112 @@ export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 	and<U, F>(other: ResultPromise<U, F>): ResultPromise<U, E | F> {
 		return new ResultPromise(
 			this.then((result) => other.then((otherResult) => result.and(otherResult))),
-		)
+		);
 	}
 
 	/**
 	 * Async version of `Result#andThen`.
 	 */
 	andThen<U, F>(f: (value: T) => Result<U, F>): ResultPromise<U, E | F> {
-		return new ResultPromise(this.then((result) => result.andThen((value) => f(value))))
+		return new ResultPromise(this.then((result) => result.andThen((value) => f(value))));
 	}
 
 	/**
 	 * Async version of `Result#andThenAsync`.
 	 */
 	andThenAsync<U, F>(f: (value: T) => Promise<Result<U, F>>): ResultPromise<U, E | F> {
-		return new ResultPromise(this.then((result) => result.andThenAsync((value) => f(value))))
+		return new ResultPromise(this.then((result) => result.andThenAsync((value) => f(value))));
 	}
 
 	/**
 	 * Async version of `Result#expect`.
 	 */
 	async expect(message: string): Promise<T> {
-		return (await this).expect(message)
+		return (await this).expect(message);
 	}
 
 	/**
 	 * Async version of `Result#expectErr`.
 	 */
 	async expectErr(message: string): Promise<E> {
-		return (await this).expectErr(message)
+		return (await this).expectErr(message);
 	}
 
 	/**
 	 * Async version of `Result#flatten`.
 	 */
 	flatten<U, F>(this: ResultPromise<ResultImpl<U, F>, E>): ResultPromise<U, E | F> {
-		return new ResultPromise(this.then((result) => result.flatten()))
+		return new ResultPromise(this.then((result) => result.flatten()));
 	}
 
 	/**
 	 * Async version of `Result#inspect`.
 	 */
 	inspect(f: (value: T) => void): ResultPromise<T, E> {
-		return new ResultPromise(this.then((result) => result.inspect(f)))
+		return new ResultPromise(this.then((result) => result.inspect(f)));
 	}
 
 	/**
 	 * Async version of `Result#inspectAsync`.
 	 */
 	inspectAsync(f: (value: T) => Promise<void>): ResultPromise<T, E> {
-		return new ResultPromise(this.then((result) => result.inspectAsync(f)))
+		return new ResultPromise(this.then((result) => result.inspectAsync(f)));
 	}
 
 	/**
 	 * Async version of `Result#inspectErr`.
 	 */
 	inspectErr(f: (error: E) => void): ResultPromise<T, E> {
-		return new ResultPromise(this.then((result) => result.inspectErr(f)))
+		return new ResultPromise(this.then((result) => result.inspectErr(f)));
 	}
 
 	/**
 	 * Async version of `Result#inspectErrAsync`.
 	 */
 	inspectErrAsync(f: (error: E) => Promise<void>): ResultPromise<T, E> {
-		return new ResultPromise(this.then((result) => result.inspectErrAsync(f)))
+		return new ResultPromise(this.then((result) => result.inspectErrAsync(f)));
 	}
 
 	/**
 	 * Async version of `Result#map`.
 	 */
 	map<U>(f: (value: T) => U): ResultPromise<U, E> {
-		return new ResultPromise(this.then((result) => result.map(f)))
+		return new ResultPromise(this.then((result) => result.map(f)));
 	}
 
 	/**
 	 * Async version of `Result#mapAsync`.
 	 */
 	mapAsync<U>(f: (value: T) => Promise<U>): ResultPromise<U, E> {
-		return new ResultPromise(this.then((result) => result.mapAsync(f)))
+		return new ResultPromise(this.then((result) => result.mapAsync(f)));
 	}
 
 	/**
 	 * Async version of `Result#mapErr`.
 	 */
 	mapErr<F>(f: (error: E) => F): ResultPromise<T, F> {
-		return new ResultPromise(this.then((result) => result.mapErr(f)))
+		return new ResultPromise(this.then((result) => result.mapErr(f)));
 	}
 
 	/**
 	 * Async version of `Result#mapErrAsync`.
 	 */
 	mapErrAsync<F>(f: (error: E) => Promise<F>): ResultPromise<T, F> {
-		return new ResultPromise(this.then((result) => result.mapErrAsync(f)))
+		return new ResultPromise(this.then((result) => result.mapErrAsync(f)));
 	}
 
 	/**
 	 * Async version of `Result#mapOr`.
 	 */
 	async mapOr<A, B>(defaultValue: A, f: (value: T) => B): Promise<A | B> {
-		return (await this).mapOr(defaultValue, f)
+		return (await this).mapOr(defaultValue, f);
 	}
 
 	/**
 	 * Async version of `Result#mapOrElse`.
 	 */
 	async mapOrElse<A, B>(defaultValue: (error: E) => A, f: (value: T) => B): Promise<A | B> {
-		return (await this).mapOrElse(defaultValue, f)
+		return (await this).mapOrElse(defaultValue, f);
 	}
 
 	/**
@@ -173,14 +173,14 @@ export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 	or<U, F>(other: ResultPromise<U, F>): ResultPromise<T | U, F> {
 		return new ResultPromise(
 			this.then((thisResult) => other.then((otherResult) => thisResult.or(otherResult))),
-		)
+		);
 	}
 
 	/**
 	 * Async version of `Result#orElse`.
 	 */
 	orElse<U, F>(f: (error: E) => Result<U, F>): ResultPromise<T | U, F> {
-		return new ResultPromise(this.then((thisResult) => thisResult.orElse((error) => f(error))))
+		return new ResultPromise(this.then((thisResult) => thisResult.orElse((error) => f(error))));
 	}
 
 	/**
@@ -189,41 +189,41 @@ export class ResultPromise<T, E> implements PromiseLike<Result<T, E>> {
 	orElseAsync<U, F>(f: (error: E) => Promise<Result<U, F>>): ResultPromise<T | U, F> {
 		return new ResultPromise(
 			this.then((thisResult) => thisResult.orElseAsync((error) => f(error))),
-		)
+		);
 	}
 
 	/**
 	 * Async version of `Result#unwrap`.
 	 */
 	async unwrap(): Promise<T> {
-		return (await this).unwrap()
+		return (await this).unwrap();
 	}
 
 	/**
 	 * Async version of `Result#unwrapErr`.
 	 */
 	async unwrapErr(): Promise<E> {
-		return (await this).unwrapErr()
+		return (await this).unwrapErr();
 	}
 
 	/**
 	 * Async version of `Result#unwrapOr`.
 	 */
 	async unwrapOr<U>(defaultValue: U): Promise<T | U> {
-		return (await this).unwrapOr(defaultValue)
+		return (await this).unwrapOr(defaultValue);
 	}
 
 	/**
 	 * Async version of `Result#unwrapOrElse`.
 	 */
 	async unwrapOrElse<U>(defaultValue: (error: E) => U): Promise<T | U> {
-		return (await this).unwrapOrElse(defaultValue)
+		return (await this).unwrapOrElse(defaultValue);
 	}
 
 	/**
 	 * Async version of `Result#match`.
 	 */
 	async match<A, B>(matcher: ResultMatch<T, E, A, B>): Promise<A | B> {
-		return (await this).match(matcher)
+		return (await this).match(matcher);
 	}
 }

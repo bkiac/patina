@@ -1,17 +1,17 @@
-import {Panic, ErrorWithCause} from "./error"
-import {parseError} from "./error"
-import {Err, Ok, type Result} from "./result"
-import {ResultPromise} from "./result_promise"
+import {Panic, ErrorWithCause} from "./error";
+import {parseError} from "./error";
+import {Err, Ok, type Result} from "./result";
+import {ResultPromise} from "./result_promise";
 
 function handlePanic(error: unknown) {
 	if (error instanceof Panic) {
-		throw error
+		throw error;
 	}
-	return error
+	return error;
 }
 
 function handleCaughtError(error: unknown) {
-	return parseError(handlePanic(error))
+	return parseError(handlePanic(error));
 }
 
 /**
@@ -22,7 +22,7 @@ function handleCaughtError(error: unknown) {
  * Original error can be accessed using the `cause` field.
  */
 export class CaughtError extends ErrorWithCause<Error> {
-	readonly tag = "CaughtError"
+	readonly tag = "CaughtError";
 }
 
 /**
@@ -45,13 +45,13 @@ export class CaughtError extends ErrorWithCause<Error> {
  */
 export function tryFn<T>(fn: () => T): Result<T, CaughtError> {
 	try {
-		return Ok(fn())
+		return Ok(fn());
 	} catch (error) {
 		return Err(
 			new CaughtError("Caught error while trying function", {
 				cause: handleCaughtError(error),
 			}),
-		)
+		);
 	}
 }
 
@@ -78,7 +78,7 @@ export function tryPromise<T>(promise: Promise<T>): ResultPromise<T, CaughtError
 					}),
 				),
 		),
-	)
+	);
 }
 
 /**
@@ -100,5 +100,5 @@ export function tryPromise<T>(promise: Promise<T>): ResultPromise<T, CaughtError
  * ```
  */
 export function tryAsyncFn<T>(fn: () => Promise<T>): ResultPromise<T, CaughtError> {
-	return tryPromise(fn())
+	return tryPromise(fn());
 }
