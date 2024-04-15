@@ -10,7 +10,6 @@ import {
 	tryFn,
 	genFn,
 	asyncGenFn,
-	CaughtError,
 } from "../src";
 import {TaggedError} from "./util";
 
@@ -61,7 +60,7 @@ describe.concurrent("fn", () => {
 		it("returns correct type with function returning Result", () => {
 			const wrapped = fn((_arg: number) => tryFn(() => 1));
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
-			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<number, CaughtError>>();
+			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<number, Error>>();
 		});
 
 		it("works with generics", () => {
@@ -192,7 +191,7 @@ describe.concurrent("asyncFn", () => {
 			const f = (_arg: number) => tryAsyncFn(async () => 1);
 			const wrapped = asyncFn(f);
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
-			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultPromise<number, CaughtError>>();
+			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultPromise<number, Error>>();
 		});
 
 		it("returns correct type with function returning Promise<Result>", () => {
@@ -204,7 +203,7 @@ describe.concurrent("asyncFn", () => {
 			};
 			const wrapped = asyncFn(f);
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
-			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultPromise<number, CaughtError>>();
+			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultPromise<number, Error>>();
 		});
 
 		it("works with generics", () => {
