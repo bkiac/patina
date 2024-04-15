@@ -1,11 +1,11 @@
 {
-	"name": "ruts",
-	"version": "0.17.0",
+	"name": "patina",
+	"version": "0.1.0",
 	"type": "module",
 	"description": "Type-safe error-handling library for TypeScript",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/bkiac/ruts.git"
+		"url": "git+https://github.com/bkiac/patina.git"
 	},
 	"author": "bkiac <bkiac@pm.me>",
 	"license": "MIT",
