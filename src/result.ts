@@ -23,10 +23,6 @@ export class ResultImpl<T, E> {
 		this[Value] = x;
 	}
 
-	private get name() {
-		return this.isOk ? "Ok" : "Err";
-	}
-
 	private unwrapFailed(message: string): never {
 		throw new Panic(message, {cause: this.value});
 	}
@@ -71,12 +67,12 @@ export class ResultImpl<T, E> {
 	 * }), 5)
 	 * ```
 	 */
-	match<A, B>(match: ResultMatch<T, E, A, B>): A | B {
-		return this.isOk ? match.Ok(this.value as T) : match.Err(this.value as E);
+	match<A, B>(pattern: ResultMatch<T, E, A, B>): A | B {
+		return this.isOk ? pattern.Ok(this.value as T) : pattern.Err(this.value as E);
 	}
 
-	matchAsync<A, B>(match: ResultMatchAsync<T, E, A, B>): Promise<A | B> {
-		return this.isOk ? match.Ok(this.value as T) : match.Err(this.value as E);
+	matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A | B> {
+		return this.isOk ? pattern.Ok(this.value as T) : pattern.Err(this.value as E);
 	}
 
 	/**
@@ -264,13 +260,13 @@ export class ResultImpl<T, E> {
 	 * x.inspect((v) => console.log(v))
 	 * ```
 	 */
-	inspect(f: (value: T) => void): Result<T, E> {
+	inspect(f: (value: T) => void): this {
 		return this.match({
 			Ok: (t) => {
 				f(t);
-				return Ok(t);
+				return this;
 			},
-			Err: (e) => Err(e),
+			Err: () => this,
 		});
 	}
 
@@ -303,12 +299,12 @@ export class ResultImpl<T, E> {
 	 * x.inspectErr((e) => console.error(e))
 	 * ```
 	 */
-	inspectErr(f: (error: E) => void): Result<T, E> {
+	inspectErr(f: (error: E) => void): this {
 		return this.match({
-			Ok: (t) => Ok(t),
+			Ok: () => this,
 			Err: (e) => {
 				f(e);
-				return Err(e);
+				return this;
 			},
 		});
 	}
@@ -364,10 +360,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	unwrap(): T {
-		return this.match({
-			Ok: (v) => v,
-			Err: () => this.unwrapFailed(`called \`unwrap()\` on \`${this.name}\``),
-		});
+		return this.expect(`called \`unwrap()\` on \`Some\``);
 	}
 
 	/**
@@ -402,10 +395,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	unwrapErr(): E {
-		return this.match({
-			Ok: () => this.unwrapFailed(`called \`unwrapErr()\` on \`${this.name}\``),
-			Err: (e) => e,
-		});
+		return this.expectErr(`called \`unwrapErr()\` on \`Ok\``);
 	}
 
 	/**
@@ -609,37 +599,31 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	flatten<U, F>(this: Result<ResultImpl<U, F>, E>): Result<U, E | F> {
-		return (this.isOk ? this.value : this) as Result<U, E | F>;
+		return this.match({
+			Ok: (t) => t,
+			Err: (e) => Err(e),
+		}) as Result<U, E | F>;
 	}
 
 	toObject(): {isOk: true; value: T} | {isOk: false; error: E} {
-		if (this.isOk) {
-			return {
-				isOk: true,
-				value: this.value as T,
-			};
-		}
-		return {
-			isOk: false,
-			error: this.value as E,
-		};
+		return this.match({
+			Ok: (value) => ({isOk: true, value}),
+			Err: (error) => ({isOk: false, error}),
+		});
 	}
 
-	toJSON(): {meta: "Ok"; value: T} | {meta: "Err"; value: E} {
-		if (this.isOk) {
-			return {
-				meta: "Ok",
-				value: this.value as T,
-			};
-		}
-		return {
-			meta: "Err",
-			value: this.value as E,
-		};
+	toJSON(): {meta: "Ok"; value: T} | {meta: "Err"; error: E} {
+		return this.match({
+			Ok: (value) => ({meta: "Ok", value}),
+			Err: (error) => ({meta: "Err", error}),
+		});
 	}
 
 	toString(): `Ok(${string})` | `Err(${string})` {
-		return this.isOk ? `Ok(${String(this.value)})` : `Err(${String(this.value)})`;
+		return this.match({
+			Ok: (value) => `Ok(${String(value)})` as const,
+			Err: (error) => `Err(${String(error)})` as const,
+		});
 	}
 
 	[inspectSymbol](): ReturnType<ResultImpl<T, E>["toString"]> {
