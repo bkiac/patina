@@ -2,6 +2,7 @@ import {Panic} from "./error";
 import {inspectSymbol} from "./util_internal";
 import {Option, Some, None} from "./option";
 import {ResultPromise} from "./result_promise";
+import {n, x} from "./common";
 
 export type ResultMatch<T, E, A, B> = {
 	Ok: (value: T) => A;
@@ -9,14 +10,28 @@ export type ResultMatch<T, E, A, B> = {
 };
 
 export class ResultImpl<T, E> {
-	readonly isOk: boolean;
-	readonly isErr: boolean;
-	readonly value: T | E;
+	private readonly [n]: boolean;
+	private readonly [x]: T | E;
 
-	constructor(ok: boolean, value: T | E) {
-		this.isOk = ok;
-		this.isErr = !ok;
-		this.value = value;
+	constructor(isOk: boolean, value: T | E) {
+		this[n] = isOk;
+		this[x] = value;
+	}
+
+	get isOk(): boolean {
+		return this[n];
+	}
+
+	get isErr(): boolean {
+		return !this[n];
+	}
+
+	get value(): T | E {
+		return this[x];
+	}
+
+	get error(): T | E {
+		return this[x];
 	}
 
 	*[Symbol.iterator](): Iterator<Result<T, E>, T, any> {
