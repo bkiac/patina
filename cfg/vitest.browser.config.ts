@@ -1,5 +1,5 @@
-import type {UserConfig} from "vitest/config"
-import cfg from "./vitest.config"
+import type {UserConfig} from "vitest/config";
+import cfg from "./vitest.config";
 
 export default {
 	...cfg,
@@ -12,4 +12,4 @@ export default {
 			name: "chromium",
 		},
 	},
-} satisfies UserConfig
+} satisfies UserConfig;
