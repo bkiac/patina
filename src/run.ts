@@ -11,7 +11,7 @@ function _run<T extends Result<any, any>, U>(
 	while (!done) {
 		const iter = gen.next(returnResult.unwrap());
 		if (iter.value instanceof ResultImpl) {
-			if (iter.value.isErr) {
+			if (iter.value.isErr()) {
 				done = true;
 				gen.return?.(iter.value as any);
 			}
@@ -68,7 +68,7 @@ function _runAsync<T extends AsyncResult<any, any> | Result<any, any>, U>(
 			if (iter.done) {
 				return result;
 			}
-			if (result.isErr) {
+			if (result.isErr()) {
 				gen.return?.(iter.value as any);
 				return result;
 			}

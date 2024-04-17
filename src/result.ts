@@ -15,8 +15,8 @@ export type ResultMatchAsync<T, E, A, B> = {
 };
 
 export class ResultImpl<T, E> {
-	private readonly [variant]: boolean;
-	private readonly [value]: T | E;
+	readonly [variant]: boolean;
+	readonly [value]: T | E;
 
 	constructor(v: boolean, x: T | E) {
 		this[variant] = v;
@@ -632,6 +632,8 @@ export class ResultImpl<T, E> {
 }
 
 export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
+	[variant]: true;
+	[value]: T;
 	isOk(): this is Ok<T, E>;
 	isErr(): this is Err<E, T>;
 	value(): T;
@@ -652,6 +654,8 @@ export function Ok<T>(value?: T): Ok<T> {
 }
 
 export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
+	[variant]: false;
+	[value]: E;
 	isOk(): this is Ok<T, E>;
 	isErr(): this is Err<E, T>;
 	value(): undefined;
