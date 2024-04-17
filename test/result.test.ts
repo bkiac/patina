@@ -52,9 +52,10 @@ describe.concurrent("core", () => {
 		const r = TestOk<number, string>(42);
 		expectTypeOf(r.value()).toEqualTypeOf<number | undefined>();
 		expectTypeOf(r.error()).toEqualTypeOf<string | undefined>();
+
 		if (r.isOk()) {
-			expectTypeOf(r.value).toEqualTypeOf<() => number>();
-			expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.value()).toEqualTypeOf<number>();
+			expectTypeOf(r.error()).toEqualTypeOf<undefined>();
 
 			expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
 			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => never>();
@@ -62,8 +63,8 @@ describe.concurrent("core", () => {
 			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
 			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
 		} else {
-			expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
-			expectTypeOf(r.error).toEqualTypeOf<() => string>();
+			expectTypeOf(r.value()).toEqualTypeOf<undefined>();
+			expectTypeOf(r.error()).toEqualTypeOf<string>();
 
 			expectTypeOf(r.unwrap).toEqualTypeOf<() => never>();
 			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
