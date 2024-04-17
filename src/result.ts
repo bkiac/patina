@@ -18,29 +18,13 @@ export class ResultImpl<T, E> {
 	private readonly [variant]: boolean;
 	private readonly [value]: T | E;
 
-	constructor(ok: boolean, x: T | E) {
-		this[variant] = ok;
+	constructor(v: boolean, x: T | E) {
+		this[variant] = v;
 		this[value] = x;
 	}
 
 	private unwrapFailed(message: string): never {
-		throw new Panic(message, {cause: this.value});
-	}
-
-	isOk(): this is Ok<T, E> {
-		return this[variant];
-	}
-
-	isErr(): this is Err<E, T> {
-		return !this[variant];
-	}
-
-	get value(): T | undefined {
-		return this.isOk() ? (this[value] as T) : undefined;
-	}
-
-	get error(): E | undefined {
-		return this.isErr() ? (this[value] as E) : undefined;
+		throw new Panic(message, {cause: this[value]});
 	}
 
 	*[Symbol.iterator](): Iterator<Result<T, E>, T, any> {
@@ -68,11 +52,27 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	match<A, B>(pattern: ResultMatch<T, E, A, B>): A | B {
-		return this.isOk() ? pattern.Ok(this.value as T) : pattern.Err(this.error as E);
+		return this[variant] ? pattern.Ok(this[value] as T) : pattern.Err(this[value] as E);
 	}
 
 	matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A | B> {
-		return this.isOk() ? pattern.Ok(this.value as T) : pattern.Err(this.error as E);
+		return this[variant] ? pattern.Ok(this[value] as T) : pattern.Err(this[value] as E);
+	}
+
+	value(): T | undefined {
+		return this.ok().unwrapOr(undefined);
+	}
+
+	error(): E | undefined {
+		return this.err().unwrapOr(undefined);
+	}
+
+	isOk(): this is Ok<T, E> {
+		return this[variant];
+	}
+
+	isErr(): this is Err<E, T> {
+		return !this[variant];
 	}
 
 	/**
@@ -632,10 +632,10 @@ export class ResultImpl<T, E> {
 }
 
 export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
-	readonly value: T;
-	readonly error: undefined;
 	isOk(): this is Ok<T, E>;
 	isErr(): this is Err<E, T>;
+	value(): T;
+	error(): undefined;
 	unwrap(): T;
 	unwrapErr(): never;
 	expect(message: string): T;
@@ -652,10 +652,10 @@ export function Ok<T>(value?: T): Ok<T> {
 }
 
 export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
-	readonly value: undefined;
-	readonly error: E;
 	isOk(): this is Ok<T, E>;
 	isErr(): this is Err<E, T>;
+	value(): undefined;
+	error(): E;
 	unwrap(): never;
 	unwrapErr(): E;
 	expect(message: string): never;

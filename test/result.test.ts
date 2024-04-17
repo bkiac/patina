@@ -13,14 +13,14 @@ describe.concurrent("core", () => {
 	it("returns an Ok result", () => {
 		const r = Ok(42);
 
-		expect(r.isOk).toEqual(true);
-		expect(r.isErr).toEqual(false);
-		expect(r.value).toEqual(42);
+		expect(r.isOk()).toEqual(true);
+		expect(r.isErr()).toEqual(false);
 
-		// expectTypeOf(r.isOk).toEqualTypeOf<() => true>();
-		// expectTypeOf(r.isErr).toEqualTypeOf<() => false>();
-		expectTypeOf(r.value).toEqualTypeOf<number>();
-		expectTypeOf(r.error).toEqualTypeOf<undefined>();
+		expect(r.value()).toEqual(42);
+		expectTypeOf(r.value).toEqualTypeOf<() => number>();
+
+		expect(r.error()).toEqual(undefined);
+		expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
 
 		expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
 		expectTypeOf(r.unwrapErr).toEqualTypeOf<() => never>();
@@ -32,14 +32,14 @@ describe.concurrent("core", () => {
 	it("returns an Err result", () => {
 		const r = Err("error");
 
-		expect(r.isOk).toEqual(false);
-		expect(r.isErr).toEqual(true);
-		expect(r.error).toEqual("error");
+		expect(r.isOk()).toEqual(false);
+		expect(r.isErr()).toEqual(true);
 
-		// expectTypeOf(r.isOk).toEqualTypeOf<() => false>();
-		// expectTypeOf(r.isErr).toEqualTypeOf<() => true>();
-		expectTypeOf(r.value).toEqualTypeOf<undefined>();
-		expectTypeOf(r.error).toEqualTypeOf<string>();
+		expect(r.value()).toEqual(undefined);
+		expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
+
+		expect(r.error()).toEqual("error");
+		expectTypeOf(r.error).toEqualTypeOf<() => string>();
 
 		expectTypeOf(r.unwrap).toEqualTypeOf<() => never>();
 		expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
@@ -50,13 +50,11 @@ describe.concurrent("core", () => {
 
 	it("works as discriminated union", () => {
 		const r = TestOk<number, string>(42);
-		expectTypeOf(r.value).toEqualTypeOf<number | undefined>();
-		expectTypeOf(r.error).toEqualTypeOf<string | undefined>();
+		expectTypeOf(r.value()).toEqualTypeOf<number | undefined>();
+		expectTypeOf(r.error()).toEqualTypeOf<string | undefined>();
 		if (r.isOk()) {
-			// expectTypeOf(r.isOk).toEqualTypeOf<() => true>();
-			// expectTypeOf(r.isErr).toEqualTypeOf<() => false>();
-			expectTypeOf(r.value).toEqualTypeOf<number>();
-			expectTypeOf(r.error).toEqualTypeOf<undefined>();
+			expectTypeOf(r.value).toEqualTypeOf<() => number>();
+			expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
 
 			expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
 			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => never>();
@@ -64,10 +62,8 @@ describe.concurrent("core", () => {
 			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
 			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
 		} else {
-			// expectTypeOf(r.isOk).toEqualTypeOf<() => false>();
-			// expectTypeOf(r.isErr).toEqualTypeOf<() => true>();
-			expectTypeOf(r.value).toEqualTypeOf<undefined>();
-			expectTypeOf(r.error).toEqualTypeOf<string>();
+			expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.error).toEqualTypeOf<() => string>();
 
 			expectTypeOf(r.unwrap).toEqualTypeOf<() => never>();
 			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
