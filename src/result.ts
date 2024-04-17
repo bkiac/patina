@@ -27,20 +27,20 @@ export class ResultImpl<T, E> {
 		throw new Panic(message, {cause: this.value});
 	}
 
-	get isOk(): boolean {
+	isOk(): this is Ok<T, E> {
 		return this[variant];
 	}
 
-	get isErr(): boolean {
+	isErr(): this is Err<E, T> {
 		return !this[variant];
 	}
 
 	get value(): T | undefined {
-		return this.isOk ? (this[value] as T) : undefined;
+		return this.isOk() ? (this[value] as T) : undefined;
 	}
 
 	get error(): E | undefined {
-		return this.isErr ? (this[value] as E) : undefined;
+		return this.isErr() ? (this[value] as E) : undefined;
 	}
 
 	*[Symbol.iterator](): Iterator<Result<T, E>, T, any> {
@@ -68,11 +68,11 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	match<A, B>(pattern: ResultMatch<T, E, A, B>): A | B {
-		return this.isOk ? pattern.Ok(this.value as T) : pattern.Err(this.error as E);
+		return this.isOk() ? pattern.Ok(this.value as T) : pattern.Err(this.error as E);
 	}
 
 	matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A | B> {
-		return this.isOk ? pattern.Ok(this.value as T) : pattern.Err(this.error as E);
+		return this.isOk() ? pattern.Ok(this.value as T) : pattern.Err(this.error as E);
 	}
 
 	/**
@@ -632,10 +632,10 @@ export class ResultImpl<T, E> {
 }
 
 export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
-	readonly isOk: true;
-	readonly isErr: false;
 	readonly value: T;
 	readonly error: undefined;
+	isOk(): this is Ok<T, E>;
+	isErr(): this is Err<E, T>;
 	unwrap(): T;
 	unwrapErr(): never;
 	expect(message: string): T;
@@ -652,10 +652,10 @@ export function Ok<T>(value?: T): Ok<T> {
 }
 
 export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
-	readonly isOk: false;
-	readonly isErr: true;
 	readonly value: undefined;
 	readonly error: E;
+	isOk(): this is Ok<T, E>;
+	isErr(): this is Err<E, T>;
 	unwrap(): never;
 	unwrapErr(): E;
 	expect(message: string): never;
