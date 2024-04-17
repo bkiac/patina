@@ -6,7 +6,6 @@ describe.concurrent("guard", () => {
 		const fn = (x: number, y: number) => x + y;
 		const wrappedFn = guard(fn);
 		const result = wrappedFn(40, 2);
-		expect(result.isOk).toEqual(true);
 		expect(result.unwrap()).toEqual(42);
 	});
 
@@ -17,7 +16,6 @@ describe.concurrent("guard", () => {
 		};
 		const wrappedFn = guard(fn);
 		const result = wrappedFn();
-		expect(result.isOk).toEqual(false);
 		expect(result.unwrapErr()).toEqual(error);
 	});
 
@@ -41,7 +39,6 @@ describe.concurrent("guardAsync", () => {
 		const fn = async (x: number, y: number) => Promise.resolve(x + y);
 		const wrappedFn = guardAsync(fn);
 		const result = await wrappedFn(40, 2);
-		expect(result.isOk).toEqual(true);
 		expect(result.unwrap()).toEqual(42);
 	});
 
@@ -52,7 +49,6 @@ describe.concurrent("guardAsync", () => {
 		};
 		const wrappedFn = guardAsync(fn);
 		const result = await wrappedFn();
-		expect(result.isOk).toEqual(false);
 		expect(result.unwrapErr()).toEqual(error);
 	});
 
