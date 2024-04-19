@@ -1,6 +1,6 @@
 import {AsyncOption} from "./async_option";
 import {AsyncResult} from "./async_result";
-import {variant, value} from "./common";
+import {kind, value} from "./common";
 import {Panic} from "./error";
 import {Err, Ok, type Result} from "./result";
 import {inspectSymbol} from "./util_internal";
@@ -16,11 +16,11 @@ export type OptionMatchAsync<T, A, B> = {
 };
 
 export class OptionImpl<T> {
-	private readonly [variant]: boolean;
+	private readonly [kind]: boolean;
 	private readonly [value]: T | undefined;
 
 	constructor(some: boolean, x: T) {
-		this[variant] = some;
+		this[kind] = some;
 		this[value] = x;
 	}
 
@@ -29,11 +29,11 @@ export class OptionImpl<T> {
 	}
 
 	get isSome(): boolean {
-		return this[variant];
+		return this[kind];
 	}
 
 	get isNone(): boolean {
-		return !this[variant];
+		return !this[kind];
 	}
 
 	get value(): T | undefined {

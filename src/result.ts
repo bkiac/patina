@@ -2,7 +2,7 @@ import {Panic} from "./error";
 import {inspectSymbol} from "./util_internal";
 import {Option, Some, None} from "./option";
 import {AsyncResult} from "./async_result";
-import {variant, value} from "./common";
+import {kind, value} from "./common";
 
 export type ResultMatch<T, E, A, B> = {
 	Ok: (value: T) => A;
@@ -15,11 +15,11 @@ export type ResultMatchAsync<T, E, A, B> = {
 };
 
 export class ResultImpl<T, E> {
-	readonly [variant]: boolean;
+	readonly [kind]: boolean;
 	readonly [value]: T | E;
 
-	constructor(v: boolean, x: T | E) {
-		this[variant] = v;
+	constructor(k: boolean, x: T | E) {
+		this[kind] = k;
 		this[value] = x;
 	}
 
@@ -52,11 +52,11 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	match<A, B>(pattern: ResultMatch<T, E, A, B>): A | B {
-		return this[variant] ? pattern.Ok(this[value] as T) : pattern.Err(this[value] as E);
+		return this[kind] ? pattern.Ok(this[value] as T) : pattern.Err(this[value] as E);
 	}
 
 	matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A | B> {
-		return this[variant] ? pattern.Ok(this[value] as T) : pattern.Err(this[value] as E);
+		return this[kind] ? pattern.Ok(this[value] as T) : pattern.Err(this[value] as E);
 	}
 
 	value(): T | undefined {
@@ -68,11 +68,11 @@ export class ResultImpl<T, E> {
 	}
 
 	isOk(): this is Ok<T, E> {
-		return this[variant];
+		return this[kind];
 	}
 
 	isErr(): this is Err<E, T> {
-		return !this[variant];
+		return !this[kind];
 	}
 
 	/**
@@ -632,7 +632,7 @@ export class ResultImpl<T, E> {
 }
 
 export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
-	[variant]: true;
+	[kind]: true;
 	[value]: T;
 	isOk(): this is Ok<T, E>;
 	isErr(): this is Err<E, T>;
@@ -654,7 +654,7 @@ export function Ok<T>(value?: T): Ok<T> {
 }
 
 export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
-	[variant]: false;
+	[kind]: false;
 	[value]: E;
 	isOk(): this is Ok<T, E>;
 	isErr(): this is Err<E, T>;
