@@ -1,2 +1,2 @@
-export const variant = Symbol("variant");
+export const kind = Symbol("kind");
 export const value = Symbol("value");
