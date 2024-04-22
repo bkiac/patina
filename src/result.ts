@@ -2,7 +2,7 @@ import {Panic} from "./error";
 import {inspectSymbol} from "./util_internal";
 import {Option, Some, None} from "./option";
 import {AsyncResult} from "./async_result";
-import {kind, value} from "./common";
+import * as symbols from "./symbols";
 
 export type ResultMatch<T, E, A, B> = {
 	Ok: (value: T) => A;
@@ -15,16 +15,16 @@ export type ResultMatchAsync<T, E, A, B> = {
 };
 
 export class ResultImpl<T, E> {
-	readonly [kind]: boolean;
-	readonly [value]: T | E;
+	readonly [symbols.kind]: boolean;
+	readonly [symbols.value]: T | E;
 
-	constructor(k: boolean, x: T | E) {
-		this[kind] = k;
-		this[value] = x;
+	constructor(k: boolean, v: T | E) {
+		this[symbols.kind] = k;
+		this[symbols.value] = v;
 	}
 
 	private unwrapFailed(message: string): never {
-		throw new Panic(message, {cause: this[value]});
+		throw new Panic(message, {cause: this[symbols.value]});
 	}
 
 	*[Symbol.iterator](): Iterator<Result<T, E>, T, any> {
@@ -52,27 +52,23 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	match<A, B>(pattern: ResultMatch<T, E, A, B>): A | B {
-		return this[kind] ? pattern.Ok(this[value] as T) : pattern.Err(this[value] as E);
+		return this[symbols.kind]
+			? pattern.Ok(this[symbols.value] as T)
+			: pattern.Err(this[symbols.value] as E);
 	}
 
 	matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A | B> {
-		return this[kind] ? pattern.Ok(this[value] as T) : pattern.Err(this[value] as E);
-	}
-
-	value(): T | undefined {
-		return this.ok().unwrapOr(undefined);
-	}
-
-	error(): E | undefined {
-		return this.err().unwrapOr(undefined);
+		return this[symbols.kind]
+			? pattern.Ok(this[symbols.value] as T)
+			: pattern.Err(this[symbols.value] as E);
 	}
 
 	isOk(): this is Ok<T, E> {
-		return this[kind];
+		return this[symbols.kind];
 	}
 
 	isErr(): this is Err<E, T> {
-		return !this[kind];
+		return !this[symbols.kind];
 	}
 
 	/**
@@ -632,12 +628,10 @@ export class ResultImpl<T, E> {
 }
 
 export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
-	[kind]: true;
-	[value]: T;
+	[symbols.kind]: true;
+	value: T;
 	isOk(): this is Ok<T, E>;
 	isErr(): this is Err<E, T>;
-	value(): T;
-	error(): undefined;
 	unwrap(): T;
 	unwrapErr(): never;
 	expect(message: string): T;
@@ -650,16 +644,16 @@ export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
 export function Ok(): Ok;
 export function Ok<T>(value: T): Ok<T>;
 export function Ok<T>(value?: T): Ok<T> {
-	return new ResultImpl<T, never>(true, value as T) as Ok<T>;
+	const ok = new ResultImpl<T, never>(true, value as T) as Ok<T>;
+	ok.value = ok[symbols.value];
+	return ok;
 }
 
 export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
-	[kind]: false;
-	[value]: E;
+	[symbols.kind]: false;
+	error: E;
 	isOk(): this is Ok<T, E>;
 	isErr(): this is Err<E, T>;
-	value(): undefined;
-	error(): E;
 	unwrap(): never;
 	unwrapErr(): E;
 	expect(message: string): never;
@@ -672,7 +666,9 @@ export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
 export function Err(): Err;
 export function Err<E>(value: E): Err<E>;
 export function Err<E>(value?: E): Err<E> {
-	return new ResultImpl<never, E>(false, value as E) as Err<E>;
+	const err = new ResultImpl<never, E>(false, value as E) as Err<E>;
+	err.error = err[symbols.value];
+	return err;
 }
 
 /**
