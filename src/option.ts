@@ -1,6 +1,6 @@
 import {AsyncOption} from "./async_option";
 import {AsyncResult} from "./async_result";
-import {kind, value} from "./common";
+import {kind, value} from "./symbols";
 import {Panic} from "./error";
 import {Err, Ok, type Result} from "./result";
 import {inspectSymbol} from "./util_internal";
