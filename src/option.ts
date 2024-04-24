@@ -1,6 +1,6 @@
 import {AsyncOption} from "./async_option";
 import {AsyncResult} from "./async_result";
-import {kind, value} from "./symbols";
+import * as symbols from "./symbols";
 import {Panic} from "./error";
 import {Err, Ok, type Result} from "./result";
 import {inspectSymbol} from "./util_internal";
@@ -16,28 +16,16 @@ export type OptionMatchAsync<T, A, B> = {
 };
 
 export class OptionImpl<T> {
-	private readonly [kind]: boolean;
-	private readonly [value]: T | undefined;
+	readonly [symbols.kind]: boolean;
+	private readonly [symbols.value]: T | undefined;
 
 	constructor(some: boolean, x: T) {
-		this[kind] = some;
-		this[value] = x;
+		this[symbols.kind] = some;
+		this[symbols.value] = x;
 	}
 
 	private unwrapFailed(message: string): never {
-		throw new Panic(message, {cause: this.value});
-	}
-
-	get isSome(): boolean {
-		return this[kind];
-	}
-
-	get isNone(): boolean {
-		return !this[kind];
-	}
-
-	get value(): T | undefined {
-		return this[value];
+		throw new Panic(message, {cause: this[symbols.value]});
 	}
 
 	/**
@@ -53,11 +41,34 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	match<A, B>(pattern: OptionMatch<T, A, B>): A | B {
-		return this.isSome ? pattern.Some(this.value as T) : pattern.None();
+		return this[symbols.kind] ? pattern.Some(this[symbols.value] as T) : pattern.None();
 	}
 
 	matchAsync<A, B>(pattern: OptionMatchAsync<T, A, B>): Promise<A | B> {
-		return this.isSome ? pattern.Some(this.value as T) : pattern.None();
+		return this[symbols.kind] ? pattern.Some(this[symbols.value] as T) : pattern.None();
+	}
+
+	/**
+	 * Returns `true` if the option is a `Some` value.
+	 */
+	isSome(): this is Some<T> {
+		return this[symbols.kind];
+	}
+
+	/**
+	 * Returns `true` if the option is a `Some` value and the contained value is equal to `value`.
+	 *
+	 * Maybe not as useful as using `option.isSome() && f(option.value)`, because it doesn't narrow the type, but it's here for completeness.
+	 */
+	isSomeAnd(predicate: (value: T) => boolean): this is Some<T> {
+		return this.isSome() && predicate(this[symbols.value] as T);
+	}
+
+	/**
+	 * Returns `true` if the option is a `None` value.
+	 */
+	isNone(): this is None {
+		return !this[symbols.kind];
 	}
 
 	/**
@@ -409,7 +420,7 @@ export class OptionImpl<T> {
 	 */
 	xor<U>(other: Option<U>): Option<T | U> {
 		return this.match({
-			Some: (t) => (other.isNone ? Some(t) : None),
+			Some: (t) => (other.isNone() ? Some(t) : None),
 			None: () => other,
 		});
 	}
@@ -458,9 +469,8 @@ export class OptionImpl<T> {
 }
 
 export interface Some<T> extends OptionImpl<T> {
-	readonly isSome: true;
-	readonly isNone: false;
-	readonly value: T;
+	[symbols.kind]: true;
+	value: () => T;
 	unwrap(): T;
 	expect(message: string): T;
 }
@@ -469,13 +479,13 @@ export interface Some<T> extends OptionImpl<T> {
  * Some value of type `T`.
  */
 export function Some<T>(value: T): Some<T> {
-	return new OptionImpl(true, value) as Some<T>;
+	const some = new OptionImpl(true, value) as Some<T>;
+	some.value = () => value;
+	return some;
 }
 
 export interface None<T = never> extends OptionImpl<T> {
-	readonly isSome: false;
-	readonly isNone: true;
-	readonly value: undefined;
+	[symbols.kind]: false;
 	unwrap(): never;
 	expect(message: string): never;
 }

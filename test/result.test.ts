@@ -16,8 +16,8 @@ describe.concurrent("core", () => {
 		expect(r.isOk()).toEqual(true);
 		expect(r.isErr()).toEqual(false);
 
-		expect(r.value).toEqual(42);
-		expectTypeOf(r.value).toEqualTypeOf<number>();
+		expect(r.value()).toEqual(42);
+		expectTypeOf(r.value).toEqualTypeOf<() => number>();
 
 		// @ts-expect-error
 		expectTypeOf(r.error).toEqualTypeOf<any>();
@@ -38,8 +38,8 @@ describe.concurrent("core", () => {
 		// @ts-expect-error
 		expectTypeOf(r.value).toEqualTypeOf<any>();
 
-		expect(r.error).toEqual("error");
-		expectTypeOf(r.error).toEqualTypeOf<string>();
+		expect(r.error()).toEqual("error");
+		expectTypeOf(r.error).toEqualTypeOf<() => string>();
 
 		expectTypeOf(r.unwrap).toEqualTypeOf<() => never>();
 		expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
@@ -55,7 +55,7 @@ describe.concurrent("core", () => {
 		// @ts-expect-error
 		expectTypeOf(r.error).toEqualTypeOf<any>();
 		if (r.isOk()) {
-			expectTypeOf(r.value).toEqualTypeOf<number>();
+			expectTypeOf(r.value).toEqualTypeOf<() => number>();
 			// @ts-expect-error
 			expectTypeOf(r.error).toEqualTypeOf<any>();
 
@@ -67,7 +67,7 @@ describe.concurrent("core", () => {
 		} else {
 			// @ts-expect-error
 			expectTypeOf(r.value).toEqualTypeOf<any>();
-			expectTypeOf(r.error).toEqualTypeOf<string>();
+			expectTypeOf(r.error).toEqualTypeOf<() => string>();
 
 			expectTypeOf(r.unwrap).toEqualTypeOf<() => never>();
 			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
