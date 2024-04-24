@@ -16,7 +16,7 @@ export type ResultMatchAsync<T, E, A, B> = {
 
 export class ResultImpl<T, E> {
 	readonly [symbols.kind]: boolean;
-	readonly [symbols.value]: T | E;
+	private readonly [symbols.value]: T | E;
 
 	constructor(k: boolean, v: T | E) {
 		this[symbols.kind] = k;
@@ -653,7 +653,7 @@ export class ResultImpl<T, E> {
 
 export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
 	[symbols.kind]: true;
-	value: T;
+	value: () => T;
 	unwrap(): T;
 	unwrapErr(): never;
 	expect(message: string): T;
@@ -667,13 +667,13 @@ export function Ok(): Ok;
 export function Ok<T>(value: T): Ok<T>;
 export function Ok<T>(value?: T): Ok<T> {
 	const ok = new ResultImpl<T, never>(true, value as T) as Ok<T>;
-	ok.value = ok[symbols.value];
+	ok.value = () => value as T;
 	return ok;
 }
 
 export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
 	[symbols.kind]: false;
-	error: E;
+	error: () => E;
 	unwrap(): never;
 	unwrapErr(): E;
 	expect(message: string): never;
@@ -684,10 +684,10 @@ export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
  * Contains the error value.
  */
 export function Err(): Err;
-export function Err<E>(value: E): Err<E>;
-export function Err<E>(value?: E): Err<E> {
-	const err = new ResultImpl<never, E>(false, value as E) as Err<E>;
-	err.error = err[symbols.value];
+export function Err<E>(error: E): Err<E>;
+export function Err<E>(error?: E): Err<E> {
+	const err = new ResultImpl<never, E>(false, error as E) as Err<E>;
+	err.error = () => error as E;
 	return err;
 }
 

@@ -12,46 +12,32 @@ function TestNone<T>(): Option<T> {
 describe.concurrent("core", () => {
 	it("returns a Some option", () => {
 		const option = Some(42);
-
-		expect(option.isSome).toEqual(true);
-		expect(option.isNone).toEqual(false);
-		expect(option.value).toEqual(42);
-
-		expectTypeOf(option.isSome).toEqualTypeOf<true>();
-		expectTypeOf(option.isNone).toEqualTypeOf<false>();
-		expectTypeOf(option.value).toEqualTypeOf<number>();
+		expect(option.isSome()).toEqual(true);
+		expect(option.isNone()).toEqual(false);
+		expect(option.value()).toEqual(42);
+		expectTypeOf(option.value).toEqualTypeOf<() => number>();
 		expectTypeOf(option.unwrap).toEqualTypeOf<() => number>();
 	});
 
 	it("returns a None option", () => {
 		const option = None;
-
-		expect(option.isSome).toEqual(false);
-		expect(option.isNone).toEqual(true);
-		expect(option.value).toEqual(undefined);
-
-		expectTypeOf(option.isSome).toEqualTypeOf<false>();
-		expectTypeOf(option.isNone).toEqualTypeOf<true>();
-		expectTypeOf(option.value).toEqualTypeOf<undefined>();
-
+		expect(option.isSome()).toEqual(false);
+		expect(option.isNone()).toEqual(true);
+		// @ts-expect-error
+		expectTypeOf(option.value).toEqualTypeOf<any>();
 		expectTypeOf(option.unwrap).toEqualTypeOf<() => never>();
 		expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>();
 	});
 
 	it("works with discriminated union", () => {
 		const option = TestSome(42);
-		if (option.isSome) {
-			expectTypeOf(option.isSome).toEqualTypeOf<true>();
-			expectTypeOf(option.isNone).toEqualTypeOf<false>();
-			expectTypeOf(option.value).toEqualTypeOf<number>();
-
+		if (option.isSome()) {
+			expectTypeOf(option.value).toEqualTypeOf<() => number>();
 			expectTypeOf(option.unwrap).toEqualTypeOf<() => number>();
 			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => number>();
 		} else {
-			expectTypeOf(option.isSome).toEqualTypeOf<false>();
-			expectTypeOf(option.isNone).toEqualTypeOf<true>();
-			expectTypeOf(option.value).toEqualTypeOf<undefined>();
-
+			// @ts-expect-error
+			expectTypeOf(option.value).toEqualTypeOf<any>();
 			expectTypeOf(option.unwrap).toEqualTypeOf<() => never>();
 			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>();
 		}
