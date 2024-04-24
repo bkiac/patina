@@ -500,6 +500,8 @@ export const None = new OptionImpl(false, undefined) as None;
  */
 export type Option<T> = Some<T> | None<T>;
 
-export function Option<T>(value: T | undefined | null): Option<T> {
+export function Option() {}
+
+Option.from = <T>(value: T | undefined | null): Option<T> => {
 	return value == null ? None : Some(value);
-}
+};
