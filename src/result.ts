@@ -1,8 +1,9 @@
-import {Panic} from "./error";
+import {Panic, parseError} from "./error";
 import {inspectSymbol} from "./util_internal";
-import {Option, Some, None} from "./option";
+import {type Option, Some, None} from "./option";
 import {AsyncResult} from "./async_result";
 import * as symbols from "./symbols";
+import type {InferErr} from "./util";
 
 export type ResultMatch<T, E, A, B> = {
 	Ok: (value: T) => A;
@@ -691,6 +692,17 @@ export function Err<E>(error?: E): Err<E> {
 	return err;
 }
 
+function handlePanic(error: unknown) {
+	if (error instanceof Panic) {
+		throw error;
+	}
+	return error;
+}
+
+function handleCaughtError(error: unknown) {
+	return parseError(handlePanic(error));
+}
+
 /**
  * `Result` is a type that represents either success (`Ok`) or failure (`Err`).
  *
@@ -699,3 +711,173 @@ export function Err<E>(error?: E): Err<E> {
  * Functions return `Result` whenever errors are expected and recoverable.
  */
 export type Result<T, E> = Ok<T, E> | Err<E, T>;
+
+export function Result() {}
+
+/**
+ * Tries to execute a function and returns the result as a `Result`.
+ *
+ * **Examples**
+ *
+ * ```
+ * // const result: Result<number, Error>
+ * const result = Result.from(() => {
+ *   if (Math.random() > 0.5) {
+ *		return 42
+ *	  } else {
+ *		throw new Error("random error")
+ *	  }
+ * })
+ * ```
+ */
+Result.from = <T>(f: () => T): Result<T, Error> => {
+	try {
+		return Ok(f());
+	} catch (error) {
+		return Err(handleCaughtError(error));
+	}
+};
+
+/**
+ * Tries to resolve a promise and returns the result as a `AsyncResult`.
+ *
+ * **Examples**
+ *
+ * ```
+ * // const result: AsyncResult<number, Error>
+ * const result = Result.fromPromise(Promise.resolve(42))
+ * ```
+ */
+Result.fromPromise = <T>(promise: Promise<T>): AsyncResult<T, Error> => {
+	return new AsyncResult(
+		promise.then(
+			(value) => Ok(value),
+			(error) => Err(handleCaughtError(error)),
+		),
+	);
+};
+
+/**
+ * Tries to execute an async function and returns the result as a `AsyncResult`.
+ *
+ * **Examples**
+ *
+ * ```
+ * // const result: AsyncResult<number, CaughtError>
+ * const result = Result.fromAsync(() => {
+ *  if (Math.random() > 0.5) {
+ *    return Promise.resolve(42)
+ * 	} else {
+ *   throw new Error("random error")
+ * }
+ * })
+ * ```
+ */
+Result.fromAsync = <T>(f: () => Promise<T>): AsyncResult<T, Error> => {
+	return Result.fromPromise(f());
+};
+
+function _try<T extends Result<any, any>, U>(
+	fn: () => Generator<T, U, any>,
+): Result<U, InferErr<T>> {
+	const gen = fn();
+	let done = false;
+	let returnResult = Ok();
+	while (!done) {
+		const iter = gen.next(returnResult.unwrap());
+		if (iter.value instanceof ResultImpl) {
+			if (iter.value.isErr()) {
+				done = true;
+				gen.return?.(iter.value as any);
+			}
+			returnResult = iter.value as any;
+		} else {
+			done = true;
+			returnResult = Ok(iter.value) as any;
+		}
+	}
+	return returnResult as any;
+}
+
+/**
+ * Runs a generator function that returns a `Result` and infers its return type as `Result<T, E>`.
+ *
+ * `yield*` must be used to yield the result of a `Result`.
+ *
+ * **Examples**
+ *
+ * ```ts
+ * // $ExpectType Result<number, string>
+ * const result = run(function* () {
+ *   const a = yield* Ok(1)
+ *   const random = Math.random()
+ *   if (random > 0.5) {
+ *     yield* Err("error")
+ *   }
+ *   return a + random
+ * })
+ * ```
+ */
+Result.try = <T extends Result<any, any>, U>(fn: () => Generator<T, U, any>) => {
+	// Variable assignment helps with type inference
+	const result = _try(fn);
+	return result;
+};
+
+async function toPromiseResult<T, E>(value: any): Promise<Result<T, E>> {
+	const awaited = await value;
+	if (value instanceof ResultImpl) {
+		return awaited as any;
+	}
+	return Ok(awaited);
+}
+
+function _tryAsync<T extends AsyncResult<any, any> | Result<any, any>, U>(
+	fn: () => AsyncGenerator<T, U, any>,
+): AsyncResult<U, InferErr<Awaited<T>>> {
+	const gen = fn();
+	const yieldedResultChain = Promise.resolve<Result<any, any>>(Ok()).then(
+		async function fulfill(nextResult): Promise<Result<any, any>> {
+			const iter = await gen.next(nextResult.unwrap());
+			const result = await toPromiseResult(iter.value);
+			if (iter.done) {
+				return result;
+			}
+			if (result.isErr()) {
+				gen.return?.(iter.value as any);
+				return result;
+			}
+			return Promise.resolve(result).then(fulfill);
+		},
+	);
+	return new AsyncResult(yieldedResultChain);
+}
+
+/**
+ * Runs an async generator function that returns a `Result` and infers its return type as `AsyncResult<T, E>`.
+ *
+ * `yield*` must be used to yield the result of a `AsyncResult` or `Result`.
+ *
+ * **Examples**
+ *
+ * ```ts
+ * const okOne = () => new AsyncResult(Promise.resolve(Ok(1)))
+ *
+ * // $ExpectType AsyncResult<number, string>
+ * const result = runAsync(async function* () {
+ *   const a = yield* okOne()
+ *   const random = Math.random()
+ *   if (random > 0.5) {
+ *     yield* Err("error")
+ *   }
+ *   return a + random
+ * })
+ * ```
+ */
+Result.tryAsync = <T extends AsyncResult<any, any> | Result<any, any>, U>(
+	fn: () => AsyncGenerator<T, U, any>,
+) => {
+	// Variable assignment helps with type inference
+	const result = _tryAsync(fn);
+	return result;
+};
