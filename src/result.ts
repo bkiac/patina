@@ -63,12 +63,36 @@ export class ResultImpl<T, E> {
 			: pattern.Err(this[symbols.value] as E);
 	}
 
+	/**
+	 * Returns `true` if the result is `Ok`.
+	 */
 	isOk(): this is Ok<T, E> {
 		return this[symbols.kind];
 	}
 
+	/**
+	 * Returns `true` if the result is `Ok` and the value satisfies the predicate.
+	 *
+	 * Maybe not as useful as using `result.isOk() && f(result.value)`, because it doesn't narrow the type, but it's here for completeness.
+	 */
+	isOkAnd(f: (value: T) => boolean): this is Ok<T, E> {
+		return this[symbols.kind] && f(this[symbols.value] as T);
+	}
+
+	/**
+	 * Returns `true` if the result is `Err`.
+	 */
 	isErr(): this is Err<E, T> {
 		return !this[symbols.kind];
+	}
+
+	/**
+	 * Returns `true` if the result is `Err` and the error satisfies the predicate.
+	 *
+	 * Maybe not as useful as using `result.isErr() && f(result.error)`, because it doesn't narrow the type, but it's here for completeness.
+	 */
+	isErrAnd(f: (error: E) => boolean): this is Err<E, T> {
+		return !this[symbols.kind] && f(this[symbols.value] as E);
 	}
 
 	/**
@@ -630,8 +654,6 @@ export class ResultImpl<T, E> {
 export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
 	[symbols.kind]: true;
 	value: T;
-	isOk(): this is Ok<T, E>;
-	isErr(): this is Err<E, T>;
 	unwrap(): T;
 	unwrapErr(): never;
 	expect(message: string): T;
@@ -652,8 +674,6 @@ export function Ok<T>(value?: T): Ok<T> {
 export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
 	[symbols.kind]: false;
 	error: E;
-	isOk(): this is Ok<T, E>;
-	isErr(): this is Err<E, T>;
 	unwrap(): never;
 	unwrapErr(): E;
 	expect(message: string): never;
