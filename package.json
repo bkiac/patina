@@ -54,6 +54,9 @@
 		"typescript": "5.0.4",
 		"vitest": "1.4.0"
 	},
+	"publishConfig": {
+		"access": "public"
+	},
 	"sideEffects": false,
 	"lint-staged": {
 		"*.{ts,yaml,json,md}": "prettier --write"
