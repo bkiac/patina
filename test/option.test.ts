@@ -30,7 +30,7 @@ describe.concurrent("core", () => {
 
 	it("works with discriminated union", () => {
 		const option = TestSome(42);
-		expectTypeOf(option.value).toEqualTypeOf<() => number | undefined>();
+		expectTypeOf(option.value()).toEqualTypeOf<number | undefined>();
 		if (option.isSome()) {
 			expectTypeOf(option.value).toEqualTypeOf<() => number>();
 			expectTypeOf(option.unwrap).toEqualTypeOf<() => number>();

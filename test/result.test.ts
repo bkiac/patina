@@ -46,8 +46,8 @@ describe.concurrent("core", () => {
 
 	it("works as discriminated union", () => {
 		const r = TestOk<number, string>(42);
-		expectTypeOf(r.value).toEqualTypeOf<() => number | undefined>();
-		expectTypeOf(r.error).toEqualTypeOf<() => string | undefined>();
+		expectTypeOf(r.value()).toEqualTypeOf<number | undefined>();
+		expectTypeOf(r.error()).toEqualTypeOf<string | undefined>();
 		if (r.isOk()) {
 			expectTypeOf(r.value).toEqualTypeOf<() => number>();
 			expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
