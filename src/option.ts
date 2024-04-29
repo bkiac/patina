@@ -2,7 +2,6 @@ import {AsyncOption} from "./async_option";
 import {AsyncResult} from "./async_result";
 import {Panic} from "./error";
 import {Err, Ok, type Result} from "./result";
-import {inspectSymbol} from "./util_internal";
 import * as symbols from "./symbols";
 
 export type OptionMatch<T, A, B> = {
@@ -400,7 +399,7 @@ export class OptionImpl<T> {
 		return this.#kind ? `Some(${String(this.#val)})` : "None";
 	}
 
-	[inspectSymbol](): ReturnType<OptionImpl<T>["toString"]> {
+	[symbols.inspect](): ReturnType<OptionImpl<T>["toString"]> {
 		return this.toString();
 	}
 }
