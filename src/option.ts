@@ -501,7 +501,7 @@ export interface None<T = never> extends OptionImpl<T> {
 /**
  * No value.
  */
-export const None = new OptionImpl(false, undefined) as None;
+export const None = new OptionImpl(false) as None;
 
 /**
  * `Option` represents an optional value: every `Option` is either `Some` and contains a value, or `None`, and does not.
