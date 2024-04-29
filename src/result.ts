@@ -15,11 +15,13 @@ export type ResultMatchAsync<T, E, A, B> = {
 };
 
 export class ResultImpl<T, E> {
-	readonly [symbols.kind]: boolean;
+	private readonly [symbols.kind]?: boolean;
 	private readonly [symbols.value]: T | E;
 
 	constructor(k: boolean, v: T | E) {
-		this[symbols.kind] = k;
+		if (k) {
+			this[symbols.kind] = k;
+		}
 		this[symbols.value] = v;
 	}
 
@@ -87,7 +89,7 @@ export class ResultImpl<T, E> {
 	 * Returns `true` if the result is `Ok`.
 	 */
 	isOk(): this is Ok<T, E> {
-		return this[symbols.kind];
+		return this[symbols.kind] ?? false;
 	}
 
 	/**
@@ -96,14 +98,14 @@ export class ResultImpl<T, E> {
 	 * Maybe not as useful as using `result.isOk() && f(result.value)`, because it doesn't narrow the type, but it's here for completeness.
 	 */
 	isOkAnd(f: (value: T) => boolean): this is Ok<T, E> {
-		return this[symbols.kind] && f(this[symbols.value] as T);
+		return this.isOk() && f(this[symbols.value] as T);
 	}
 
 	/**
 	 * Returns `true` if the result is `Err`.
 	 */
 	isErr(): this is Err<E, T> {
-		return !this[symbols.kind];
+		return !this.isOk();
 	}
 
 	/**
@@ -672,7 +674,7 @@ export class ResultImpl<T, E> {
 }
 
 export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
-	[symbols.kind]: true;
+	[symbols.tag]: "Ok";
 	value(): T;
 	error(): undefined;
 	unwrap(): T;
@@ -691,7 +693,7 @@ export function Ok<T>(value?: T): Ok<T> {
 }
 
 export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
-	[symbols.kind]: false;
+	[symbols.tag]: "Err";
 	value(): undefined;
 	error(): E;
 	unwrap(): never;
