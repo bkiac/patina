@@ -1,5 +1,5 @@
 import {AsyncResult} from ".";
-import type {Option, OptionMatch} from "./option";
+import type {Option, OptionMatch, OptionMatchAsync} from "./option";
 
 /**
  * A promise that resolves to an `Option`.
@@ -31,6 +31,24 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 				throw reason;
 			},
 		);
+	}
+
+	/**
+	 * Async version of `Option#match`.
+	 */
+	async match<A, B>(matcher: OptionMatch<T, A, B>): Promise<A | B> {
+		return (await this).match(matcher);
+	}
+
+	async matchAsync<A, B>(matcher: OptionMatchAsync<T, A, B>): Promise<A | B> {
+		return (await this).matchAsync(matcher);
+	}
+
+	/**
+	 * Async version of `Option#value`.
+	 */
+	async value(): Promise<T | undefined> {
+		return (await this).value();
 	}
 
 	/**
@@ -156,12 +174,5 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 		return new AsyncOption(
 			this.then((thisOption) => other.then((otherOption) => thisOption.xor(otherOption))),
 		);
-	}
-
-	/**
-	 * Async version of `Option#match`.
-	 */
-	async match<A, B>(matcher: OptionMatch<T, A, B>): Promise<A | B> {
-		return (await this).match(matcher);
 	}
 }
