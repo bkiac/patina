@@ -17,11 +17,13 @@ export type OptionMatchAsync<T, A, B> = {
 
 export class OptionImpl<T> {
 	readonly [symbols.kind]: boolean;
-	private readonly [symbols.value]: T | undefined;
+	private readonly [symbols.value]?: T;
 
-	constructor(some: boolean, x: T) {
+	constructor(some: boolean, x?: T) {
 		this[symbols.kind] = some;
-		this[symbols.value] = x;
+		if (x !== undefined) {
+			this[symbols.value] = x;
+		}
 	}
 
 	private unwrapFailed(message: string): never {
@@ -46,6 +48,13 @@ export class OptionImpl<T> {
 
 	matchAsync<A, B>(pattern: OptionMatchAsync<T, A, B>): Promise<A | B> {
 		return this[symbols.kind] ? pattern.Some(this[symbols.value] as T) : pattern.None();
+	}
+
+	/**
+	 * Returns the contained `Some` value, if exists.
+	 */
+	value(): T | undefined {
+		return this[symbols.value];
 	}
 
 	/**
@@ -470,7 +479,7 @@ export class OptionImpl<T> {
 
 export interface Some<T> extends OptionImpl<T> {
 	[symbols.kind]: true;
-	value: () => T;
+	value(): T;
 	unwrap(): T;
 	expect(message: string): T;
 }
@@ -479,13 +488,12 @@ export interface Some<T> extends OptionImpl<T> {
  * Some value of type `T`.
  */
 export function Some<T>(value: T): Some<T> {
-	const some = new OptionImpl(true, value) as Some<T>;
-	some.value = () => value;
-	return some;
+	return new OptionImpl(true, value) as Some<T>;
 }
 
 export interface None<T = never> extends OptionImpl<T> {
 	[symbols.kind]: false;
+	value(): undefined;
 	unwrap(): never;
 	expect(message: string): never;
 }

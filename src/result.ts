@@ -65,6 +65,26 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
+	 * Returns the contained value, if it exists.
+	 */
+	value(): T | undefined {
+		return this.match({
+			Ok: (t) => t,
+			Err: () => undefined,
+		});
+	}
+
+	/**
+	 * Returns the contained error, if it exists.
+	 */
+	error(): E | undefined {
+		return this.match({
+			Ok: () => undefined,
+			Err: (e) => e,
+		});
+	}
+
+	/**
 	 * Returns `true` if the result is `Ok`.
 	 */
 	isOk(): this is Ok<T, E> {
@@ -654,7 +674,8 @@ export class ResultImpl<T, E> {
 
 export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
 	[symbols.kind]: true;
-	value: () => T;
+	value(): T;
+	error(): undefined;
 	unwrap(): T;
 	unwrapErr(): never;
 	expect(message: string): T;
@@ -667,14 +688,13 @@ export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
 export function Ok(): Ok;
 export function Ok<T>(value: T): Ok<T>;
 export function Ok<T>(value?: T): Ok<T> {
-	const ok = new ResultImpl<T, never>(true, value as T) as Ok<T>;
-	ok.value = () => value as T;
-	return ok;
+	return new ResultImpl<T, never>(true, value as T) as Ok<T>;
 }
 
 export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
 	[symbols.kind]: false;
-	error: () => E;
+	value(): undefined;
+	error(): E;
 	unwrap(): never;
 	unwrapErr(): E;
 	expect(message: string): never;
@@ -687,9 +707,7 @@ export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
 export function Err(): Err;
 export function Err<E>(error: E): Err<E>;
 export function Err<E>(error?: E): Err<E> {
-	const err = new ResultImpl<never, E>(false, error as E) as Err<E>;
-	err.error = () => error as E;
-	return err;
+	return new ResultImpl<never, E>(false, error as E) as Err<E>;
 }
 
 function handlePanic(error: unknown) {
