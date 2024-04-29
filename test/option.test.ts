@@ -23,21 +23,20 @@ describe.concurrent("core", () => {
 		const option = None;
 		expect(option.isSome()).toEqual(false);
 		expect(option.isNone()).toEqual(true);
-		// @ts-expect-error
-		expectTypeOf(option.value).toEqualTypeOf<any>();
+		expectTypeOf(option.value).toEqualTypeOf<() => undefined>();
 		expectTypeOf(option.unwrap).toEqualTypeOf<() => never>();
 		expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>();
 	});
 
 	it("works with discriminated union", () => {
 		const option = TestSome(42);
+		expectTypeOf(option.value).toEqualTypeOf<() => number | undefined>();
 		if (option.isSome()) {
 			expectTypeOf(option.value).toEqualTypeOf<() => number>();
 			expectTypeOf(option.unwrap).toEqualTypeOf<() => number>();
 			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => number>();
 		} else {
-			// @ts-expect-error
-			expectTypeOf(option.value).toEqualTypeOf<any>();
+			expectTypeOf(option.value).toEqualTypeOf<() => undefined>();
 			expectTypeOf(option.unwrap).toEqualTypeOf<() => never>();
 			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>();
 		}
@@ -333,22 +332,22 @@ describe.concurrent("match", () => {
 	});
 });
 
-describe.concurrent("Option", () => {
+describe.concurrent("Option.from", () => {
 	it("returns Some when the value is not null or undefined", () => {
 		const value = "hello" as string | number | null;
-		const option = Option(value);
+		const option = Option.from(value);
 		expectTypeOf(option).toEqualTypeOf<Option<string | number>>();
 		expect(option).toEqual(Some(value));
 	});
 
 	it("returns Some when the value is falsy", () => {
-		expect(Option(false)).toEqual(Some(false));
-		expect(Option(0)).toEqual(Some(0));
-		expect(Option("")).toEqual(Some(""));
+		expect(Option.from(false)).toEqual(Some(false));
+		expect(Option.from(0)).toEqual(Some(0));
+		expect(Option.from("")).toEqual(Some(""));
 	});
 
 	it("returns None when the value is null or undefined", () => {
-		expect(Option(null)).toEqual(None);
-		expect(Option(undefined)).toEqual(None);
+		expect(Option.from(null)).toEqual(None);
+		expect(Option.from(undefined)).toEqual(None);
 	});
 });
