@@ -1,5 +1,4 @@
 import {Panic, parseError} from "./error";
-import {inspectSymbol} from "./util_internal";
 import {type Option, Some, None} from "./option";
 import {AsyncResult} from "./async_result";
 import * as symbols from "./symbols";
@@ -588,7 +587,7 @@ export class ResultImpl<T, E> {
 		return this.#kind ? `Ok(${this.#val})` : `Err(${this.#val})`;
 	}
 
-	[inspectSymbol](): ReturnType<ResultImpl<T, E>["toString"]> {
+	[symbols.inspect](): ReturnType<ResultImpl<T, E>["toString"]> {
 		return this.toString();
 	}
 }
