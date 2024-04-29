@@ -1,13 +1,13 @@
 import {it, expect, expectTypeOf, describe} from "vitest";
-import {tryFn, Ok, Err, Result, tryAsyncFn, AsyncResult} from "../src";
+import {trySync, Ok, Err, Result, tryAsync, AsyncResult} from "../src";
 
 async function wait<T>(ms: number): Promise<T> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-describe("tryFn", () => {
-	it("should tryFn with all Oks", () => {
-		const result = tryFn(function* () {
+describe("trySync", () => {
+	it("should try with all Oks", () => {
+		const result = trySync(function* () {
 			const x = yield* Ok(42);
 			const y = yield* Ok(1);
 			return x + y;
@@ -17,7 +17,7 @@ describe("tryFn", () => {
 	});
 
 	it("should handle transformed return type", () => {
-		const result = tryFn(function* () {
+		const result = trySync(function* () {
 			const x = yield* Ok(42);
 			const y = yield* Ok(1);
 			return x.toString() + y.toString();
@@ -28,14 +28,14 @@ describe("tryFn", () => {
 
 	it("works with function call", () => {
 		function fn() {
-			return tryFn(function* () {
+			return trySync(function* () {
 				const x = yield* Ok(1);
 				const y = yield* Ok(1);
 				return x + y;
 			});
 		}
 
-		const result = tryFn(function* () {
+		const result = trySync(function* () {
 			const x = yield* Ok(1);
 			const y = yield* fn();
 			return x + y;
@@ -45,8 +45,8 @@ describe("tryFn", () => {
 		expect(result.unwrap()).toEqual(3);
 	});
 
-	it("should tryFn with early Err", () => {
-		const result = tryFn(function* () {
+	it("should try with early Err", () => {
+		const result = trySync(function* () {
 			const x = yield* Ok(42);
 			const y = yield* Err("error");
 			return x + y;
@@ -57,8 +57,8 @@ describe("tryFn", () => {
 });
 
 describe("tryAsyncFn", () => {
-	it("should tryFn async with all Oks", async () => {
-		const result = tryAsyncFn(async function* () {
+	it("should try async with all Oks", async () => {
+		const result = tryAsync(async function* () {
 			const x = yield* Ok(42);
 			const y = yield* new AsyncResult(Promise.resolve(Ok(1)));
 			return x + y;
@@ -67,8 +67,8 @@ describe("tryAsyncFn", () => {
 		await expect(result.unwrap()).resolves.toEqual(43);
 	});
 
-	it("should tryFn async with early Err", async () => {
-		const result = tryAsyncFn(async function* () {
+	it("should try async with early Err", async () => {
+		const result = tryAsync(async function* () {
 			const x = yield* Ok(42);
 			const y = yield* new AsyncResult(Promise.resolve(Err("error")));
 			return x + y;
@@ -79,14 +79,14 @@ describe("tryAsyncFn", () => {
 
 	it("works with function call", async () => {
 		function fn() {
-			return tryAsyncFn(async function* () {
+			return tryAsync(async function* () {
 				const x = yield* Ok(1);
 				const y = yield* new AsyncResult(Promise.resolve(Ok(1)));
 				return x + y;
 			});
 		}
 
-		const result = tryAsyncFn(async function* () {
+		const result = tryAsync(async function* () {
 			const x = yield* Ok(1);
 			const y = yield* fn();
 			return x + y;
@@ -97,7 +97,7 @@ describe("tryAsyncFn", () => {
 	});
 
 	it("should handle transformed return type", async () => {
-		const result = tryAsyncFn(async function* () {
+		const result = tryAsync(async function* () {
 			const x = yield* Ok(42);
 			const y = yield* new AsyncResult(Promise.resolve(Ok(1)));
 			return x.toString() + y.toString();
@@ -112,7 +112,7 @@ describe("tryAsyncFn", () => {
 			const duration = 1000;
 
 			function shouldNotBlock() {
-				return tryAsyncFn(async function* () {
+				return tryAsync(async function* () {
 					const x = yield* Ok(1);
 					await wait(duration);
 					const y = yield* new AsyncResult(Promise.resolve(Ok(1)));
