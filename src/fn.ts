@@ -1,6 +1,6 @@
 import {type Result} from "./result";
 import {AsyncResult} from "./async_result";
-import {run, runAsync} from "./run";
+import {trySync, tryAsync} from "./try";
 import type {InferErr, InferOk} from "./util";
 
 /**
@@ -67,11 +67,11 @@ export function asyncFn(f: any): any {
  * })
  * ```
  */
-export function genFn<A extends any[], R extends Result<any, any>, T>(
+export function gen<A extends any[], R extends Result<any, any>, T>(
 	fn: (...args: A) => Generator<R, T, any>,
 ): (...args: A) => Result<T, InferErr<R>> {
 	return function (...args: any[]) {
-		return run(() => fn(...(args as A)));
+		return trySync(() => fn(...(args as A)));
 	};
 }
 
@@ -93,10 +93,10 @@ export function genFn<A extends any[], R extends Result<any, any>, T>(
  * })
  * ```
  */
-export function asyncGenFn<A extends any[], R extends AsyncResult<any, any> | Result<any, any>, T>(
+export function asyncGen<A extends any[], R extends AsyncResult<any, any> | Result<any, any>, T>(
 	fn: (...args: A) => AsyncGenerator<R, T, any>,
 ): (...args: A) => AsyncResult<T, InferErr<Awaited<R>>> {
 	return function (...args: any[]) {
-		return runAsync(() => fn(...(args as A)));
+		return tryAsync(() => fn(...(args as A)));
 	};
 }

@@ -1,16 +1,5 @@
 import {describe, expect, it, expectTypeOf, test} from "vitest";
-import {
-	asyncFn,
-	fn,
-	Ok,
-	Err,
-	tryAsyncFn,
-	AsyncResult,
-	type Result,
-	tryFn,
-	genFn,
-	asyncGenFn,
-} from "../src";
+import {asyncFn, fn, Ok, Err, AsyncResult, Result, gen, asyncGen} from "../src";
 import {TaggedError} from "./util";
 
 describe.concurrent("fn", () => {
@@ -58,7 +47,7 @@ describe.concurrent("fn", () => {
 		// })
 
 		it("returns correct type with function returning Result", () => {
-			const wrapped = fn((_arg: number) => tryFn(() => 1));
+			const wrapped = fn((_arg: number) => Result.from(() => 1));
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
 			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<number, Error>>();
 		});
@@ -82,7 +71,7 @@ describe.concurrent("fn", () => {
 			};
 			const wrapped = fn(() => {
 				const r = foo();
-				if (r.isErr) {
+				if (r.isErr()) {
 					return r;
 				}
 				return Ok("foo");
@@ -103,10 +92,10 @@ describe.concurrent("fn", () => {
 
 			const wrapped = fn(() => {
 				const r = foo();
-				if (r.isErr) {
+				if (r.isErr()) {
 					return r;
 				}
-				return Ok(r.value);
+				return Ok(r.value());
 			});
 			expectTypeOf(wrapped).returns.toEqualTypeOf<Result<Data, TaggedError>>();
 		});
@@ -129,7 +118,7 @@ describe.concurrent("fn", () => {
 
 			bar = fn(() => {
 				const ye = foo();
-				if (ye.isOk) {
+				if (ye.isOk()) {
 					return Ok(ye);
 				}
 				return Err(true);
@@ -188,7 +177,7 @@ describe.concurrent("asyncFn", () => {
 		});
 
 		it("returns correct type with function returning AsyncResult", () => {
-			const f = (_arg: number) => tryAsyncFn(async () => 1);
+			const f = (_arg: number) => Result.fromPromise(Promise.resolve(1));
 			const wrapped = asyncFn(f);
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
 			expectTypeOf(wrapped).returns.toEqualTypeOf<AsyncResult<number, Error>>();
@@ -196,9 +185,7 @@ describe.concurrent("asyncFn", () => {
 
 		it("returns correct type with function returning Promise<Result>", () => {
 			const f = async (_arg: number) => {
-				const bar = tryAsyncFn(async () => {
-					return 1;
-				});
+				const bar = Result.fromPromise(Promise.resolve(1));
 				return bar;
 			};
 			const wrapped = asyncFn(f);
@@ -225,7 +212,7 @@ describe.concurrent("asyncFn", () => {
 			});
 			const wrapped = asyncFn(async () => {
 				const r = await foo();
-				if (r.isErr) {
+				if (r.isErr()) {
 					return r;
 				}
 				return Ok(true);
@@ -235,8 +222,8 @@ describe.concurrent("asyncFn", () => {
 	});
 });
 
-test("genFn", () => {
-	const fn = genFn(function* (arg: number) {
+test("gen", () => {
+	const fn = gen(function* (arg: number) {
 		const x = yield* Ok(arg);
 		const y = yield* Err(1);
 		const z = yield* Err("error");
@@ -245,8 +232,8 @@ test("genFn", () => {
 	expectTypeOf(fn).toEqualTypeOf<(arg: number) => Result<number, number | string>>();
 });
 
-test("asyncGenFn", () => {
-	const fn = asyncGenFn(async function* (arg: number) {
+test("asyncGen", () => {
+	const fn = asyncGen(async function* (arg: number) {
 		const x = yield* new AsyncResult(Promise.resolve(Ok(arg)));
 		const y = yield* new AsyncResult(Promise.resolve(Err(1)));
 		const z = yield* new AsyncResult(Promise.resolve(Err("error")));

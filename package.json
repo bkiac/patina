@@ -1,8 +1,8 @@
 {
-	"name": "patina",
+	"name": "@patina/std",
 	"version": "0.1.0",
 	"type": "module",
-	"description": "Type-safe error-handling library for TypeScript",
+	"description": "Type-safe nothing-handling and error-handling library",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/bkiac/patina.git"

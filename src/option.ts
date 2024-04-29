@@ -1,9 +1,8 @@
 import {AsyncOption} from "./async_option";
 import {AsyncResult} from "./async_result";
-import {variant, value} from "./common";
 import {Panic} from "./error";
 import {Err, Ok, type Result} from "./result";
-import {inspectSymbol} from "./util_internal";
+import * as symbols from "./symbols";
 
 export type OptionMatch<T, A, B> = {
 	Some: (value: T) => A;
@@ -16,28 +15,18 @@ export type OptionMatchAsync<T, A, B> = {
 };
 
 export class OptionImpl<T> {
-	private readonly [variant]: boolean;
-	private readonly [value]: T | undefined;
+	readonly #kind?: true;
+	readonly #val?: T;
 
-	constructor(some: boolean, x: T) {
-		this[variant] = some;
-		this[value] = x;
+	constructor(some: boolean, x?: T) {
+		if (some) {
+			this.#kind = true;
+			this.#val = x!;
+		}
 	}
 
 	private unwrapFailed(message: string): never {
-		throw new Panic(message, {cause: this.value});
-	}
-
-	get isSome(): boolean {
-		return this[variant];
-	}
-
-	get isNone(): boolean {
-		return !this[variant];
-	}
-
-	get value(): T | undefined {
-		return this[value];
+		throw new Panic(message, {cause: this.#val});
 	}
 
 	/**
@@ -53,11 +42,41 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	match<A, B>(pattern: OptionMatch<T, A, B>): A | B {
-		return this.isSome ? pattern.Some(this.value as T) : pattern.None();
+		return this.#kind ? pattern.Some(this.#val as T) : pattern.None();
 	}
 
 	matchAsync<A, B>(pattern: OptionMatchAsync<T, A, B>): Promise<A | B> {
-		return this.isSome ? pattern.Some(this.value as T) : pattern.None();
+		return this.#kind ? pattern.Some(this.#val as T) : pattern.None();
+	}
+
+	/**
+	 * Returns the contained `Some` value, if exists.
+	 */
+	value(): T | undefined {
+		return this.#val;
+	}
+
+	/**
+	 * Returns `true` if the option is a `Some` value.
+	 */
+	isSome(): this is Some<T> {
+		return this.#kind === true;
+	}
+
+	/**
+	 * Returns `true` if the option is a `Some` value and the contained value is equal to `value`.
+	 *
+	 * Maybe not as useful as using `option.isSome() && f(option.value)`, because it doesn't narrow the type, but it's here for completeness.
+	 */
+	isSomeAnd(predicate: (value: T) => boolean): this is Some<T> {
+		return this.#kind === true && predicate(this.#val as T);
+	}
+
+	/**
+	 * Returns `true` if the option is a `None` value.
+	 */
+	isNone(): this is None {
+		return this.#kind !== true;
 	}
 
 	/**
@@ -73,10 +92,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	expect(message: string): T {
-		return this.match({
-			Some: (t) => t,
-			None: () => this.unwrapFailed(message),
-		});
+		return this.#kind ? (this.#val as T) : this.unwrapFailed(message);
 	}
 
 	/**
@@ -108,10 +124,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	unwrapOr<U>(defaultValue: U): T | U {
-		return this.match({
-			Some: (t) => t,
-			None: () => defaultValue,
-		});
+		return this.#kind ? (this.#val as T) : defaultValue;
 	}
 
 	/**
@@ -127,17 +140,11 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	unwrapOrElse<U>(defaultValue: () => U): T | U {
-		return this.match({
-			Some: (t) => t,
-			None: () => defaultValue(),
-		});
+		return this.#kind ? (this.#val as T) : defaultValue();
 	}
 
 	unwrapOrElseAsync<U>(defaultValue: () => Promise<U>): Promise<T | U> {
-		return this.matchAsync({
-			Some: (t) => Promise.resolve(t),
-			None: () => defaultValue(),
-		});
+		return this.#kind ? Promise.resolve(this.#val as T) : defaultValue();
 	}
 
 	/**
@@ -151,19 +158,11 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	map<U>(f: (value: T) => U): Option<U> {
-		return this.match({
-			Some: (t) => Some(f(t)),
-			None: () => None,
-		});
+		return this.#kind ? Some(f(this.#val as T)) : None;
 	}
 
 	mapAsync<U>(f: (value: T) => Promise<U>): AsyncOption<U> {
-		return new AsyncOption(
-			this.matchAsync({
-				Some: (t) => f(t).then(Some),
-				None: () => Promise.resolve(None),
-			}),
-		);
+		return new AsyncOption(this.#kind ? f(this.#val as T).then(Some) : Promise.resolve(None));
 	}
 
 	/**
@@ -176,21 +175,17 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	inspect(f: (value: T) => void): this {
-		return this.match({
-			Some: (t) => {
-				f(t);
-				return this;
-			},
-			None: () => this,
-		});
+		if (this.#kind) {
+			f(this.#val as T);
+		}
+		return this;
 	}
 
 	inspectAsync(f: (value: T) => Promise<void>): AsyncOption<T> {
 		return new AsyncOption(
-			this.matchAsync({
-				Some: (t) => f(t).then(() => Some(t)),
-				None: () => Promise.resolve(None),
-			}),
+			this.#kind
+				? f(this.#val as T).then(() => this as unknown as Some<T>)
+				: Promise.resolve(None),
 		);
 	}
 
@@ -205,10 +200,11 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B {
-		return this.match({
-			Some: (t) => f(t),
-			None: () => defaultValue,
-		});
+		return this.#kind ? f(this.#val as T) : defaultValue;
+	}
+
+	mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B> {
+		return this.#kind ? f(this.#val as T) : Promise.resolve(defaultValue);
 	}
 
 	/**
@@ -223,20 +219,14 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	mapOrElse<A, B>(defaultValue: () => A, f: (value: T) => B): A | B {
-		return this.match({
-			Some: (t) => f(t),
-			None: () => defaultValue(),
-		});
+		return this.#kind ? f(this.#val as T) : defaultValue();
 	}
 
 	mapOrElseAsync<A, B>(
 		defaultValue: () => Promise<A>,
 		f: (value: T) => Promise<B>,
 	): Promise<A | B> {
-		return this.matchAsync({
-			Some: (t) => f(t),
-			None: () => defaultValue(),
-		});
+		return this.#kind ? f(this.#val as T) : defaultValue();
 	}
 
 	/**
@@ -250,10 +240,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	okOr<E>(err: E): Result<T, E> {
-		return this.match({
-			Some: (t) => Ok(t),
-			None: () => Err(err),
-		});
+		return this.#kind ? Ok(this.#val as T) : Err(err);
 	}
 
 	/**
@@ -267,18 +254,14 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	okOrElse<E>(err: () => E): Result<T, E> {
-		return this.match({
-			Some: (t) => Ok(t),
-			None: () => Err(err()),
-		});
+		return this.#kind ? Ok(this.#val as T) : Err(err());
 	}
 
 	okOrElseAsync<E>(err: () => Promise<E>): AsyncResult<T, E> {
-		return new AsyncResult(
-			this.matchAsync({
-				Some: (t) => Promise.resolve(Ok(t)),
-				None: () => err().then(Err),
-			}) as Promise<Result<T, E>>,
+		return new AsyncResult<T, E>(
+			this.#kind
+				? Promise.resolve(Ok(this.#val as T))
+				: (err().then(Err) as Promise<Result<T, E>>),
 		);
 	}
 
@@ -295,10 +278,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	and<U>(other: Option<U>): Option<U> {
-		return this.match({
-			Some: () => other,
-			None: () => None,
-		});
+		return this.#kind ? other : None;
 	}
 
 	/**
@@ -313,19 +293,11 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	andThen<U>(f: (value: T) => Option<U>): Option<U> {
-		return this.match({
-			Some: (t) => f(t),
-			None: () => None,
-		});
+		return this.#kind ? f(this.#val as T) : None;
 	}
 
 	andThenAsync<U>(f: (value: T) => Promise<Option<U>> | AsyncOption<U>): AsyncOption<U> {
-		return new AsyncOption(
-			this.matchAsync({
-				Some: (t) => f(t) as Promise<Option<U>>,
-				None: () => Promise.resolve(None),
-			}),
-		);
+		return new AsyncOption(this.#kind ? f(this.#val as T) : Promise.resolve(None));
 	}
 
 	/**
@@ -342,10 +314,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	filter(predicate: (value: T) => boolean): Option<T> {
-		return this.match({
-			Some: (t) => (predicate(t) ? Some(t) : None),
-			None: () => None,
-		});
+		return (this.#kind && predicate(this.#val as T) ? this : None) as Option<T>;
 	}
 
 	/**
@@ -361,10 +330,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	or<U>(other: Option<U>): Option<T | U> {
-		return this.match({
-			Some: (t) => Some(t),
-			None: () => other,
-		});
+		return (this.#kind ? this : other) as Option<T | U>;
 	}
 
 	/**
@@ -380,18 +346,14 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	orElse<U>(f: () => Option<U>): Option<T | U> {
-		return this.match({
-			Some: (t) => Some(t),
-			None: () => f(),
-		});
+		return (this.#kind ? this : f()) as Option<T | U>;
 	}
 
 	orElseAsync<U>(f: () => Promise<Option<U>> | AsyncOption<U>): AsyncOption<T | U> {
 		return new AsyncOption(
-			this.matchAsync({
-				Some: (t) => Promise.resolve(Some(t)),
-				None: () => f() as Promise<Option<U>>,
-			}) as Promise<Option<T | U>>,
+			(this.#kind ? Promise.resolve(this as unknown as Some<T>) : f()) as Promise<
+				Option<T | U>
+			>,
 		);
 	}
 
@@ -408,10 +370,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	xor<U>(other: Option<U>): Option<T | U> {
-		return this.match({
-			Some: (t) => (other.isNone ? Some(t) : None),
-			None: () => other,
-		});
+		return (this.#kind ? (other.#kind ? None : this) : other) as Option<T | U>;
 	}
 
 	/**
@@ -425,42 +384,29 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	flatten<U>(this: Option<Option<U>>): Option<U> {
-		return this.match({
-			Some: (t) => t,
-			None: () => None,
-		});
+		return this.#kind ? (this.#val as Option<U>) : None;
 	}
 
 	toObject(): {isSome: true; value: T} | {isSome: false; value: null} {
-		return this.match({
-			Some: (value) => ({isSome: true, value}),
-			None: () => ({isSome: false, value: null}),
-		});
+		return this.#kind ? {isSome: true, value: this.#val as T} : {isSome: false, value: null};
 	}
 
 	toJSON(): {meta: "Some"; value: T} | {meta: "None"; value: null} {
-		return this.match({
-			Some: (value) => ({meta: "Some", value}),
-			None: () => ({meta: "None", value: null}),
-		});
+		return this.#kind ? {meta: "Some", value: this.#val as T} : {meta: "None", value: null};
 	}
 
 	toString(): `Some(${string})` | "None" {
-		return this.match({
-			Some: (value) => `Some(${String(value)})` as const,
-			None: () => "None" as const,
-		});
+		return this.#kind ? `Some(${String(this.#val)})` : "None";
 	}
 
-	[inspectSymbol](): ReturnType<OptionImpl<T>["toString"]> {
+	[symbols.inspect](): ReturnType<OptionImpl<T>["toString"]> {
 		return this.toString();
 	}
 }
 
 export interface Some<T> extends OptionImpl<T> {
-	readonly isSome: true;
-	readonly isNone: false;
-	readonly value: T;
+	[symbols.tag]: "Some";
+	value(): T;
 	unwrap(): T;
 	expect(message: string): T;
 }
@@ -473,9 +419,8 @@ export function Some<T>(value: T): Some<T> {
 }
 
 export interface None<T = never> extends OptionImpl<T> {
-	readonly isSome: false;
-	readonly isNone: true;
-	readonly value: undefined;
+	[symbols.tag]: "None";
+	value(): undefined;
 	unwrap(): never;
 	expect(message: string): never;
 }
@@ -483,13 +428,15 @@ export interface None<T = never> extends OptionImpl<T> {
 /**
  * No value.
  */
-export const None = new OptionImpl(false, undefined) as None;
+export const None = new OptionImpl(false) as None;
 
 /**
  * `Option` represents an optional value: every `Option` is either `Some` and contains a value, or `None`, and does not.
  */
 export type Option<T> = Some<T> | None<T>;
 
-export function Option<T>(value: T | undefined | null): Option<T> {
+export function Option() {}
+
+Option.from = <T>(value: T | undefined | null): Option<T> => {
 	return value == null ? None : Some(value);
-}
+};

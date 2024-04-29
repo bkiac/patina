@@ -1,5 +1,5 @@
 import {AsyncOption} from "./async_option";
-import type {Result, ResultImpl, ResultMatch} from "./result";
+import type {Result, ResultImpl, ResultMatch, ResultMatchAsync} from "./result";
 
 /**
  * A promise that resolves to a `Result`.
@@ -37,6 +37,25 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 				throw reason;
 			},
 		);
+	}
+
+	/**
+	 * Async version of `Result#match`.
+	 */
+	async match<A, B>(matcher: ResultMatch<T, E, A, B>): Promise<A | B> {
+		return (await this).match(matcher);
+	}
+
+	async matchAsync<A, B>(matcher: ResultMatchAsync<T, E, A, B>): Promise<A | B> {
+		return (await this).matchAsync(matcher);
+	}
+
+	async value(): Promise<T | undefined> {
+		return (await this).value();
+	}
+
+	async error(): Promise<E | undefined> {
+		return (await this).error();
 	}
 
 	/**
@@ -218,12 +237,5 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 */
 	async unwrapOrElse<U>(defaultValue: (error: E) => U): Promise<T | U> {
 		return (await this).unwrapOrElse(defaultValue);
-	}
-
-	/**
-	 * Async version of `Result#match`.
-	 */
-	async match<A, B>(matcher: ResultMatch<T, E, A, B>): Promise<A | B> {
-		return (await this).match(matcher);
 	}
 }

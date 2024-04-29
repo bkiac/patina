@@ -1,78 +1,94 @@
-import {Panic} from "./error";
-import {parseError} from "./error";
-import {Err, Ok, type Result} from "./result";
 import {AsyncResult} from "./async_result";
-
-function handlePanic(error: unknown) {
-	if (error instanceof Panic) {
-		throw error;
-	}
-	return error;
-}
-
-function handleCaughtError(error: unknown) {
-	return parseError(handlePanic(error));
-}
+import {type Result, ResultImpl, Ok} from "./result";
+import type {InferErr} from "./util";
 
 /**
- * Tries to execute a function and returns the result as a `Result`.
+ * Runs a generator function that returns a `Result` and infers its return type as `Result<T, E>`.
+ *
+ * `yield*` must be used to yield the result of a `Result`.
  *
  * **Examples**
  *
- * ```
- * // const result: Result<number, Error>
- * const result = tryFn(() => {
- *   if (Math.random() > 0.5) {
- *		return 42
- *	  } else {
- *		throw new Error("random error")
- *	  }
+ * ```ts
+ * // $ExpectType Result<number, string>
+ * const result = tryFn(function* () {
+ *   const a = yield* Ok(1)
+ *   const random = Math.random()
+ *   if (random > 0.5) {
+ *     yield* Err("error")
+ *   }
+ *   return a + random
  * })
  * ```
  */
-export function tryFn<T>(fn: () => T): Result<T, Error> {
-	try {
-		return Ok(fn());
-	} catch (error) {
-		return Err(handleCaughtError(error));
+export function trySync<T extends Result<any, any>, U>(
+	fn: () => Generator<T, U, any>,
+): Result<U, InferErr<T>> {
+	const gen = fn();
+	let done = false;
+	let returnResult = Ok();
+	while (!done) {
+		const iter = gen.next(returnResult.unwrap());
+		if (iter.value instanceof ResultImpl) {
+			if (iter.value.isErr()) {
+				done = true;
+				gen.return?.(iter.value as any);
+			}
+			returnResult = iter.value as any;
+		} else {
+			done = true;
+			returnResult = Ok(iter.value) as any;
+		}
 	}
+	return returnResult as any;
+}
+
+async function toPromiseResult<T, E>(value: any): Promise<Result<T, E>> {
+	const awaited = await value;
+	if (value instanceof ResultImpl) {
+		return awaited as any;
+	}
+	return Ok(awaited);
 }
 
 /**
- * Tries to resolve a promise and returns the result as a `AsyncResult`.
+ * Runs an async generator function that returns a `Result` and infers its return type as `AsyncResult<T, E>`.
+ *
+ * `yield*` must be used to yield the result of a `AsyncResult` or `Result`.
  *
  * **Examples**
  *
- * ```
- * // const result: AsyncResult<number, Error>
- * const result = tryPromise(Promise.resolve(42))
+ * ```ts
+ * const okOne = () => new AsyncResult(Promise.resolve(Ok(1)))
+ *
+ * // $ExpectType AsyncResult<number, string>
+ * const result = tryAsyncFn(async function* () {
+ *   const a = yield* okOne()
+ *   const random = Math.random()
+ *   if (random > 0.5) {
+ *     yield* Err("error")
+ *   }
+ *   return a + random
+ * })
  * ```
  */
-export function tryPromise<T>(promise: Promise<T>): AsyncResult<T, Error> {
-	return new AsyncResult(
-		promise.then(
-			(value) => Ok(value),
-			(error: unknown) => Err(handleCaughtError(error)),
-		),
+export function tryAsync<T extends AsyncResult<any, any> | Result<any, any>, U>(
+	fn: () => AsyncGenerator<T, U, any>,
+): AsyncResult<U, InferErr<Awaited<T>>> {
+	const gen = fn();
+	const yieldedResultChain = Promise.resolve<Result<any, any>>(Ok()).then(
+		async function fulfill(nextResult): Promise<Result<any, any>> {
+			const iter = await gen.next(nextResult.unwrap());
+			const result = await toPromiseResult(iter.value);
+			if (iter.done) {
+				return result;
+			}
+			if (result.isErr()) {
+				gen.return?.(iter.value as any);
+				return result;
+			}
+			return Promise.resolve(result).then(fulfill);
+		},
 	);
-}
-
-/**
- * Tries to execute an async function and returns the result as a `AsyncResult`.
- *
- * **Examples**
- *
- * ```
- * // const result: AsyncResult<number, CaughtError>
- * const result = tryAsyncFn(() => {
- *  if (Math.random() > 0.5) {
- *    return Promise.resolve(42)
- * 	} else {
- *   throw new Error("random error")
- * }
- * })
- * ```
- */
-export function tryAsyncFn<T>(fn: () => Promise<T>): AsyncResult<T, Error> {
-	return tryPromise(fn());
+	return new AsyncResult(yieldedResultChain);
 }

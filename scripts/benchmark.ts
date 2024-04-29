@@ -9,14 +9,14 @@ function formatTime(ms: number) {
 
 const a = asyncFn(async () => {
 	const one = await getOne();
-	if (one.isErr) {
+	if (one.isErr()) {
 		return one;
 	}
 	const rand = Math.random();
 	if (Math.random() < 0.5) {
 		return Err("error");
 	}
-	return Ok(rand + one.value);
+	return Ok(rand + one.value());
 });
 
 const b = asyncGenFn(async function* () {
