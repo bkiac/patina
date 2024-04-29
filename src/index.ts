@@ -4,6 +4,5 @@ export * from "./option";
 export * from "./error";
 export * from "./async_result";
 export * from "./result";
-export * from "./run";
 export * from "./try";
 export * from "./util";
