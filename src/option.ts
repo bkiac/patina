@@ -16,12 +16,12 @@ export type OptionMatchAsync<T, A, B> = {
 };
 
 export class OptionImpl<T> {
-	readonly [symbols.kind]: boolean;
+	private readonly [symbols.kind]?: true;
 	private readonly [symbols.value]?: T;
 
 	constructor(some: boolean, x?: T) {
-		this[symbols.kind] = some;
-		if (x !== undefined) {
+		if (some) {
+			this[symbols.kind] = true;
 			this[symbols.value] = x;
 		}
 	}
@@ -61,7 +61,7 @@ export class OptionImpl<T> {
 	 * Returns `true` if the option is a `Some` value.
 	 */
 	isSome(): this is Some<T> {
-		return this[symbols.kind];
+		return this[symbols.kind] ?? false;
 	}
 
 	/**
@@ -77,7 +77,7 @@ export class OptionImpl<T> {
 	 * Returns `true` if the option is a `None` value.
 	 */
 	isNone(): this is None {
-		return !this[symbols.kind];
+		return !this.isSome();
 	}
 
 	/**
@@ -478,7 +478,7 @@ export class OptionImpl<T> {
 }
 
 export interface Some<T> extends OptionImpl<T> {
-	[symbols.kind]: true;
+	[symbols.tag]: "Some";
 	value(): T;
 	unwrap(): T;
 	expect(message: string): T;
@@ -492,7 +492,7 @@ export function Some<T>(value: T): Some<T> {
 }
 
 export interface None<T = never> extends OptionImpl<T> {
-	[symbols.kind]: false;
+	[symbols.tag]: "None";
 	value(): undefined;
 	unwrap(): never;
 	expect(message: string): never;
