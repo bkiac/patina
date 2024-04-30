@@ -355,7 +355,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	unwrap(): T {
-		return this.expect(`called \`unwrap()\` on \`Some\``);
+		return this.expect(`called \`unwrap()\` on \`Err\``);
 	}
 
 	/**
