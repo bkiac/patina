@@ -1,6 +1,6 @@
 {
 	"name": "@patina/std",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"description": "Type-safe nothing-handling and error-handling library",
 	"repository": {
