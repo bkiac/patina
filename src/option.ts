@@ -75,7 +75,7 @@ export class OptionImpl<T> {
 	/**
 	 * Returns `true` if the option is a `None` value.
 	 */
-	isNone(): this is None {
+	isNone(): this is None<T> {
 		return this.#kind !== true;
 	}
 

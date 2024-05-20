@@ -40,6 +40,16 @@ describe.concurrent("core", () => {
 			expectTypeOf(option.unwrap).toEqualTypeOf<() => never>();
 			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>();
 		}
+
+		if (option.isNone()) {
+			expectTypeOf(option.value).toEqualTypeOf<() => undefined>();
+			expectTypeOf(option.unwrap).toEqualTypeOf<() => never>();
+			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>();
+		} else {
+			expectTypeOf(option.value).toEqualTypeOf<() => number>();
+			expectTypeOf(option.unwrap).toEqualTypeOf<() => number>();
+			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => number>();
+		}
 	});
 });
 

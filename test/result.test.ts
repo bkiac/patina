@@ -67,6 +67,26 @@ describe.concurrent("core", () => {
 			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
 			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
 		}
+
+		if (r.isErr()) {
+			expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.error).toEqualTypeOf<() => string>();
+
+			expectTypeOf(r.unwrap).toEqualTypeOf<() => never>();
+			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
+
+			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
+			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
+		} else {
+			expectTypeOf(r.value).toEqualTypeOf<() => number>();
+			expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
+
+			expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
+			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => never>();
+
+			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
+			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
+		}
 	});
 });
 
