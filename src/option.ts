@@ -393,10 +393,6 @@ export class OptionImpl<T> {
 		return this.kind ? {isSome: true, value: this.wrapped as T} : {isSome: false, value: null};
 	}
 
-	toJSON(): {meta: "Some"; value: T} | {meta: "None"; value: null} {
-		return this.kind ? {meta: "Some", value: this.wrapped as T} : {meta: "None", value: null};
-	}
-
 	toString(): `Some(${string})` | "None" {
 		return this.kind ? `Some(${String(this.wrapped)})` : "None";
 	}

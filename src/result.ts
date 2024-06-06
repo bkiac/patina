@@ -579,12 +579,6 @@ export class ResultImpl<T, E> {
 			: {isOk: false, error: this.wrapped as E};
 	}
 
-	toJSON(): {meta: "Ok"; value: T} | {meta: "Err"; error: E} {
-		return this.kind
-			? {meta: "Ok", value: this.wrapped as T}
-			: {meta: "Err", error: this.wrapped as E};
-	}
-
 	toString(): `Ok(${string})` | `Err(${string})` {
 		return this.kind ? `Ok(${this.wrapped})` : `Err(${this.wrapped})`;
 	}
