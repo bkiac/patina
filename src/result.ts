@@ -580,7 +580,8 @@ export class ResultImpl<T, E> {
 	}
 
 	toString(): `Ok(${string})` | `Err(${string})` {
-		return this.kind ? `Ok(${this.wrapped})` : `Err(${this.wrapped})`;
+		const str = String(this.wrapped);
+		return this.kind ? `Ok(${str})` : `Err(${str})`;
 	}
 
 	[symbols.inspect](): ReturnType<ResultImpl<T, E>["toString"]> {
