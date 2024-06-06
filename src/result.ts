@@ -17,6 +17,8 @@ export class ResultImpl<T, E> {
 	private readonly kind?: true;
 	private readonly wrapped: T | E;
 
+	[Symbol.toStringTag] = "Result";
+
 	constructor(k: boolean, v: T | E) {
 		if (k) {
 			this.kind = true;

@@ -18,6 +18,8 @@ export class OptionImpl<T> {
 	private readonly kind?: true;
 	private readonly wrapped?: T;
 
+	[Symbol.toStringTag] = "Option";
+
 	constructor(kind: boolean, x?: T) {
 		if (kind) {
 			this.kind = true;
