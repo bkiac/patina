@@ -1,6 +1,6 @@
 {
 	"name": "@patina/core",
-	"version": "2.0.1",
+	"version": "2.1.0",
 	"type": "module",
 	"description": "Type-safe nothing-handling and error-handling library",
 	"repository": {
