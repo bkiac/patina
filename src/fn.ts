@@ -93,9 +93,9 @@ export function gen<A extends any[], R extends Result<any, any>, T>(
  * })
  * ```
  */
-export function asyncGen<A extends any[], R extends AsyncResult<any, any> | Result<any, any>, T>(
-	fn: (...args: A) => AsyncGenerator<R, T, any>,
-): (...args: A) => AsyncResult<T, InferErr<Awaited<R>>> {
+export function asyncGen<A extends any[], R extends AsyncResult<any, any> | Result<any, any>>(
+	fn: (...args: A) => AsyncGenerator<R, InferOk<Awaited<R>>, any>,
+): (...args: A) => AsyncResult<InferOk<Awaited<R>>, InferErr<Awaited<R>>> {
 	return function (...args: any[]) {
 		return tryAsync(() => fn(...(args as A)));
 	};
