@@ -36,7 +36,7 @@
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"prepublishOnly": "pnpm run build && pnpm run test",
-		"test": "pnpm test:ts&& pnpm test:node --run && pnpm test:browser --run",
+		"test": "pnpm test:ts && pnpm test:node --run && pnpm test:browser --run",
 		"test:browser": "vitest --config ./cfg/vitest.browser.config.ts",
 		"test:node": "vitest --config ./cfg/vitest.config.ts",
 		"test:ts": "tsc --project ./cfg/tsconfig.test.json",
