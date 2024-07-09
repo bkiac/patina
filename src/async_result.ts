@@ -214,14 +214,14 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	/**
 	 * Async version of `Result#unwrap`.
 	 */
-	async unwrap(): Promise<T> {
+	async unwrap(): Promise<T | undefined> {
 		return (await this).unwrap();
 	}
 
 	/**
 	 * Async version of `Result#unwrapErr`.
 	 */
-	async unwrapErr(): Promise<E> {
+	async unwrapErr(): Promise<E | undefined> {
 		return (await this).unwrapErr();
 	}
 

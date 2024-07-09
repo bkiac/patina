@@ -217,9 +217,9 @@ describe.concurrent("unwrap", () => {
 		await expect(option.unwrap()).resolves.toEqual(42);
 	});
 
-	it("throws Panic when called on a None option", async () => {
+	it("returns undefined when called on a None option", async () => {
 		const option = promiseNone();
-		await expect(() => option.unwrap()).rejects.toThrow(Panic);
+		await expect(option.unwrap()).resolves.toEqual(undefined);
 	});
 });
 

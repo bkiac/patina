@@ -360,10 +360,10 @@ describe.concurrent("unwrap", () => {
 		await expect(result.unwrap()).resolves.toEqual(42);
 	});
 
-	it("throws a Panic for an Err result", async () => {
+	it("returns undefined for an Err result", async () => {
 		const error = new Error("Test error");
 		const result = new AsyncResult(Promise.resolve(Err(error)));
-		await expect(result.unwrap()).rejects.toThrow(Panic);
+		await expect(result.unwrap()).resolves.toEqual(undefined);
 	});
 });
 
@@ -374,9 +374,9 @@ describe.concurrent("unwrapErr", () => {
 		await expect(result.unwrapErr()).resolves.toEqual(error);
 	});
 
-	it("throws for an Ok result", async () => {
+	it("returns undefined for an Ok result", async () => {
 		const result = new AsyncResult(Promise.resolve(Ok(42)));
-		await expect(result.unwrapErr()).rejects.toThrow(Panic);
+		await expect(result.unwrapErr()).resolves.toEqual(undefined);
 	});
 });
 

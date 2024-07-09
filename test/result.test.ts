@@ -445,9 +445,9 @@ describe.concurrent("unwrap", () => {
 		expect(result.unwrap()).toEqual(42);
 	});
 
-	it("throws a Panic for an Err result", () => {
+	it("returns undefined for an Err result", () => {
 		const result = TestErr<number, string>("error");
-		expect(() => result.unwrap()).toThrow(Panic);
+		expect(result.unwrap()).toEqual(undefined);
 	});
 });
 
@@ -457,9 +457,9 @@ describe.concurrent("unwrapErr", () => {
 		expect(result.unwrapErr()).toEqual("error");
 	});
 
-	it("throws for an Ok result", () => {
+	it("returns undefined for an Ok result", () => {
 		const result = TestOk<number, string>(42);
-		expect(() => result.unwrapErr()).toThrow(Panic);
+		expect(result.unwrapErr()).toEqual(undefined);
 	});
 });
 

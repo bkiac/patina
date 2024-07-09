@@ -149,7 +149,7 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	/**
 	 * Async version of `Option#unwrap`.
 	 */
-	async unwrap(): Promise<T> {
+	async unwrap(): Promise<T | undefined> {
 		return (await this).unwrap();
 	}
 

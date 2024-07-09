@@ -264,9 +264,9 @@ describe.concurrent("unwrap", () => {
 		expect(option.unwrap()).toEqual(42);
 	});
 
-	it("throws when called on a None option", () => {
+	it("returns undefined when called on a None option", () => {
 		const option = TestNone<string>();
-		expect(() => option.unwrap()).toThrow(Panic);
+		expect(option.unwrap()).toEqual(undefined);
 	});
 });
 
