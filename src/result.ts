@@ -64,6 +64,8 @@ export class ResultImpl<T, E> {
 
 	/**
 	 * Returns the contained value, if it exists.
+	 *
+	 * @deprecated Use `unwrap()` instead.
 	 */
 	value(): T | undefined {
 		return this.kind ? (this.wrapped as T) : undefined;
@@ -71,6 +73,8 @@ export class ResultImpl<T, E> {
 
 	/**
 	 * Returns the contained error, if it exists.
+	 *
+	 * @deprecated Use `unwrapErr()` instead.
 	 */
 	error(): E | undefined {
 		return this.kind ? undefined : (this.wrapped as E);
@@ -345,19 +349,10 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Returns the contained `Ok` value.
-	 *
-	 * Throws `Panic` if the value is an `Err`, with a message containing the content of the `Err` and `this` as `cause`.
-	 *
-	 * **Examples**
-	 *
-	 * ```
-	 * const x = Err("emergency failure")
-	 * x.unwrap() // throws Panic: called
-	 * ```
+	 * Returns the contained `Ok` value or `undefined`.
 	 */
-	unwrap(): T {
-		return this.expect(`called \`unwrap()\` on \`Err\``);
+	unwrap(): T | undefined {
+		return this.kind ? (this.wrapped as T) : undefined;
 	}
 
 	/**
@@ -377,19 +372,10 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Returns the contained `Err` value.
-	 *
-	 * Throws `Panic` if the value is an `Ok`, with a message containing the content of the `Ok` and `this` as `cause`.
-	 *
-	 * **Examples**
-	 *
-	 * ```
-	 * const x = Ok(2)
-	 * x.unwrapErr() // throws Panic
-	 * ```
+	 * Returns the contained `Err` value or `undefined`
 	 */
-	unwrapErr(): E {
-		return this.expectErr(`called \`unwrapErr()\` on \`Ok\``);
+	unwrapErr(): E | undefined {
+		return this.kind ? undefined : (this.wrapped as E);
 	}
 
 	/**
@@ -594,7 +580,7 @@ export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
 	value(): T;
 	error(): undefined;
 	unwrap(): T;
-	unwrapErr(): never;
+	unwrapErr(): undefined;
 	expect(message: string): T;
 	expectErr(message: string): never;
 }
@@ -612,7 +598,7 @@ export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
 	[symbols.tag]: "Err";
 	value(): undefined;
 	error(): E;
-	unwrap(): never;
+	unwrap(): undefined;
 	unwrapErr(): E;
 	expect(message: string): never;
 	expectErr(message: string): E;

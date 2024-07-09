@@ -53,6 +53,8 @@ export class OptionImpl<T> {
 
 	/**
 	 * Returns the contained `Some` value, if exists.
+	 *
+	 * @deprecated Use `unwrap()` instead.
 	 */
 	value(): T | undefined {
 		return this.wrapped;
@@ -98,19 +100,10 @@ export class OptionImpl<T> {
 	}
 
 	/**
-	 * Returns the contained `Some` value, if exists.
-	 *
-	 * Throws `Panic` with a default message if the value is `None`.
-	 *
-	 * **Examples**
-	 *
-	 * ```
-	 * Some(42).unwrap() // => 42
-	 * None.unwrap() // => Panic: called "unwrap()" on None
-	 * ```
+	 * Returns the contained `Some` value, if exists, otherwise returns `undefined`.
 	 */
-	unwrap(): T {
-		return this.expect(`called \`unwrap()\` on \`None\``);
+	unwrap(): T | undefined {
+		return this.kind ? (this.wrapped as T) : undefined;
 	}
 
 	/**
@@ -419,7 +412,7 @@ export function Some<T>(value: T): Some<T> {
 export interface None<T = never> extends OptionImpl<T> {
 	[symbols.tag]: "None";
 	value(): undefined;
-	unwrap(): never;
+	unwrap(): undefined;
 	expect(message: string): never;
 }
 
