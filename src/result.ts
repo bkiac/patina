@@ -535,7 +535,7 @@ export class ResultImpl<T, E> {
 		return this.kind ? (this.wrapped as T) : defaultValue(this.wrapped as E);
 	}
 
-	unwrapOrAsync<U>(defaultValue: (error: E) => Promise<U>): Promise<T | U> {
+	unwrapOrElseAsync<U>(defaultValue: (error: E) => Promise<U>): Promise<T | U> {
 		return this.kind ? Promise.resolve(this.wrapped as T) : defaultValue(this.wrapped as E);
 	}
 
