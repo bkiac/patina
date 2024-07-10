@@ -577,7 +577,17 @@ export class ResultImpl<T, E> {
 
 export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
 	[symbols.tag]: "Ok";
+	/**
+	 * Returns the contained value, if it exists.
+	 *
+	 * @deprecated Use `unwrap()` instead.
+	 */
 	value(): T;
+	/**
+	 * Returns the contained error, if it exists.
+	 *
+	 * @deprecated Use `unwrapErr()` instead.
+	 */
 	error(): undefined;
 	unwrap(): T;
 	unwrapErr(): undefined;
@@ -596,7 +606,17 @@ export function Ok<T>(value?: T): Ok<T> {
 
 export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
 	[symbols.tag]: "Err";
+	/**
+	 * Returns the contained value, if it exists.
+	 *
+	 * @deprecated Use `unwrap()` instead.
+	 */
 	value(): undefined;
+	/**
+	 * Returns the contained value, if it exists.
+	 *
+	 * @deprecated Use `unwrapErr()` instead.
+	 */
 	error(): E;
 	unwrap(): undefined;
 	unwrapErr(): E;
