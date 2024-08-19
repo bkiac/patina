@@ -138,7 +138,7 @@ const getAverageGrade = asyncFn(async (studentId: string) => {
 });
 ```
 
-## Result
+## `Result`
 
 `Result` is a type that represents either success (`Ok`) or failure (`Err`).
 
@@ -398,7 +398,7 @@ assert.strictEqual(
 );
 ```
 
-## Async
+## `AsyncResult`
 
 `AsyncResult` is a type that represents either success (`Ok`) or failure (`Err`) of an asynchronous operation.
 
@@ -407,6 +407,14 @@ It implements the `Promise` interface, so you can use it as a drop-in replacemen
 The same methods are available on `AsyncResult` as on `Result`.
 
 Methods on both `Result` and `AsyncResult` have `async` versions that accept a function that return a `Promise`, e.g. `mapAsync`, `inspectAsync` `andThenAsync`, etc. These methods are useful for chaining asynchronous operations and will turn a `Result` into an `AsyncResult`.
+
+## `Option`
+
+Same methods are available on `Option` as on `Result`.
+
+### `AsyncOption`
+
+`AsyncOption` is a type that represents either a value (`Some`) or nothing (`None`) of an asynchronous operation.
 
 ## Utilities
 
