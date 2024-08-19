@@ -11,30 +11,30 @@
 -   [Usage](#usage)
 -   [Panic](#panic)
 -   [Result](#result)
-    -   [and](#and)
-    -   [andThen](#andthen)
+    -   [from](#fromf-function)
+    -   [fromPromise](#frompromise-promise)
+    -   [and](#andother-result)
+    -   [andThen](#andthenf-function)
     -   [err](#err)
-    -   [expect](#expect)
-    -   [expectErr](#expecterr)
+    -   [expect](#expectmessage-string)
+    -   [expectErr](#expecterrmessage-string)
     -   [flatten](#flatten)
-    -   [inspect](#inspect)
-    -   [inspectErr](#inspecterr)
+    -   [inspect](#inspectf-function)
+    -   [inspectErr](#inspecterrf-function)
     -   [isErr](#iserr)
-    -   [isErrAnd](#iserrand)
     -   [isOk](#isok)
-    -   [isOk](#isokand)
-    -   [map](#map)
-    -   [mapErr](#maperr)
-    -   [mapOr](#mapor)
-    -   [mapOrElse](#maporelse)
+    -   [map](#mapf-function)
+    -   [mapErr](#maperrf-function)
+    -   [mapOr](#mapordefaultvalue-t-f-function)
+    -   [mapOrElse](#mapordefaultvalue-function-f-function)
     -   [ok](#ok)
-    -   [or](#or)
-    -   [orElse](#orelse)
+    -   [or](#orother-result)
+    -   [orElse](#orelsef-function)
     -   [unwrap](#unwrap)
     -   [unwrapErr](#unwraperr)
-    -   [unwrapOr](#unwrapor)
-    -   [unwrapOrElse](#unwraporelse)
-    -   [match](#match)
+    -   [unwrapOr](#unwrapordefaultvalue-t)
+    -   [unwrapOrElse](#unwrapelsef-function)
+    -   [match](#matchmatcher-matcher)
 -   [Async](#async)
 -   [Utilities](#utilities)
 -   [Testing](#testing)
@@ -209,6 +209,10 @@ let y: Result<string, string> = Err("late error");
 assert.deepStrictEqual(y.andThen((n) => Ok(n * 2)).unwrapErr(), "late error");
 ```
 
+### `.err()`
+
+Returns `None` if the result is `Ok`, otherwise returns `Some` containing the error.
+
 ### `.expect(message: string)`
 
 Returns the contained `Ok` value.
@@ -231,6 +235,10 @@ const x = Ok(2);
 x.expectErr("Testing expectErr"); // throws Panic: Testing expectErr
 ```
 
+### `.flatten()`
+
+Converts from `Result<Result<U, F>, E>` to `Result<U, E | F>`.
+
 ### `.inspect(f: Function)`
 
 Calls the provided function with the contained value (if `Ok`).
@@ -248,6 +256,14 @@ Calls the provided function with the contained error (if `Err`).
 const x = Err("error");
 x.inspectErr((e) => console.error(e));
 ```
+
+### `.isErr()`
+
+Returns `true` if the result is an `Err`, and narrows the type to `Err`.
+
+### `.isOk()`
+
+Returns `true` if the result is an `Ok`, and narrows the type to `Ok`.
 
 ### `.map(f: Function)`
 
@@ -312,6 +328,10 @@ assert.strictEqual(
 	42,
 );
 ```
+
+### `.ok()`
+
+Returns `Some` if the result is `Ok`, otherwise returns `None`.
 
 ### `.or(other: Result)`
 
