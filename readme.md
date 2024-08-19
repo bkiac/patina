@@ -418,6 +418,37 @@ Same methods are available on `Option` as on `Result`.
 
 ## Utilities
 
+### `asyncFn`
+
+Wraps a function that returns any shape of `Promise<Result<any, any>>` and wraps the return value in a `AsyncResult`.
+
+```ts
+// (a: number, b: number) => Promise<Err<string> | Ok<number>>
+const divide = async (a: number, b: number) => (b === 0 ? Err("division by zero") : Ok(a / b));
+
+// (a: number, b: number) => AsyncResult<number, string>
+const wrapped = asyncFn(divide);
+
+// then you can await the result
+const result = await wrapped(1, 2); // => Result<number, string>
+```
+
+### `isResult(value: any): value is Result`
+
+Returns `true` if `value` is an instance of `Result`.
+
+### `isAsyncResult(value: any): value is AsyncResult`
+
+Returns `true` if `value` is an instance of `AsyncResult`.
+
+### `isOption(value: any): value is Option`
+
+Returns `true` if `value` is an instance of `Option`.
+
+### `isAsyncOption(value: any): value is AsyncOption`
+
+Returns `true` if `value` is an instance of `AsyncOption`.
+
 ## Testing
 
 Adding an iterator to the Result class has introduced behavior that affects how testing libraries handle deep comparisons of instances of this class.
