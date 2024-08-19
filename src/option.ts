@@ -52,7 +52,7 @@ export class OptionImpl<T> {
 	}
 
 	/**
-	 * Returns the contained `Some` value, if exists.
+	 * Returns the contained `Some` value, if it exists.
 	 *
 	 * @deprecated Use `unwrap()` instead.
 	 */
@@ -397,6 +397,11 @@ export class OptionImpl<T> {
 
 export interface Some<T> extends OptionImpl<T> {
 	[symbols.tag]: "Some";
+	/**
+	 * Returns the contained `Some` value, if it exists.
+	 *
+	 * @deprecated Use `unwrap()` instead.
+	 */
 	value(): T;
 	unwrap(): T;
 	expect(message: string): T;
@@ -411,6 +416,11 @@ export function Some<T>(value: T): Some<T> {
 
 export interface None<T = never> extends OptionImpl<T> {
 	[symbols.tag]: "None";
+	/**
+	 * Returns the contained `Some` value, if it exists.
+	 *
+	 * @deprecated Use `unwrap()` instead.
+	 */
 	value(): undefined;
 	unwrap(): undefined;
 	expect(message: string): never;
