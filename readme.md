@@ -125,6 +125,7 @@ const getAverageGrade = asyncFn(async (studentId: string) => {
 			return new Error("failed to get grades");
 		});
 
+	// Check and return error
 	if (grades.isErr()) {
 		return Err(grades.unwrapErr());
 	}
