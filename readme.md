@@ -35,7 +35,9 @@
     -   [unwrapOr](#unwrapordefaultvalue-t)
     -   [unwrapOrElse](#unwraporelsef-function)
     -   [match](#matchmatcher-matcher)
--   [Async](#async)
+-   [AsyncResult](#asyncresult)
+-   [Option](#option)
+-   [AsyncOption](#asyncoption)
 -   [Utilities](#utilities)
 -   [Testing](#testing)
 -   [Similar Libraries](#similar-libraries)
@@ -452,11 +454,11 @@ The same methods are available on `AsyncResult` as on `Result`.
 
 Methods on both `Result` and `AsyncResult` have `async` versions that accept a function that return a `Promise`, e.g. `mapAsync`, `inspectAsync` `andThenAsync`, etc. These methods are useful for chaining asynchronous operations and will turn a `Result` into an `AsyncResult`.
 
-## `Option`
+## `Option`
 
-Same methods are available on `Option` as on `Result`.
+Similar methods are available on `Option` as on `Result`.
 
-### `AsyncOption`
+## `AsyncOption`
 
 `AsyncOption` is a type that represents either a value (`Some`) or nothing (`None`) of an asynchronous operation.
 
