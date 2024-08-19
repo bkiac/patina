@@ -5,7 +5,9 @@ import type {InferErr} from "./util";
 /**
  * Runs a generator function that returns a `Result` and infers its return type as `Result<T, E>`.
  *
- * `yield*` must be used to yield the result of a `Result`.
+ * `yield*` must be used to unwrap and propagate a `Result`:
+ * -   yielding an `Ok` will unwrap the value
+ * -   yielding an `Err` will stop the function and return the error
  *
  * **Examples**
  *
@@ -54,7 +56,9 @@ async function toPromiseResult<T, E>(value: any): Promise<Result<T, E>> {
 /**
  * Runs an async generator function that returns a `Result` and infers its return type as `AsyncResult<T, E>`.
  *
- * `yield*` must be used to yield the result of a `AsyncResult` or `Result`.
+ * `yield*` must be used to unwrap and propagate a `Result`:
+ * -   yielding an `Ok` will unwrap the value
+ * -   yielding an `Err` will stop the function and return the error
  *
  * **Examples**
  *

@@ -502,29 +502,34 @@ These utilities help your code appear and behave more like traditional synchrono
 
 Note that TS sometimes has trouble inferring yielded result type, especially when a lot of `yield*` operations are used in a single function. For complex cases, you may need to explicitly type the result or revert to handling `Results` directly.
 
-#### `trySync(f: Function): Result`
+#### `trySync`
 
 Runs a generator function that returns a `Result` and infers its return type as `Result<T, E>`.
 
-`yield*` must be used to yield the result of a `Result`.
+`yield*` must be used to unwrap and propagate a `Result`:
+
+-   yielding an `Ok` will unwrap the value
+-   yielding an `Err` will stop the function and return the error
 
 ```ts
 // Result<number, string>
 const result = tryFn(function* () {
 	const a = yield* Ok(1);
-	const random = Math.random();
-	if (random > 0.5) {
+	if (Math.random() > 0.5) {
 		yield* Err("error");
 	}
 	return a + random;
 });
 ```
 
-#### `tryAsync(f: Function): AsyncResult`
+#### `tryAsync`
 
 Runs an async generator function that returns a `Result` and infers its return type as `AsyncResult<T, E>`.
 
-`yield*` must be used to yield the result of a `AsyncResult` or `Result`.
+`yield*` must be used to unwrap and propagate a `Result`:
+
+-   yielding an `Ok` will unwrap the value
+-   yielding an `Err` will stop the function and return the error
 
 ```ts
 const okOne = () => new AsyncResult(Promise.resolve(Ok(1)));
@@ -532,8 +537,7 @@ const okOne = () => new AsyncResult(Promise.resolve(Ok(1)));
 // AsyncResult<number, string>
 const result = tryAsync(async function* () {
 	const a = yield* okOne();
-	const random = Math.random();
-	if (random > 0.5) {
+	if (Math.random() > 0.5) {
 		yield* Err("error");
 	}
 	return a + random;
