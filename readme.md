@@ -1,4 +1,4 @@
-# patina
+# Patina
 
 -   error- and nothing-handling library for TypeScript
 -   inspired by Rust's `Result` and `Option` types
