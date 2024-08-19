@@ -8,7 +8,7 @@
 ## Table of contents
 
 -   [Installation](#installation)
--   [Usage](#Usage)
+-   [Usage](#usage)
 -   [Panic](#panic)
 -   [Result](#result)
     -   [and](#and)
@@ -136,6 +136,29 @@ const getAverageGrade = asyncFn(async (studentId: string) => {
 		value.reduce((a, b) => a + b, 0),
 		value.length,
 	);
+});
+```
+
+## `Panic`
+
+`Panic` is a special error that extends native `Error` and represents a panic condition. It is used to indicate that a function has failed in an unrecoverable way. The `throw` statement should only be used to raise exceptions that represent a bug detected in your program.
+
+On the other hand, `Result` can represent either the successful outcome of some operation, `Ok<T>`, or an expected runtime error, `Err<E>`. `Result` types are used alongside user-defined error types that represent the various anticipated runtime failure modes that the associated operation might encounter. Unlike exceptions, `Result` types must be explicitly handled and propagated by the developer.
+
+The utilities of this library are designed to differentiate between recoverable errors and panics. For example thrown `Panics` will not be caught:
+
+```ts
+function panicOrError() {
+	const rand = Math.random();
+	if (rand > 0.5) {
+		throw new Panic("random panic");
+	}
+	return rand;
+}
+
+// Will not catch the panic
+const result = Result.from(() => {
+	panicOrError();
 });
 ```
 
