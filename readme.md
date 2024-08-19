@@ -1,7 +1,7 @@
 # Patina
 
 -   error- and nothing-handling library for TypeScript
--   inspired by Rust's `Result` and `Option` types
+-   inspired by Rust's [`Result`](https://doc.rust-lang.org/std/result/) and [`Option`](https://doc.rust-lang.org/std/option) types
 -   utilities for composing functions that return errors and interacting with code that throws errors
 -   no dependencies
 
