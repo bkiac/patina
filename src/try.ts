@@ -11,7 +11,7 @@ import type {InferErr} from "./util";
  *
  * ```ts
  * // $ExpectType Result<number, string>
- * const result = tryFn(function* () {
+ * const result = trySync(function* () {
  *   const a = yield* Ok(1)
  *   const random = Math.random()
  *   if (random > 0.5) {
@@ -62,7 +62,7 @@ async function toPromiseResult<T, E>(value: any): Promise<Result<T, E>> {
  * const okOne = () => new AsyncResult(Promise.resolve(Ok(1)))
  *
  * // $ExpectType AsyncResult<number, string>
- * const result = tryAsyncFn(async function* () {
+ * const result = tryAsync(async function* () {
  *   const a = yield* okOne()
  *   const random = Math.random()
  *   if (random > 0.5) {
