@@ -1,24 +1,36 @@
-import type {Err, Ok} from "./result"
+import {ResultImpl, type Ok, type Err, type Result} from "./result";
+import {OptionImpl, type Option} from "./option";
+import {AsyncResult} from "./async_result";
+import {AsyncOption} from "./async_option";
 
-export const inspectSymbol = Symbol.for("nodejs.util.inspect.custom")
+export type InferOk<T> = T extends Ok<infer O, any> ? O : never;
 
-/**
- * Tries to replace the stack trace to include the subclass error name.
- *
- * May not work in every environment, since `stack` property is implementation-dependent and isn't standardized,
- *
- * meaning different JavaScript engines might produce different stack traces.
- *
- * See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/stack
- */
-export function replaceStack(name: string, originName: string, stack?: string) {
-	const r = new RegExp(`^${originName}`)
-	return stack?.replace(r, name)
+export type InferErr<T> = T extends Err<infer E, any> ? E : never;
+
+export type ExtractOk<T> = T extends Ok<infer O, any>
+	? O
+	: T extends Result<infer O, infer _>
+	? O
+	: never;
+
+export type ExtractErr<T> = T extends Err<infer E, any>
+	? E
+	: T extends Result<infer _, infer E>
+	? E
+	: never;
+
+export function isResult<T, E>(value: unknown): value is Result<T, E> {
+	return value instanceof ResultImpl;
 }
 
-export function formatErrorString(name: string, message = "") {
-	return name + (message ? ": " + message : "")
+export function isAsyncResult<T, E>(value: unknown): value is AsyncResult<T, E> {
+	return value instanceof AsyncResult;
 }
 
-export type InferOk<T> = T extends Ok<infer O> ? O : never
-export type InferErr<T> = T extends Err<infer E> ? E : never
+export function isOption<T>(value: unknown): value is Option<T> {
+	return value instanceof OptionImpl;
+}
+
+export function isAsyncOption<T>(value: unknown): value is AsyncOption<T> {
+	return value instanceof AsyncOption;
+}

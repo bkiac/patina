@@ -2,5 +2,5 @@
 // this is needed for generating declaration files for the library without errors,
 // as in some environments this method may not be available.
 interface ErrorConstructor {
-	captureStackTrace?(targetObject: object, constructorOpt?: Function | undefined): void
+	captureStackTrace?(targetObject: object, constructorOpt?: Function | undefined): void;
 }

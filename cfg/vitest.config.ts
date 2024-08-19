@@ -1,4 +1,4 @@
-import type {UserConfig} from "vitest/config"
+import type {UserConfig} from "vitest/config";
 
 export default {
 	test: {
@@ -6,4 +6,4 @@ export default {
 		cache: false,
 		environment: "node",
 	},
-} satisfies UserConfig
+} satisfies UserConfig;

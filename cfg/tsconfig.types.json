@@ -6,6 +6,5 @@
 		"declaration": true,
 		"emitDeclarationOnly": true,
 		"removeComments": false
-	},
-	"exclude": ["../node_modules", "../**/*.ignore.ts", "../**/*.test.ts"]
+	}
 }
