@@ -140,39 +140,263 @@ const getAverageGrade = asyncFn(async (studentId: string) => {
 
 ## Result
 
-### and
+`Result` is a type that represents either success (`Ok`) or failure (`Err`).
 
-### andThen
+`Result<T, E>` is the type used for returning errors. It is a discriminated union with the variants, `Ok<T>`, representing success and containing a value, and `Err<E>`, representing error and containing an error value.
 
-### expect
+Functions return `Result` whenever errors are expected and recoverable.
 
-### expectErr
+### `.from(f: Function)`
 
-### inspect
+Tries to execute a function and returns the result as a `Result`.
 
-### inspectErr
+```ts
+const result = Result.from(() => {
+	if (Math.random() > 0.5) {
+		return 42;
+	} else {
+		throw new Error("random error");
+	}
+});
+```
 
-### map
+### `.fromPromise(promise: Promise)`
 
-### mapErr
+Tries to resolve a promise and returns the result as a `AsyncResult`.
 
-### mapOr
+```ts
+// AsyncResult<number, Error>
+const result = Result.fromPromise(Promise.resolve(42));
+```
 
-### mapOrElse
+### `.and(other: Result)`
 
-### or
+Returns `other` if the result is `Ok`, otherwise returns `this` (as `Err`).
 
-### orElse
+### `.andThen(f: Function)`
 
-### unwrap
+Calls `f` if the result is `Ok`, otherwise returns `this` (as `Err`).
 
-### unwrapErr
+```ts
+let x: Result<number, string> = Ok(2);
+assert.deepStrictEqual(x.andThen((n) => Ok(n * 2)).unwrap(), 4);
 
-### unwrapOr
+let y: Result<string, string> = Err("late error");
+assert.deepStrictEqual(y.andThen((n) => Ok(n * 2)).unwrapErr(), "late error");
+```
 
-### unwrapOrElse
+### `.expect(message: string)`
 
-### match
+Returns the contained `Ok` value.
+
+Throws `Panic` if the value is an `Err`, with a message containing `message` and content of the `Err` as `cause`.
+
+```ts
+const x = Err("emergency failure");
+x.expect("Testing expect"); // throws Panic: Testing expect
+```
+
+### `.expectErr(message: string)`
+
+Returns the contained `Err` value.
+
+Throws `Panic` if the value is an `Ok`, with a message containing `message` and content of the `Ok` as `cause`.
+
+```ts
+const x = Ok(2);
+x.expectErr("Testing expectErr"); // throws Panic: Testing expectErr
+```
+
+### `.inspect(f: Function)`
+
+Calls the provided function with the contained value (if `Ok`).
+
+```ts
+const x = Ok(2);
+x.inspect((v) => console.log(v));
+```
+
+### `.inspectErr(f: Function)`
+
+Calls the provided function with the contained error (if `Err`).
+
+```ts
+const x = Err("error");
+x.inspectErr((e) => console.error(e));
+```
+
+### `.map(f: Function)`
+
+Maps a `Result<T, E>` to `Result<U, E>` by applying a function to a contained `Ok` value, leaving an `Err` value untouched.
+
+```ts
+const x = Ok(10);
+const mapped = x.map((n) => `number ${n}`);
+assert.strictEqual(mapped.unwrap(), "number 10");
+```
+
+### `.mapErr(f: Function)`
+
+Maps a `Result<T, E>` to `Result<T, F>` by applying a function to a contained `Err` value, leaving an `Ok` value untouched.
+
+```ts
+const x = Err("error");
+const mapped = x.mapErr((s) => s.length);
+assert.strictEqual(mapped.unwrapErr(), 5);
+```
+
+### `.mapOr(defaultValue: T, f: Function)`
+
+Returns the provided default (if `Err`), or applies a function to the contained value (if `Ok`).
+
+```ts
+const x: Result<string, string> = Ok("foo");
+assert.strictEqual(
+	x.mapOr(42, (v) => v.length),
+	3,
+);
+
+const y: Result<string, string> = Err("bar");
+assert.strictEqual(
+	y.mapOr(42, (v) => v.length),
+	42,
+);
+```
+
+### `.mapOrElse(defaultValue: Function, f: Function)`
+
+Maps a `Result<T, E>` to `A | B` by applying fallback function `defaultValue` to a contained `Err` value, or function `f` to a contained `Ok` value.
+
+```ts
+const k = 21;
+
+let x: Result<string, string> = Ok("foo");
+assert.strictEqual(
+	x.mapOrElse(
+		() => k * 2,
+		(v) => v.length,
+	),
+	3,
+);
+
+x = Err("bar");
+assert.strictEqual(
+	x.mapOrElse(
+		() => k * 2,
+		(v) => v.length,
+	),
+	42,
+);
+```
+
+### `.or(other: Result)`
+
+Returns `other` if the result is `Err`, otherwise returns `this` (as `Ok`).
+
+```ts
+let x: Result<number, string> = Ok(2);
+let y: Result<number, string> = Err("late error");
+assert.deepStrictEqual(x.or(y).unwrap(), 2);
+assert.deepStrictEqual(y.or(x).unwrap(), 2);
+```
+
+### `.orElse(f: Function)`
+
+Calls `f` if the result is `Err`, otherwise returns `this` (as `Ok`).
+
+```ts
+let x: Result<number, string> = Ok(2);
+assert.deepStrictEqual(x.orElse((e) => Err(e + "bar")).unwrap(), 2);
+
+let y: Result<number, string> = Err("foo");
+assert.deepStrictEqual(y.orElse((e) => Err(e + "bar")).unwrapErr(), "foobar");
+```
+
+### `.unwrap()`
+
+Returns the contained `Ok` value or `undefined`.
+
+This works differently from Rust's `unwrap` method, which panics if the value is an `Err`. Since TypeScript compiler is not able to enforce that a value is checked for error before unwrapping, this method is safer to use.
+
+```ts
+let x: Result<number, string> = Ok(2);
+let value = x.unwrap(); // `value` type is `2 | undefined`
+if (x.isOk()) {
+	value = x.unwrap(); // `value` type is `2`
+} else {
+	value = x.unwrap(); // `value` type is `undefined`
+}
+```
+
+### `.unwrapErr()`
+
+Returns the contained `Err` value or `undefined`.
+
+This works differently from Rust's `unwrap_err` method, which panics if the value is an `Ok`. Since TypeScript compiler is not able to enforce that a value is checked for error before unwrapping, this method is safer to use.
+
+```ts
+let x: Result<number, string> = Err("failure");
+let value = x.unwrapErr(); // `value` type is `"failure" | undefined`
+if (x.isErr()) {
+	value = x.unwrapErr(); // `value` type is `"failure"`
+} else {
+	value = x.unwrapErr(); // `value` type is `undefined`
+}
+```
+
+### `.unwrapOr(defaultValue: T)`
+
+Returns the contained `Ok` value or `defaultValue`.
+
+```ts
+let x: Result<number, string> = Ok(2);
+assert.strictEqual(x.unwrapOr(0), 2);
+
+let y: Result<number, string> = Err("error");
+assert.strictEqual(y.unwrapOr(0), 0);
+```
+
+### `.unwrapOrElse(f: Function)`
+
+Returns the contained `Ok` value or the result of a function.
+
+```ts
+let x: Result<number, string> = Ok(2);
+assert.strictEqual(
+	x.unwrapOrElse(() => 0),
+	2,
+);
+
+let y: Result<number, string> = Err("error");
+assert.strictEqual(
+	y.unwrapOrElse(() => 0),
+	0,
+);
+```
+
+### `.match(matcher: Matcher)`
+
+Matches a `Result<T, E>` to `A | B` by applying a matcher object. Similar to Rust's `match` statement.
+
+```ts
+const x: Result<number, string> = Ok(2);
+assert.strictEqual(
+	x.match({
+		Ok: (v) => v * 2,
+		Err: (e) => e.length,
+	}),
+	4,
+);
+
+const y: Result<number, string> = Err("error");
+assert.strictEqual(
+	y.match({
+		Ok: (v) => v * 2,
+		Err: (e) => e.length,
+	}),
+	5,
+);
+```
 
 ## Async
 
