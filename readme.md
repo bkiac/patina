@@ -561,6 +561,10 @@ expect(Ok().unwrap()).toEqual(Ok(1).unwrap()); // Now fails as expected
 
 ## Similar Libraries
 
+Unfortunately, there are no native TypeScript statements or expression that can help you deal with or propagate errors and you can only go so far with wrapping `try` and `catch`. Writing code with this library will look very different to what you're used to. Although it may seem verbose, it is more explicit and safer, but on the other hand it may not be straightforward to use and sometimes you can find yourself fighting the type system.
+
+If you find this library lacking, you may want to check out similar libraries:
+
 -   [@badrap/result](https://github.com/badrap/result)
 -   [effect](https://github.com/Effect-TS/effect)
 -   [neverthrow](https://github.com/supermacro/neverthrow)
