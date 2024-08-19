@@ -62,7 +62,7 @@ import {
 	asyncFn,
 	Panic,
 	ErrorWithCause,
-} from "../";
+} from "@patina/core";
 import {db} from "./db";
 
 function divide(a: number, b: number): Result<number, Error> {
