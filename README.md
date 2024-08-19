@@ -400,6 +400,14 @@ assert.strictEqual(
 
 ## Async
 
+`AsyncResult` is a type that represents either success (`Ok`) or failure (`Err`) of an asynchronous operation.
+
+It implements the `Promise` interface, so you can use it as a drop-in replacement for promises.
+
+The same methods are available on `AsyncResult` as on `Result`.
+
+Methods on both `Result` and `AsyncResult` have `async` versions that accept a function that return a `Promise`, e.g. `mapAsync`, `inspectAsync` `andThenAsync`, etc. These methods are useful for chaining asynchronous operations and will turn a `Result` into an `AsyncResult`.
+
 ## Utilities
 
 ## Testing
