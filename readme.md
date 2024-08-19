@@ -542,8 +542,8 @@ const result = tryAsync(async function* () {
 
 ## Testing
 
-Adding an iterator to the Result class has introduced behavior that affects how testing libraries handle deep comparisons of instances of this class.
-This is interfering with how deep equality checks are performed, as the tests rely on iterating over object properties or their prototypes to determine equality.
+Adding an iterator to the Result class -- to make `trySync` and `tryAsync` work -- has introduced an unexpected behavior that has an effect on how testing libraries handle deep comparisons of instances of this class.
+This may interfere with how deep equality checks are performed, as the tests rely on iterating over object properties or their prototypes to determine equality.
 
 This means asserting equality between any two instances of the Result class will always pass, even if the instances are not equal:
 
@@ -553,7 +553,7 @@ expect(Err()).toEqual(Err(1));
 expect(Ok()).toEqual(Err());
 ```
 
-To properly test equality between instances of the Result class, you can unwrap the value and compare it directly:
+To properly test equality between instances of the Result class, you can unwrap the value or error and compare it with the expected value directly:
 
 ```ts
 expect(Ok().unwrap()).toEqual(Ok(1).unwrap()); // Now fails as expected
