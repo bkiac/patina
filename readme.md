@@ -11,7 +11,7 @@
 -   [Usage](#usage)
 -   [Panic](#panic)
 -   [Result](#result)
-    -   [from](#fromf-function)
+    -   [fromThrowable](#fromthrowablef-function)
     -   [fromPromise](#frompromisepromise-promise)
     -   [and](#andother-result)
     -   [andThen](#andthenf-function)
@@ -173,7 +173,7 @@ const result = Result.from(() => {
 
 Functions return `Result` whenever errors are expected and recoverable.
 
-### `.from(f: Function)`
+### `.fromThrowable(f: Function)`
 
 Tries to execute a function and returns the result as a `Result`.
 

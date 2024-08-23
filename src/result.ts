@@ -662,7 +662,7 @@ export function Result() {}
  *
  * ```
  * // const result: Result<number, Error>
- * const result = Result.from(() => {
+ * const result = Result.fromThrowable(() => {
  *   if (Math.random() > 0.5) {
  *		return 42
  *	  } else {
@@ -671,13 +671,18 @@ export function Result() {}
  * })
  * ```
  */
-Result.from = <T>(f: () => T): Result<T, Error> => {
+Result.fromThrowable = <T>(f: () => T): Result<T, Error> => {
 	try {
 		return Ok(f());
 	} catch (error) {
 		return Err(handleCaughtError(error));
 	}
 };
+
+/**
+ * @deprecated Use `Result.from()` instead.
+ */
+Result.from = Result.fromThrowable;
 
 /**
  * Tries to resolve a promise and returns the result as a `AsyncResult`.
