@@ -5,13 +5,15 @@ import type {InferErr} from "./util";
 /**
  * Runs a generator function that returns a `Result` and infers its return type as `Result<T, E>`.
  *
- * `yield*` must be used to yield the result of a `Result`.
+ * `yield*` must be used to unwrap and propagate a `Result`:
+ * -   yielding an `Ok` will unwrap the value
+ * -   yielding an `Err` will stop the function and return the error
  *
  * **Examples**
  *
  * ```ts
  * // $ExpectType Result<number, string>
- * const result = tryFn(function* () {
+ * const result = trySync(function* () {
  *   const a = yield* Ok(1)
  *   const random = Math.random()
  *   if (random > 0.5) {
@@ -54,7 +56,9 @@ async function toPromiseResult<T, E>(value: any): Promise<Result<T, E>> {
 /**
  * Runs an async generator function that returns a `Result` and infers its return type as `AsyncResult<T, E>`.
  *
- * `yield*` must be used to yield the result of a `AsyncResult` or `Result`.
+ * `yield*` must be used to unwrap and propagate a `Result`:
+ * -   yielding an `Ok` will unwrap the value
+ * -   yielding an `Err` will stop the function and return the error
  *
  * **Examples**
  *
@@ -62,7 +66,7 @@ async function toPromiseResult<T, E>(value: any): Promise<Result<T, E>> {
  * const okOne = () => new AsyncResult(Promise.resolve(Ok(1)))
  *
  * // $ExpectType AsyncResult<number, string>
- * const result = tryAsyncFn(async function* () {
+ * const result = tryAsync(async function* () {
  *   const a = yield* okOne()
  *   const random = Math.random()
  *   if (random > 0.5) {
