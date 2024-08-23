@@ -1,5 +1,5 @@
 import {AsyncResult} from "./async_result";
-import {type Result, ResultImpl, Ok} from "./result";
+import {type Result, ResultImpl, Ok, type Err} from "./result";
 import type {InferErr} from "./util";
 
 /**
@@ -91,4 +91,8 @@ export function tryAsync<T extends AsyncResult<any, any> | Result<any, any>, U>(
 		},
 	);
 	return new AsyncResult(yieldedResultChain);
+}
+
+export function tryBlock<T, E>(scope: () => Generator<Err<E, never>, Result<T, E>>): Result<T, E> {
+	return scope().next().value;
 }

@@ -1,5 +1,5 @@
 import {it, expect, expectTypeOf, describe} from "vitest";
-import {trySync, Ok, Err, Result, tryAsync, AsyncResult} from "../src";
+import {trySync, Ok, Err, Result, tryAsync, AsyncResult, tryBlock, Panic} from "../src";
 
 async function wait<T>(ms: number): Promise<T> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
@@ -130,4 +130,33 @@ describe("tryAsyncFn", () => {
 		},
 		60 * 1000,
 	);
+});
+
+describe.only("tryBlock", () => {
+	it("should work", () => {
+		const block = tryBlock(function* () {
+			const x = yield* Ok(1).try();
+			const y = yield* Ok(1).try();
+			return Ok(x + y);
+		});
+		expectTypeOf(block).toEqualTypeOf<Result<number, never>>();
+		expect(block.unwrap()).toEqual(2);
+
+		const block2 = tryBlock(function* () {
+			const x = yield* Ok(1).try();
+			const y = yield* Err("error").try();
+			return Ok(x + y);
+		});
+		expectTypeOf(block2).toEqualTypeOf<Result<number, string>>();
+		expect(block2.unwrapErr()).toEqual("error");
+
+		const block3 = tryBlock(function* () {
+			const x = yield* Ok(1).try();
+			if (Math.random() > 0.5) {
+				return Ok(x);
+			}
+			return Err("error");
+		});
+		expectTypeOf(block3).toEqualTypeOf<Result<number, string>>();
+	});
 });
