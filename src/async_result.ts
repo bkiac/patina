@@ -1,5 +1,5 @@
 import {AsyncOption} from "./async_option";
-import type {Result, ResultImpl, ResultMatch, ResultMatchAsync} from "./result";
+import type {Err, Result, ResultImpl, ResultMatch, ResultMatchAsync} from "./result";
 
 /**
  * A promise that resolves to a `Result`.
@@ -13,6 +13,10 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 
 	*[Symbol.iterator](): Iterator<AsyncResult<T, E>, T, any> {
 		return yield this;
+	}
+
+	async *try(): AsyncGenerator<Err<E, never>, T> {
+		return yield* await this.promise.then((res) => res.try());
 	}
 
 	then<A, B>(

@@ -1,6 +1,6 @@
 import {AsyncResult} from "./async_result";
 import {type Result, ResultImpl, Ok, type Err} from "./result";
-import type {InferErr} from "./util";
+import {isResult, type InferErr} from "./util";
 
 /**
  * Runs a generator function that returns a `Result` and infers its return type as `Result<T, E>`.
@@ -45,7 +45,7 @@ export function trySync<T extends Result<any, any>, U>(
 
 async function toPromiseResult<T, E>(value: any): Promise<Result<T, E>> {
 	const awaited = await value;
-	if (value instanceof ResultImpl) {
+	if (isResult(awaited)) {
 		return awaited as any;
 	}
 	return Ok(awaited);
@@ -95,4 +95,11 @@ export function tryAsync<T extends AsyncResult<any, any> | Result<any, any>, U>(
 
 export function tryBlock<T, E>(scope: () => Generator<Err<E, never>, Result<T, E>>): Result<T, E> {
 	return scope().next().value;
+}
+
+export function tryBlockAsync<T, E>(
+	scope: () => AsyncGenerator<Err<E, never>, Result<T, E>>,
+): AsyncResult<T, E> {
+	const next = scope().next();
+	return new AsyncResult(next.then((result) => result.value));
 }

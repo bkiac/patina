@@ -1,5 +1,16 @@
 import {it, expect, expectTypeOf, describe} from "vitest";
-import {trySync, Ok, Err, Result, tryAsync, AsyncResult, tryBlock, Panic} from "../src";
+import {
+	trySync,
+	Ok,
+	Err,
+	Result,
+	tryAsync,
+	AsyncResult,
+	tryBlock,
+	Panic,
+	tryBlockAsync,
+} from "../src";
+import exp from "constants";
 
 async function wait<T>(ms: number): Promise<T> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
@@ -133,7 +144,7 @@ describe("tryAsyncFn", () => {
 });
 
 describe.only("tryBlock", () => {
-	it("should work", () => {
+	it("should work", async () => {
 		const block = tryBlock(function* () {
 			const x = yield* Ok(1).try();
 			const y = yield* Ok(1).try();
@@ -158,5 +169,29 @@ describe.only("tryBlock", () => {
 			return Err("error");
 		});
 		expectTypeOf(block3).toEqualTypeOf<Result<number, string>>();
+
+		const block5 = tryBlockAsync(async function* () {
+			const x = yield* Ok(1).try();
+			const y = yield* Ok(1).try();
+			return Ok(x + y);
+		});
+		expectTypeOf(block5).toEqualTypeOf<AsyncResult<number, never>>();
+		await expect(block5.unwrap()).resolves.toEqual(2);
+
+		const block6 = tryBlockAsync(async function* () {
+			const x = yield* new AsyncResult(Promise.resolve(Ok(1))).try();
+			const y = yield* new AsyncResult(Promise.resolve(Ok(1))).try();
+			return Ok(x + y);
+		});
+		expectTypeOf(block6).toEqualTypeOf<AsyncResult<number, never>>();
+		await expect(block6.unwrap()).resolves.toEqual(2);
+
+		const block7 = tryBlockAsync(async function* () {
+			const x = yield* new AsyncResult(Promise.resolve(Ok(1))).try();
+			const y = yield* new AsyncResult(Promise.resolve(Err("error"))).try();
+			return Ok(x + y);
+		});
+		expectTypeOf(block7).toEqualTypeOf<AsyncResult<number, string>>();
+		await expect(block7.unwrapErr()).resolves.toEqual("error");
 	});
 });
