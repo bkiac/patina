@@ -1,16 +1,5 @@
 import {it, expect, expectTypeOf, describe} from "vitest";
-import {
-	trySync,
-	Ok,
-	Err,
-	Result,
-	tryAsync,
-	AsyncResult,
-	tryBlock,
-	Panic,
-	tryBlockAsync,
-} from "../src";
-import exp from "constants";
+import {trySync, Ok, Err, Result, tryAsync, AsyncResult, tryBlock, tryBlockAsync} from "../src";
 
 async function wait<T>(ms: number): Promise<T> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
