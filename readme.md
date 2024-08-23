@@ -459,6 +459,21 @@ Methods on both `Result` and `AsyncResult` have `async` versions that accept a f
 
 Similar methods are available on `Option` as on `Result`.
 
+### `.fromNullish(value: T)`
+
+Returns `Some` if the value is not `null` or `undefined`, otherwise returns `None`.
+
+```ts
+const x = Option.fromNullish(42);
+assert.deepStrictEqual(x.unwrap(), 42);
+
+const y = Option.fromNullish(null);
+assert.deepStrictEqual(y, None);
+
+const z = Option.fromNullish(undefined);
+assert.deepStrictEqual(z, None);
+```
+
 ## `AsyncOption`
 
 `AsyncOption` is a type that represents either a value (`Some`) or nothing (`None`) of an asynchronous operation.

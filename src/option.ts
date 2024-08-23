@@ -438,6 +438,14 @@ export type Option<T> = Some<T> | None<T>;
 
 export function Option() {}
 
-Option.from = <T>(value: T | undefined | null): Option<T> => {
+/**
+ * Creates an `Option` from a nullish value.
+ */
+Option.fromNullish = <T>(value: T | undefined | null): Option<T> => {
 	return value == null ? None : Some(value);
 };
+
+/**
+ * @deprecated Use `Option.fromNullish()` instead.
+ */
+Option.from = Option.fromNullish;
