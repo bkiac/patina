@@ -653,52 +653,52 @@ function handleCaughtError(error: unknown) {
  */
 export type Result<T, E> = Ok<T, E> | Err<E, T>;
 
-export function Result() {}
-
-/**
- * Tries to execute a function and returns the result as a `Result`.
- *
- * **Examples**
- *
- * ```
- * // const result: Result<number, Error>
- * const result = Result.fromThrowable(() => {
- *   if (Math.random() > 0.5) {
- *		return 42
- *	  } else {
- *		throw new Error("random error")
- *	  }
- * })
- * ```
- */
-Result.fromThrowable = <T>(f: () => T): Result<T, Error> => {
-	try {
-		return Ok(f());
-	} catch (error) {
-		return Err(handleCaughtError(error));
+export namespace Result {
+	/**
+	 * Tries to execute a function and returns the result as a `Result`.
+	 *
+	 * **Examples**
+	 *
+	 * ```
+	 * // const result: Result<number, Error>
+	 * const result = Result.fromThrowable(() => {
+	 *   if (Math.random() > 0.5) {
+	 *		return 42
+	 *	  } else {
+	 *		throw new Error("random error")
+	 *	  }
+	 * })
+	 * ```
+	 */
+	export function fromThrowable<T>(f: () => T): Result<T, Error> {
+		try {
+			return Ok(f());
+		} catch (error) {
+			return Err(handleCaughtError(error));
+		}
 	}
-};
 
-/**
- * @deprecated Use `Result.from()` instead.
- */
-Result.from = Result.fromThrowable;
+	/**
+	 * @deprecated Use `Result.fromThrowable()` instead.
+	 */
+	export const from = fromThrowable;
 
-/**
- * Tries to resolve a promise and returns the result as a `AsyncResult`.
- *
- * **Examples**
- *
- * ```
- * // const result: AsyncResult<number, Error>
- * const result = Result.fromPromise(Promise.resolve(42))
- * ```
- */
-Result.fromPromise = <T>(promise: Promise<T>): AsyncResult<T, Error> => {
-	return new AsyncResult(
-		promise.then(
-			(value) => Ok(value),
-			(error) => Err(handleCaughtError(error)),
-		),
-	);
-};
+	/**
+	 * Tries to resolve a promise and returns the result as a `AsyncResult`.
+	 *
+	 * **Examples**
+	 *
+	 * ```
+	 * // const result: AsyncResult<number, Error>
+	 * const result = Result.fromPromise(Promise.resolve(42))
+	 * ```
+	 */
+	export function fromPromise<T>(promise: Promise<T>): AsyncResult<T, Error> {
+		return new AsyncResult(
+			promise.then(
+				(value) => Ok(value),
+				(error) => Err(handleCaughtError(error)),
+			),
+		);
+	}
+}

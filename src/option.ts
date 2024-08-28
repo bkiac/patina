@@ -436,16 +436,16 @@ export const None = new OptionImpl(false) as None;
  */
 export type Option<T> = Some<T> | None<T>;
 
-export function Option() {}
+export namespace Option {
+	/**
+	 * Creates an `Option` from a nullish value.
+	 */
+	export function fromNullish<T>(value: T | undefined | null): Option<T> {
+		return value == null ? None : Some(value);
+	}
 
-/**
- * Creates an `Option` from a nullish value.
- */
-Option.fromNullish = <T>(value: T | undefined | null): Option<T> => {
-	return value == null ? None : Some(value);
-};
-
-/**
- * @deprecated Use `Option.fromNullish()` instead.
- */
-Option.from = Option.fromNullish;
+	/**
+	 * @deprecated Use `Option.fromNullish()` instead.
+	 */
+	export const from = fromNullish;
+}
