@@ -11,10 +11,6 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 		readonly promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>> | AsyncResult<T, E>,
 	) {}
 
-	*[Symbol.iterator](): Iterator<AsyncResult<T, E>, T, any> {
-		return yield this;
-	}
-
 	async *try(): AsyncGenerator<Err<E, never>, T> {
 		return yield* await this.promise.then((res) => res.try());
 	}
