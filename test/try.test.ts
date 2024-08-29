@@ -95,6 +95,6 @@ test("tryBlockAsync", async () => {
 			throw error;
 		});
 	} catch (e) {
-		expect(e.cause).toEqual(error);
+		expect((e as any).cause).toEqual(error);
 	}
 });
