@@ -1,5 +1,5 @@
-import {describe, expect, it, expectTypeOf, test} from "vitest";
-import {asyncFn, fn, Ok, Err, AsyncResult, Result, gen, asyncGen} from "../src";
+import {describe, expect, it, expectTypeOf} from "vitest";
+import {asyncFn, fn, Ok, Err, AsyncResult, Result} from "../src";
 import {TaggedError} from "./util";
 
 describe.concurrent("fn", () => {
@@ -220,24 +220,4 @@ describe.concurrent("asyncFn", () => {
 			expectTypeOf(wrapped).returns.toEqualTypeOf<AsyncResult<boolean, string>>();
 		});
 	});
-});
-
-test("gen", () => {
-	const fn = gen(function* (arg: number) {
-		const x = yield* Ok(arg);
-		const y = yield* Err(1);
-		const z = yield* Err("error");
-		return x + y;
-	});
-	expectTypeOf(fn).toEqualTypeOf<(arg: number) => Result<number, number | string>>();
-});
-
-test("asyncGen", () => {
-	const fn = asyncGen(async function* (arg: number) {
-		const x = yield* new AsyncResult(Promise.resolve(Ok(arg)));
-		const y = yield* new AsyncResult(Promise.resolve(Err(1)));
-		const z = yield* new AsyncResult(Promise.resolve(Err("error")));
-		return x + y;
-	});
-	expectTypeOf(fn).toEqualTypeOf<(arg: number) => AsyncResult<number, number | string>>();
 });

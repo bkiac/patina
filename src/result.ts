@@ -26,9 +26,17 @@ export class ResultImpl<T, E> {
 		this.wrapped = v;
 	}
 
-	*[Symbol.iterator](): Iterator<Result<T, E>, T, any> {
-		const self = this as unknown as Result<T, E>;
-		return yield self;
+	public try(): Generator<Err<E, never>, T> {
+		const wrapped = this.wrapped;
+		if (this.kind) {
+			return (function* () {
+				return wrapped as T;
+			})();
+		}
+		return (function* () {
+			yield Err(wrapped as E);
+			throw new Panic("Do not use this generator outside of a try block");
+		})();
 	}
 
 	private unwrapFailed(message: string): never {
