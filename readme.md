@@ -589,6 +589,7 @@ If you find this library lacking, you may want to check out similar libraries:
 -   [neverthrow](https://github.com/supermacro/neverthrow)
 -   [option-t](https://github.com/option-t/option-t)
 -   [oxide.ts](https://github.com/traverse1984/oxide.ts)
+-   [qio](https://github.com/tusharmath/qio)
 -   [true-myth](https://github.com/true-myth/true-myth)
 -   [ts-results](https://github.com/vultix/ts-results)
 -   [ts-results-es](https://github.com/lune-climate/ts-results-es)
