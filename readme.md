@@ -514,8 +514,7 @@ const result = await wrapped(1, 2); // => Result<number, string>
 
 ### `tryBlock`
 
-Creates a scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a `Result`.
-Only works with synchronous functions, for asynchronous functions use `tryBlockAsync`.
+Creates a scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a `Result`. This is trying to emulate Rust's `try_blocks` and `?` operator. Only works with synchronous blocks, if you need to use asynchronous operations, use `tryBlockAsync` instead.
 
 ```ts
 const result = tryBlock(function* () {
@@ -528,7 +527,7 @@ assert.equal(result.unwrap(), 3);
 
 ### `tryBlockAsync`
 
-Creates a scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a `Result` or `AsyncResult`.
+Creates a scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a `Result` or `AsyncResult`. This is trying to emulate Rust's `try_blocks` and `?` operator.
 
 ```ts
 const asyncNumber = new AsyncResult(Promise.resolve(Ok(2)));

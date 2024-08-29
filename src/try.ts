@@ -6,7 +6,9 @@ import {InferErr, InferOk} from "./util";
 /**
  * Creates a scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a `Result`.
  *
- * **Note:** This function is synchronous. If you need to use asynchronous operations, use `tryBlockAsync` instead.
+ * This is trying to emulate Rust's `try_blocks` and `?` operator.
+ *
+ * **Note:** Only works with synchronous blocks, if you need to use asynchronous operations, use `tryBlockAsync` instead.
  *
  * **Example:**
  *
@@ -28,6 +30,8 @@ export function tryBlock<Y extends Err<any, never>, R extends Result<any, any>>(
 
 /**
  * Creates an async scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a `Result` or `AsyncResult`.
+ *
+ * This is trying to emulate Rust's `try_blocks` and `?` operator.
  *
  * Any thrown `Error` will be wrapped in a `Panic`.
  *
