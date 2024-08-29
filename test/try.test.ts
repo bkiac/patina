@@ -1,5 +1,5 @@
 import {it, expect, expectTypeOf, describe, test} from "vitest";
-import {Ok, Err, Result, AsyncResult, tryBlock, tryBlockAsync} from "../src";
+import {Ok, Err, Result, AsyncResult, tryBlock, tryBlockAsync, Panic} from "../src";
 
 test("tryBlock", () => {
 	const block = tryBlock(function* () {
@@ -52,4 +52,19 @@ test("tryBlockAsync", async () => {
 	});
 	expectTypeOf(block7).toEqualTypeOf<AsyncResult<number, string>>();
 	await expect(block7.unwrapErr()).resolves.toEqual("error");
+
+	// Do not catch panic
+	const panic = new Panic();
+	await expect(() =>
+		tryBlockAsync(async function* () {
+			throw panic;
+		}),
+	).rejects.toThrow(panic);
+
+	// Wrap unexpected error in panic
+	await expect(() =>
+		tryBlockAsync(async function* () {
+			throw new Error("unexpected");
+		}),
+	).rejects.toThrow(Panic);
 });
