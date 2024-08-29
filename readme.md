@@ -39,7 +39,9 @@
 -   [Option](#option)
 -   [AsyncOption](#asyncoption)
 -   [Utilities](#utilities)
-    -   [Generators](#generators)
+    -   [asyncFn](#asyncfn)
+    -   [tryBlock](#tryblock)
+    -   [tryBlockAsync](#tryblockasync)
 -   [Similar Libraries](#similar-libraries)
 
 ## Installation
@@ -479,21 +481,6 @@ assert.deepStrictEqual(z, None);
 
 ## Utilities
 
-### `asyncFn`
-
-Wraps a function that returns any shape of `Promise<Result<any, any>>` and wraps the return value in a `AsyncResult`.
-
-```ts
-// (a: number, b: number) => Promise<Err<string> | Ok<number>>
-const divide = async (a: number, b: number) => (b === 0 ? Err("division by zero") : Ok(a / b));
-
-// (a: number, b: number) => AsyncResult<number, string>
-const wrapped = asyncFn(divide);
-
-// then you can await the result
-const result = await wrapped(1, 2); // => Result<number, string>
-```
-
 ### `isResult(value: any): value is Result`
 
 Returns `true` if `value` is an instance of `Result`.
@@ -510,52 +497,48 @@ Returns `true` if `value` is an instance of `Option`.
 
 Returns `true` if `value` is an instance of `AsyncOption`.
 
-### Generators
+### `asyncFn`
 
-These utilities help your code appear and behave more like traditional synchronous code by propagating errors automatically.
-
-Note that TS sometimes has trouble inferring yielded result type, especially when a lot of `yield*` operations are used in a single function. For complex cases, you may need to explicitly type the result or revert to handling `Results` directly.
-
-#### `trySync`
-
-Runs a generator function that returns a `Result` and infers its return type as `Result<T, E>`.
-
-`yield*` must be used to unwrap and propagate a `Result`:
-
--   yielding an `Ok` will unwrap the value
--   yielding an `Err` will stop the function and return the error
+Wraps a function that returns any shape of `Promise<Result<any, any>>` and wraps the return value in a `AsyncResult`.
 
 ```ts
-// Result<number, string>
-const result = tryFn(function* () {
-	const a = yield* Ok(1);
-	if (Math.random() > 0.5) {
-		yield* Err("error");
-	}
-	return a + random;
-});
+// (a: number, b: number) => Promise<Err<string> | Ok<number>>
+const divide = async (a: number, b: number) => (b === 0 ? Err("division by zero") : Ok(a / b));
+
+// (a: number, b: number) => AsyncResult<number, string>
+const wrapped = asyncFn(divide);
+
+// then you can await the result
+const result = await wrapped(1, 2); // => Result<number, string>
 ```
 
-#### `tryAsync`
+### `tryBlock`
 
-Runs an async generator function that returns a `Result` and infers its return type as `AsyncResult<T, E>`.
-
-`yield*` must be used to unwrap and propagate a `Result`:
-
--   yielding an `Ok` will unwrap the value
--   yielding an `Err` will stop the function and return the error
+Creates a scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a `Result`.
+Only works with synchronous functions, for asynchronous functions use `tryBlockAsync`.
 
 ```ts
-const okOne = () => new AsyncResult(Promise.resolve(Ok(1)));
-
-// AsyncResult<number, string>
-const result = tryAsync(async function* () {
-	const a = yield* okOne();
-	if (Math.random() > 0.5) {
-		yield* Err("error");
-	}
-	return a + random;
+const result = tryBlock(function* () {
+	const x = yield* Ok(1).try();
+	const y = yield* Ok(2).try();
+	return Ok(x + y);
 });
+assert.equal(result.unwrap(), 3);
+```
+
+### `tryBlockAsync`
+
+Creates a scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a `Result` or `AsyncResult`.
+
+```ts
+const asyncNumber = new AsyncResult(Promise.resolve(Ok(2)));
+
+const result = await tryBlockAsync(async function* () {
+	const x = yield* Ok(1).try();
+	const y = yield* asyncNumber.try();
+	return Ok(x + y);
+});
+assert.equal(result.unwrap(), 3);
 ```
 
 ## Similar Libraries

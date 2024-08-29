@@ -3,7 +3,7 @@ import {Panic} from "./error";
 import {type Result, type Err} from "./result";
 
 /**
- * Creates a scope where you can use `yield*` and `try()` together to unwrap or propagate errors.
+ * Creates a scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a `Result`.
  *
  * **Note:** This function is synchronous. If you need to use asynchronous operations, use `tryBlockAsync` instead.
  *
@@ -24,7 +24,7 @@ export function tryBlock<T, E>(scope: () => Generator<Err<E, never>, Result<T, E
 }
 
 /**
- * Creates an async scope where you can use `yield*` and `try()` together to unwrap or propagate errors.
+ * Creates an async scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a `Result` or `AsyncResult`.
  *
  * Any thrown `Error` will be wrapped in a `Panic`.
  *
