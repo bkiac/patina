@@ -52,7 +52,7 @@ export class OptionImpl<T> {
 	}
 
 	/**
-	 * Returns the contained `Some` value, if exists.
+	 * Returns the contained `Some` value, if it exists.
 	 *
 	 * @deprecated Use `unwrap()` instead.
 	 */
@@ -397,6 +397,11 @@ export class OptionImpl<T> {
 
 export interface Some<T> extends OptionImpl<T> {
 	[symbols.tag]: "Some";
+	/**
+	 * Returns the contained `Some` value, if it exists.
+	 *
+	 * @deprecated Use `unwrap()` instead.
+	 */
 	value(): T;
 	unwrap(): T;
 	expect(message: string): T;
@@ -411,6 +416,11 @@ export function Some<T>(value: T): Some<T> {
 
 export interface None<T = never> extends OptionImpl<T> {
 	[symbols.tag]: "None";
+	/**
+	 * Returns the contained `Some` value, if it exists.
+	 *
+	 * @deprecated Use `unwrap()` instead.
+	 */
 	value(): undefined;
 	unwrap(): undefined;
 	expect(message: string): never;
@@ -428,6 +438,14 @@ export type Option<T> = Some<T> | None<T>;
 
 export function Option() {}
 
-Option.from = <T>(value: T | undefined | null): Option<T> => {
+/**
+ * Creates an `Option` from a nullish value.
+ */
+Option.fromNullish = <T>(value: T | undefined | null): Option<T> => {
 	return value == null ? None : Some(value);
 };
+
+/**
+ * @deprecated Use `Option.fromNullish()` instead.
+ */
+Option.from = Option.fromNullish;

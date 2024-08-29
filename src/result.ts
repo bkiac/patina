@@ -590,7 +590,17 @@ export class ResultImpl<T, E> {
 
 export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
 	[symbols.tag]: "Ok";
+	/**
+	 * Returns the contained value, if it exists.
+	 *
+	 * @deprecated Use `unwrap()` instead.
+	 */
 	value(): T;
+	/**
+	 * Returns the contained error, if it exists.
+	 *
+	 * @deprecated Use `unwrapErr()` instead.
+	 */
 	error(): undefined;
 	unwrap(): T;
 	unwrapErr(): undefined;
@@ -609,7 +619,17 @@ export function Ok<T>(value?: T): Ok<T> {
 
 export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
 	[symbols.tag]: "Err";
+	/**
+	 * Returns the contained value, if it exists.
+	 *
+	 * @deprecated Use `unwrap()` instead.
+	 */
 	value(): undefined;
+	/**
+	 * Returns the contained value, if it exists.
+	 *
+	 * @deprecated Use `unwrapErr()` instead.
+	 */
 	error(): E;
 	unwrap(): undefined;
 	unwrapErr(): E;
@@ -655,7 +675,7 @@ export function Result() {}
  *
  * ```
  * // const result: Result<number, Error>
- * const result = Result.from(() => {
+ * const result = Result.fromThrowable(() => {
  *   if (Math.random() > 0.5) {
  *		return 42
  *	  } else {
@@ -664,13 +684,18 @@ export function Result() {}
  * })
  * ```
  */
-Result.from = <T>(f: () => T): Result<T, Error> => {
+Result.fromThrowable = <T>(f: () => T): Result<T, Error> => {
 	try {
 		return Ok(f());
 	} catch (error) {
 		return Err(handleCaughtError(error));
 	}
 };
+
+/**
+ * @deprecated Use `Result.from()` instead.
+ */
+Result.from = Result.fromThrowable;
 
 /**
  * Tries to resolve a promise and returns the result as a `AsyncResult`.

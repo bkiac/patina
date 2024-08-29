@@ -46,6 +46,8 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 
 	/**
 	 * Async version of `Option#value`.
+	 *
+	 * @deprecated Use `unwrap()` instead.
 	 */
 	async value(): Promise<T | undefined> {
 		return (await this).value();

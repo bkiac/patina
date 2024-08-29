@@ -342,22 +342,22 @@ describe.concurrent("match", () => {
 	});
 });
 
-describe.concurrent("Option.from", () => {
+describe.concurrent("Option.fromNullish", () => {
 	it("returns Some when the value is not null or undefined", () => {
 		const value = "hello" as string | number | null;
-		const option = Option.from(value);
+		const option = Option.fromNullish(value);
 		expectTypeOf(option).toEqualTypeOf<Option<string | number>>();
 		expect(option).toEqual(Some(value));
 	});
 
 	it("returns Some when the value is falsy", () => {
-		expect(Option.from(false)).toEqual(Some(false));
-		expect(Option.from(0)).toEqual(Some(0));
-		expect(Option.from("")).toEqual(Some(""));
+		expect(Option.fromNullish(false)).toEqual(Some(false));
+		expect(Option.fromNullish(0)).toEqual(Some(0));
+		expect(Option.fromNullish("")).toEqual(Some(""));
 	});
 
 	it("returns None when the value is null or undefined", () => {
-		expect(Option.from(null)).toEqual(None);
-		expect(Option.from(undefined)).toEqual(None);
+		expect(Option.fromNullish(null)).toEqual(None);
+		expect(Option.fromNullish(undefined)).toEqual(None);
 	});
 });

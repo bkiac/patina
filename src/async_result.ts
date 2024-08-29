@@ -54,10 +54,16 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 		return (await this).matchAsync(matcher);
 	}
 
+	/**
+	 * @deprecated - Use `unwrap()` instead.
+	 */
 	async value(): Promise<T | undefined> {
 		return (await this).value();
 	}
 
+	/**
+	 * @deprecated - Use `unwrapErr()` instead.
+	 */
 	async error(): Promise<E | undefined> {
 		return (await this).error();
 	}
