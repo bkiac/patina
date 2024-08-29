@@ -514,7 +514,7 @@ const result = await wrapped(1, 2); // => Result<number, string>
 
 ### `tryBlock`
 
-Creates a scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a `Result`. This is trying to emulate Rust's `try_blocks` and `?` operator. Only works with synchronous blocks, if you need to use asynchronous operations, use `tryBlockAsync` instead.
+Creates a scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a `Result`. This is trying to emulate Rust's [`try_blocks`](https://doc.rust-lang.org/stable/unstable-book/language-features/try-blocks.html) and [`?` operator](https://doc.rust-lang.org/rust-by-example/std/result/question_mark.html). Only works with synchronous blocks, if you need to use asynchronous operations, use `tryBlockAsync` instead.
 
 ```ts
 const result = tryBlock(function* () {
@@ -527,7 +527,7 @@ assert.equal(result.unwrap(), 3);
 
 ### `tryBlockAsync`
 
-Creates a scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a `Result` or `AsyncResult`. This is trying to emulate Rust's `try_blocks` and `?` operator.
+Creates a scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a `Result` or `AsyncResult`. This is trying to emulate Rust's [`try_blocks`](https://doc.rust-lang.org/stable/unstable-book/language-features/try-blocks.html) and [`?` operator](https://doc.rust-lang.org/rust-by-example/std/result/question_mark.html).
 
 ```ts
 const asyncNumber = new AsyncResult(Promise.resolve(Ok(2)));
