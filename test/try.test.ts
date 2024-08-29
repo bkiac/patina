@@ -62,9 +62,17 @@ test("tryBlockAsync", async () => {
 	).rejects.toThrow(panic);
 
 	// Wrap unexpected error in panic
+	const error = new Error("unexpected");
 	await expect(() =>
 		tryBlockAsync(async function* () {
-			throw new Error("unexpected");
+			throw error;
 		}),
 	).rejects.toThrow(Panic);
+	try {
+		await tryBlockAsync(async function* () {
+			throw error;
+		});
+	} catch (e) {
+		expect(e.cause).toEqual(error);
+	}
 });
