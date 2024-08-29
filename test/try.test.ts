@@ -1,4 +1,4 @@
-import {it, expect, expectTypeOf, describe, test} from "vitest";
+import {expect, expectTypeOf, test} from "vitest";
 import {Ok, Err, Result, AsyncResult, tryBlock, tryBlockAsync, Panic} from "../src";
 
 test("tryBlock", () => {
@@ -9,6 +9,17 @@ test("tryBlock", () => {
 	});
 	expectTypeOf(block).toEqualTypeOf<Result<number, never>>();
 	expect(block.unwrap()).toEqual(2);
+
+	const block4 = tryBlock(function* () {
+		const x = yield* Err("error").try();
+		const y = yield* Err(2).try();
+		if (Math.random() > 0.5) {
+			return Ok("foo");
+		} else {
+			return Ok(0);
+		}
+	});
+	expectTypeOf(block4).toEqualTypeOf<Result<string | number, string | number>>();
 
 	const block2 = tryBlock(function* () {
 		const x = yield* Ok(1).try();
@@ -36,6 +47,17 @@ test("tryBlockAsync", async () => {
 	});
 	expectTypeOf(block5).toEqualTypeOf<AsyncResult<number, never>>();
 	await expect(block5.unwrap()).resolves.toEqual(2);
+
+	const block1 = tryBlockAsync(async function* () {
+		const x = yield* Err("error").try();
+		const y = yield* new AsyncResult(Promise.resolve(Err(2))).try();
+		if (Math.random() > 0.5) {
+			return Ok("foo");
+		} else {
+			return Ok(0);
+		}
+	});
+	expectTypeOf(block1).toEqualTypeOf<AsyncResult<string | number, string | number>>();
 
 	const block6 = tryBlockAsync(async function* () {
 		const x = yield* new AsyncResult(Promise.resolve(Ok(1))).try();
