@@ -1,98 +1,71 @@
 import {AsyncResult} from "./async_result";
-import {type Result, ResultImpl, Ok} from "./result";
-import type {InferErr} from "./util";
+import {Panic} from "./error";
+import {type Result, type Err} from "./result";
+import {InferErr, InferOk} from "./util";
 
 /**
- * Runs a generator function that returns a `Result` and infers its return type as `Result<T, E>`.
+ * Creates a scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a `Result`.
  *
- * `yield*` must be used to unwrap and propagate a `Result`:
- * -   yielding an `Ok` will unwrap the value
- * -   yielding an `Err` will stop the function and return the error
+ * This is trying to emulate Rust's `try_blocks` and `?` operator.
  *
- * **Examples**
+ * **Note:** Only works with synchronous blocks, if you need to use asynchronous operations, use `tryBlockAsync` instead.
+ *
+ * **Example:**
  *
  * ```ts
- * // $ExpectType Result<number, string>
- * const result = trySync(function* () {
- *   const a = yield* Ok(1)
- *   const random = Math.random()
- *   if (random > 0.5) {
- *     yield* Err("error")
- *   }
- *   return a + random
- * })
+ * const block = tryBlock(function* () {
+ * 	const x = yield* Ok(1).try();
+ * 	const y = yield* Ok(1).try();
+ * 	return Ok(x + y);
+ * });
+ *
+ * assert.equal(block.unwrap(), 2);
  * ```
  */
-export function trySync<T extends Result<any, any>, U>(
-	fn: () => Generator<T, U, any>,
-): Result<U, InferErr<T>> {
-	const gen = fn();
-	let done = false;
-	let returnResult = Ok();
-	while (!done) {
-		const iter = gen.next(returnResult.unwrap());
-		if (iter.value instanceof ResultImpl) {
-			if (iter.value.isErr()) {
-				done = true;
-				gen.return?.(iter.value as any);
-			}
-			returnResult = iter.value as any;
-		} else {
-			done = true;
-			returnResult = Ok(iter.value) as any;
-		}
-	}
-	return returnResult as any;
-}
-
-async function toPromiseResult<T, E>(value: any): Promise<Result<T, E>> {
-	const awaited = await value;
-	if (value instanceof ResultImpl) {
-		return awaited as any;
-	}
-	return Ok(awaited);
+export function tryBlock<Y extends Err<any, never>, R extends Result<any, any>>(
+	scope: () => Generator<Y, R>,
+): Result<InferOk<R>, InferErr<Y> | InferErr<R>> {
+	return scope().next().value;
 }
 
 /**
- * Runs an async generator function that returns a `Result` and infers its return type as `AsyncResult<T, E>`.
+ * Creates an async scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a `Result` or `AsyncResult`.
  *
- * `yield*` must be used to unwrap and propagate a `Result`:
- * -   yielding an `Ok` will unwrap the value
- * -   yielding an `Err` will stop the function and return the error
+ * This is trying to emulate Rust's `try_blocks` and `?` operator.
  *
- * **Examples**
+ * Any thrown `Error` will be wrapped in a `Panic`.
+ *
+ * **Example:**
  *
  * ```ts
- * const okOne = () => new AsyncResult(Promise.resolve(Ok(1)))
+ * const asyncNumber = new AsyncResult(Promise.resolve(Ok(1)));
  *
- * // $ExpectType AsyncResult<number, string>
- * const result = tryAsync(async function* () {
- *   const a = yield* okOne()
- *   const random = Math.random()
- *   if (random > 0.5) {
- *     yield* Err("error")
- *   }
- *   return a + random
- * })
+ * const block = await tryBlockAsync(async function* () {
+ * 	const x = yield* Ok(1).try();
+ * 	const y = yield* asyncNumber.try();
+ * 	return Ok(x + y);
+ * });
+ *
+ * assert.equal(block.unwrap(), 2);
  * ```
  */
-export function tryAsync<T extends AsyncResult<any, any> | Result<any, any>, U>(
-	fn: () => AsyncGenerator<T, U, any>,
-): AsyncResult<U, InferErr<Awaited<T>>> {
-	const gen = fn();
-	const yieldedResultChain = Promise.resolve<Result<any, any>>(Ok()).then(
-		async function fulfill(nextResult): Promise<Result<any, any>> {
-			const iter = await gen.next(nextResult.unwrap());
-			const result = await toPromiseResult(iter.value);
-			if (iter.done) {
-				return result;
-			}
-			if (result.isErr()) {
-				gen.return?.(iter.value as any);
-				return result;
-			}
-			return Promise.resolve(result).then(fulfill);
-		},
+export function tryBlockAsync<Y extends Err<any, never>, R extends Result<any, any>>(
+	scope: () => AsyncGenerator<Y, R>,
+): AsyncResult<InferOk<R>, InferErr<Y> | InferErr<R>> {
+	const next = scope().next();
+	return new AsyncResult(
+		next
+			.then((result) => result.value)
+			.catch((error) => {
+				if (error instanceof Panic) {
+					throw error;
+				}
+				throw new Panic(
+					"Unexpected rejected promise in `tryBlockAsync`: resolve the promise safely instead of throwing",
+					{
+						cause: error,
+					},
+				);
+			}),
 	);
-	return new AsyncResult(yieldedResultChain);
 }
