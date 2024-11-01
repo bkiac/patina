@@ -1,5 +1,5 @@
 import {Err, Ok, Result} from "./result";
-import {AsyncResult} from "./async_result";
+import {ResultAsync} from "./result_async";
 import {Panic, parseError} from "./error";
 
 function unknownToError(e: unknown): Error {
@@ -31,7 +31,7 @@ export function catchUnwind<T>(fn: () => T): Result<T, Error> {
 /**
  * Wraps a function in an `AsyncResult` and catches any thrown error, even `Panics`, emulating Rust's `catch_unwind`.
  */
-export function catchUnwindAsync<T>(fn: () => Promise<T>): AsyncResult<T, Error> {
+export function catchUnwindAsync<T>(fn: () => Promise<T>): ResultAsync<T, Error> {
 	async function unwind() {
 		try {
 			return await Result.fromThrowableAsync(fn); // `await` is required here, otherwise the error is not caught
@@ -39,5 +39,5 @@ export function catchUnwindAsync<T>(fn: () => Promise<T>): AsyncResult<T, Error>
 			return Err(unknownToError(e));
 		}
 	}
-	return new AsyncResult(unwind());
+	return new ResultAsync(unwind());
 }

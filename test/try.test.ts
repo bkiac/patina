@@ -1,5 +1,5 @@
 import {describe, expect, expectTypeOf, test} from "vitest";
-import {Ok, Err, Result, AsyncResult, tryBlock, tryBlockAsync, Panic} from "../src";
+import {Ok, Err, Result, ResultAsync, tryBlock, tryBlockAsync, Panic} from "../src";
 
 describe("deprecated try()", () => {
 	test("tryBlock", () => {
@@ -46,34 +46,34 @@ describe("deprecated try()", () => {
 			const y = yield* Ok(1).try();
 			return Ok(x + y);
 		});
-		expectTypeOf(block5).toEqualTypeOf<AsyncResult<number, never>>();
+		expectTypeOf(block5).toEqualTypeOf<ResultAsync<number, never>>();
 		await expect(block5.unwrap()).resolves.toEqual(2);
 
 		const block1 = tryBlockAsync(async function* () {
 			const x = yield* Err("error").try();
-			const y = yield* new AsyncResult(Promise.resolve(Err(2))).try();
+			const y = yield* new ResultAsync(Promise.resolve(Err(2))).try();
 			if (Math.random() > 0.5) {
 				return Ok("foo");
 			} else {
 				return Ok(0);
 			}
 		});
-		expectTypeOf(block1).toEqualTypeOf<AsyncResult<string | number, string | number>>();
+		expectTypeOf(block1).toEqualTypeOf<ResultAsync<string | number, string | number>>();
 
 		const block6 = tryBlockAsync(async function* () {
-			const x = yield* new AsyncResult(Promise.resolve(Ok(1))).try();
-			const y = yield* new AsyncResult(Promise.resolve(Ok(1))).try();
+			const x = yield* new ResultAsync(Promise.resolve(Ok(1))).try();
+			const y = yield* new ResultAsync(Promise.resolve(Ok(1))).try();
 			return Ok(x + y);
 		});
-		expectTypeOf(block6).toEqualTypeOf<AsyncResult<number, never>>();
+		expectTypeOf(block6).toEqualTypeOf<ResultAsync<number, never>>();
 		await expect(block6.unwrap()).resolves.toEqual(2);
 
 		const block7 = tryBlockAsync(async function* () {
-			const x = yield* new AsyncResult(Promise.resolve(Ok(1))).try();
-			const y = yield* new AsyncResult(Promise.resolve(Err("error"))).try();
+			const x = yield* new ResultAsync(Promise.resolve(Ok(1))).try();
+			const y = yield* new ResultAsync(Promise.resolve(Err("error"))).try();
 			return Ok(x + y);
 		});
-		expectTypeOf(block7).toEqualTypeOf<AsyncResult<number, string>>();
+		expectTypeOf(block7).toEqualTypeOf<ResultAsync<number, string>>();
 		await expect(block7.unwrapErr()).resolves.toEqual("error");
 
 		// Do not catch panic
@@ -145,34 +145,34 @@ test("tryBlockAsync", async () => {
 		const y = yield* Ok(1);
 		return Ok(x + y);
 	});
-	expectTypeOf(block5).toEqualTypeOf<AsyncResult<number, never>>();
+	expectTypeOf(block5).toEqualTypeOf<ResultAsync<number, never>>();
 	await expect(block5.unwrap()).resolves.toEqual(2);
 
 	const block1 = tryBlockAsync(async function* () {
 		const x = yield* Err("error");
-		const y = yield* new AsyncResult(Promise.resolve(Err(2)));
+		const y = yield* new ResultAsync(Promise.resolve(Err(2)));
 		if (Math.random() > 0.5) {
 			return Ok("foo");
 		} else {
 			return Ok(0);
 		}
 	});
-	expectTypeOf(block1).toEqualTypeOf<AsyncResult<string | number, string | number>>();
+	expectTypeOf(block1).toEqualTypeOf<ResultAsync<string | number, string | number>>();
 
 	const block6 = tryBlockAsync(async function* () {
-		const x = yield* new AsyncResult(Promise.resolve(Ok(1)));
-		const y = yield* new AsyncResult(Promise.resolve(Ok(1)));
+		const x = yield* new ResultAsync(Promise.resolve(Ok(1)));
+		const y = yield* new ResultAsync(Promise.resolve(Ok(1)));
 		return Ok(x + y);
 	});
-	expectTypeOf(block6).toEqualTypeOf<AsyncResult<number, never>>();
+	expectTypeOf(block6).toEqualTypeOf<ResultAsync<number, never>>();
 	await expect(block6.unwrap()).resolves.toEqual(2);
 
 	const block7 = tryBlockAsync(async function* () {
-		const x = yield* new AsyncResult(Promise.resolve(Ok(1)));
-		const y = yield* new AsyncResult(Promise.resolve(Err("error")));
+		const x = yield* new ResultAsync(Promise.resolve(Ok(1)));
+		const y = yield* new ResultAsync(Promise.resolve(Err("error")));
 		return Ok(x + y);
 	});
-	expectTypeOf(block7).toEqualTypeOf<AsyncResult<number, string>>();
+	expectTypeOf(block7).toEqualTypeOf<ResultAsync<number, string>>();
 	await expect(block7.unwrapErr()).resolves.toEqual("error");
 
 	// Do not catch panic

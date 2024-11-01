@@ -1,4 +1,4 @@
-import {AsyncResult} from "./async_result";
+import {ResultAsync} from "./result_async";
 import {Panic} from "./error";
 import {type Result, type Err} from "./result";
 import {InferErr, InferOk} from "./util";
@@ -51,9 +51,9 @@ export function tryBlock<Y extends Err<any, never>, R extends Result<any, any>>(
  */
 export function tryBlockAsync<Y extends Err<any, never>, R extends Result<any, any>>(
 	scope: () => AsyncGenerator<Y, R>,
-): AsyncResult<InferOk<R>, InferErr<Y> | InferErr<R>> {
+): ResultAsync<InferOk<R>, InferErr<Y> | InferErr<R>> {
 	const next = scope().next();
-	return new AsyncResult(
+	return new ResultAsync(
 		next
 			.then((result) => result.value)
 			.catch((error) => {

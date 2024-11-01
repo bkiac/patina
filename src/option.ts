@@ -1,5 +1,5 @@
-import {AsyncOption} from "./async_option";
-import {AsyncResult} from "./async_result";
+import {OptionAsync} from "./option_async";
+import {ResultAsync} from "./result_async";
 import {Panic} from "./error";
 import {Err, Ok, type Result} from "./result";
 import * as symbols from "./symbols";
@@ -168,11 +168,11 @@ export class OptionImpl<T> {
 		return None;
 	}
 
-	public mapAsync<U>(f: (value: T) => Promise<U>): AsyncOption<U> {
+	public mapAsync<U>(f: (value: T) => Promise<U>): OptionAsync<U> {
 		if (this.#some) {
-			return new AsyncOption(f(this.#value as T).then(Some));
+			return new OptionAsync(f(this.#value as T).then(Some));
 		}
-		return new AsyncOption(Promise.resolve(None));
+		return new OptionAsync(Promise.resolve(None));
 	}
 
 	/**
@@ -191,11 +191,11 @@ export class OptionImpl<T> {
 		return this;
 	}
 
-	public inspectAsync(f: (value: T) => Promise<void>): AsyncOption<T> {
+	public inspectAsync(f: (value: T) => Promise<void>): OptionAsync<T> {
 		if (this.#some) {
-			return new AsyncOption(f(this.#value as T).then(() => this as unknown as Some<T>));
+			return new OptionAsync(f(this.#value as T).then(() => this as unknown as Some<T>));
 		}
-		return new AsyncOption(Promise.resolve(None));
+		return new OptionAsync(Promise.resolve(None));
 	}
 
 	/**
@@ -284,11 +284,11 @@ export class OptionImpl<T> {
 		return Err(err());
 	}
 
-	public okOrElseAsync<E>(err: () => Promise<E>): AsyncResult<T, E> {
+	public okOrElseAsync<E>(err: () => Promise<E>): ResultAsync<T, E> {
 		if (this.#some) {
-			return new AsyncResult(Promise.resolve(Ok(this.#value as T)));
+			return new ResultAsync(Promise.resolve(Ok(this.#value as T)));
 		}
-		return new AsyncResult(err().then((e) => Err(e)));
+		return new ResultAsync(err().then((e) => Err(e)));
 	}
 
 	/**
@@ -328,11 +328,11 @@ export class OptionImpl<T> {
 		return None;
 	}
 
-	public andThenAsync<U>(f: (value: T) => Promise<Option<U>> | AsyncOption<U>): AsyncOption<U> {
+	public andThenAsync<U>(f: (value: T) => Promise<Option<U>> | OptionAsync<U>): OptionAsync<U> {
 		if (this.#some) {
-			return new AsyncOption(f(this.#value as T));
+			return new OptionAsync(f(this.#value as T));
 		}
-		return new AsyncOption(Promise.resolve(None));
+		return new OptionAsync(Promise.resolve(None));
 	}
 
 	/**
@@ -355,14 +355,14 @@ export class OptionImpl<T> {
 		return None;
 	}
 
-	public filterAsync(predicate: (value: T) => Promise<boolean>): AsyncOption<T> {
+	public filterAsync(predicate: (value: T) => Promise<boolean>): OptionAsync<T> {
 		const check = async (): Promise<Option<T>> => {
 			if (this.#some && (await predicate(this.#value as T))) {
 				return this as unknown as Option<T>;
 			}
 			return None;
 		};
-		return new AsyncOption(check());
+		return new OptionAsync(check());
 	}
 
 	/**
@@ -403,11 +403,11 @@ export class OptionImpl<T> {
 		return f();
 	}
 
-	public orElseAsync<U>(f: () => Promise<Option<U>> | AsyncOption<U>): AsyncOption<T | U> {
+	public orElseAsync<U>(f: () => Promise<Option<U>> | OptionAsync<U>): OptionAsync<T | U> {
 		if (this.#some) {
-			return new AsyncOption(Promise.resolve(this as unknown as Some<T>));
+			return new OptionAsync(Promise.resolve(this as unknown as Some<T>));
 		}
-		return new AsyncOption(f());
+		return new OptionAsync(f());
 	}
 
 	/**

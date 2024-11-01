@@ -1,6 +1,6 @@
 import {describe, it, expect, expectTypeOf} from "vitest";
 import {catchUnwind, catchUnwindAsync} from "../src/unwind";
-import {Panic, Result, AsyncResult} from "../src";
+import {Panic, Result, ResultAsync} from "../src";
 
 const UNEXPECTED_ERROR_MESSAGE = "Unexpected error type";
 
@@ -44,7 +44,7 @@ describe.concurrent("catchUnwind", () => {
 describe.concurrent("catchUnwindAsync", () => {
 	it("returns Ok result when async function succeeds", async () => {
 		const result = catchUnwindAsync(async () => 42);
-		expectTypeOf(result).toEqualTypeOf<AsyncResult<number, Error>>();
+		expectTypeOf(result).toEqualTypeOf<ResultAsync<number, Error>>();
 		await expect(result.unwrap()).resolves.toEqual(42);
 	});
 

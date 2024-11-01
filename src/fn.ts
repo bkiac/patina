@@ -1,5 +1,5 @@
 import {type Result} from "./result";
-import {AsyncResult} from "./async_result";
+import {ResultAsync} from "./result_async";
 import type {InferErr, InferOk} from "./util";
 
 /**
@@ -36,14 +36,14 @@ export function fn<A extends any[], R extends Result<any, any>>(
  * const result = await wrapped(1, 2) // => Result<number, string>
  * ```
  */
-export function asyncFn<A extends any[], R extends AsyncResult<any, any>>(
+export function asyncFn<A extends any[], R extends ResultAsync<any, any>>(
 	f: (...args: A) => R,
-): (...args: A) => AsyncResult<InferOk<Awaited<R>>, InferErr<Awaited<R>>>;
+): (...args: A) => ResultAsync<InferOk<Awaited<R>>, InferErr<Awaited<R>>>;
 export function asyncFn<A extends any[], R extends Promise<Result<any, any>>>(
 	f: (...args: A) => R,
-): (...args: A) => AsyncResult<InferOk<Awaited<R>>, InferErr<Awaited<R>>>;
+): (...args: A) => ResultAsync<InferOk<Awaited<R>>, InferErr<Awaited<R>>>;
 export function asyncFn(f: any): any {
 	return function (...args: any[]) {
-		return new AsyncResult(f(...args));
+		return new ResultAsync(f(...args));
 	};
 }

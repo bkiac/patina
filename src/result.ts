@@ -1,6 +1,6 @@
 import {Panic, parseError} from "./error";
 import {type Option, Some, None} from "./option";
-import {AsyncResult} from "./async_result";
+import {ResultAsync} from "./result_async";
 import * as symbols from "./symbols";
 
 export type ResultMatch<T, E, A, B> = {
@@ -174,11 +174,11 @@ export class ResultImpl<T, E> {
 	 * assert.strictEqual(await mapped.unwrap(), "number 10")
 	 * ```
 	 */
-	public mapAsync<U>(f: (value: T) => Promise<U>): AsyncResult<U, E> {
+	public mapAsync<U>(f: (value: T) => Promise<U>): ResultAsync<U, E> {
 		if (this.#ok) {
-			return new AsyncResult(f(this.#value as T).then((v) => Ok(v)));
+			return new ResultAsync(f(this.#value as T).then((v) => Ok(v)));
 		}
-		return new AsyncResult(Promise.resolve(Err(this.#value as E)));
+		return new ResultAsync(Promise.resolve(Err(this.#value as E)));
 	}
 
 	/**
@@ -269,11 +269,11 @@ export class ResultImpl<T, E> {
 	 * assert.strictEqual(await mapped.unwrapErr(), 5)
 	 * ```
 	 */
-	public mapErrAsync<F>(f: (error: E) => Promise<F>): AsyncResult<T, F> {
+	public mapErrAsync<F>(f: (error: E) => Promise<F>): ResultAsync<T, F> {
 		if (!this.#ok) {
-			return new AsyncResult(f(this.#value as E).then((v) => Err(v)));
+			return new ResultAsync(f(this.#value as E).then((v) => Err(v)));
 		}
-		return new AsyncResult(Promise.resolve(Ok(this.#value as T)));
+		return new ResultAsync(Promise.resolve(Ok(this.#value as T)));
 	}
 
 	/**
@@ -303,11 +303,11 @@ export class ResultImpl<T, E> {
 	 * x.inspectAsync((v) => Promise.resolve(console.log(v)))
 	 * ```
 	 */
-	public inspectAsync(f: (value: T) => Promise<void>): AsyncResult<T, E> {
+	public inspectAsync(f: (value: T) => Promise<void>): ResultAsync<T, E> {
 		if (this.#ok) {
-			return new AsyncResult(f(this.#value as T).then(() => this) as Promise<Result<T, E>>);
+			return new ResultAsync(f(this.#value as T).then(() => this) as Promise<Result<T, E>>);
 		}
-		return new AsyncResult(Promise.resolve(this) as Promise<Result<T, E>>);
+		return new ResultAsync(Promise.resolve(this) as Promise<Result<T, E>>);
 	}
 
 	/**
@@ -337,11 +337,11 @@ export class ResultImpl<T, E> {
 	 * x.inspectErrAsync((e) => Promise.resolve(console.error(e)))
 	 * ```
 	 */
-	public inspectErrAsync(f: (error: E) => Promise<void>): AsyncResult<T, E> {
+	public inspectErrAsync(f: (error: E) => Promise<void>): ResultAsync<T, E> {
 		if (!this.#ok) {
-			return new AsyncResult(f(this.#value as E).then(() => this) as Promise<Result<T, E>>);
+			return new ResultAsync(f(this.#value as E).then(() => this) as Promise<Result<T, E>>);
 		}
-		return new AsyncResult(Promise.resolve(this) as Promise<Result<T, E>>);
+		return new ResultAsync(Promise.resolve(this) as Promise<Result<T, E>>);
 	}
 
 	/**
@@ -466,12 +466,12 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	public andThenAsync<U, F>(
-		f: (value: T) => AsyncResult<U, F> | Promise<Result<U, F>>,
-	): AsyncResult<U, E | F> {
+		f: (value: T) => ResultAsync<U, F> | Promise<Result<U, F>>,
+	): ResultAsync<U, E | F> {
 		if (this.#ok) {
-			return new AsyncResult(f(this.#value as T));
+			return new ResultAsync(f(this.#value as T));
 		}
-		return new AsyncResult(Promise.resolve(this) as Promise<Result<U, E | F>>);
+		return new ResultAsync(Promise.resolve(this) as Promise<Result<U, E | F>>);
 	}
 
 	/**
@@ -527,12 +527,12 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	public orElseAsync<U, F>(
-		f: (error: E) => AsyncResult<U, F> | Promise<Result<U, F>>,
-	): AsyncResult<T | U, F> {
+		f: (error: E) => ResultAsync<U, F> | Promise<Result<U, F>>,
+	): ResultAsync<T | U, F> {
 		if (this.#ok) {
-			return new AsyncResult(Promise.resolve(this) as Promise<Result<T | U, F>>);
+			return new ResultAsync(Promise.resolve(this) as Promise<Result<T | U, F>>);
 		}
-		return new AsyncResult(f(this.#value as E));
+		return new ResultAsync(f(this.#value as E));
 	}
 
 	/**
@@ -767,8 +767,8 @@ export namespace Result {
 	 * const result = Result.fromPromise(Promise.resolve(42))
 	 * ```
 	 */
-	export function fromPromise<T>(promise: Promise<T>): AsyncResult<T, Error> {
-		return new AsyncResult(
+	export function fromPromise<T>(promise: Promise<T>): ResultAsync<T, Error> {
+		return new ResultAsync(
 			promise.then(
 				(value) => Ok(value),
 				(error) => Err(handleCaughtError(error)),
@@ -793,7 +793,7 @@ export namespace Result {
 	 *	  }
 	 * })
 	 */
-	export function fromThrowableAsync<T>(f: () => Promise<T>): AsyncResult<T, Error> {
+	export function fromThrowableAsync<T>(f: () => Promise<T>): ResultAsync<T, Error> {
 		async function safe() {
 			try {
 				return Ok(await f());
@@ -801,7 +801,7 @@ export namespace Result {
 				return Err(handleCaughtError(error));
 			}
 		}
-		return new AsyncResult(safe());
+		return new ResultAsync(safe());
 	}
 
 	/**
