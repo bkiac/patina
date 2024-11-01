@@ -651,17 +651,6 @@ export function Err<E>(error?: E): Err<E> {
 	return new ResultImpl<never, E>(false, error as E) as Err<E>;
 }
 
-function handlePanic(error: unknown) {
-	if (error instanceof Panic) {
-		throw error;
-	}
-	return error;
-}
-
-function handleCaughtError(error: unknown) {
-	return parseError(handlePanic(error));
-}
-
 /**
  * `Result` is a type that represents either success (`Ok`) or failure (`Err`).
  *
@@ -672,6 +661,17 @@ function handleCaughtError(error: unknown) {
 export type Result<T, E> = Ok<T, E> | Err<E, T>;
 
 export namespace Result {
+	function handlePanic(error: unknown) {
+		if (error instanceof Panic) {
+			throw error;
+		}
+		return error;
+	}
+
+	function handleCaughtError(error: unknown) {
+		return parseError(handlePanic(error));
+	}
+
 	/**
 	 * Tries to execute a function and returns the result as a `Result`.
 	 *
@@ -704,6 +704,8 @@ export namespace Result {
 	/**
 	 * Tries to resolve a promise and returns the result as a `AsyncResult`.
 	 *
+	 * This may allow a synchronous error to escape, prefer using `Result.fromThrowableAsync()` instead.
+	 *
 	 * **Examples**
 	 *
 	 * ```
@@ -718,5 +720,33 @@ export namespace Result {
 				(error) => Err(handleCaughtError(error)),
 			),
 		);
+	}
+
+	/**
+	 * Tries to execute an async function and returns the result as a `AsyncResult`.
+	 *
+	 * This is safer then `Result.fromPromise()` because it will not allow a synchronous error to escape.
+	 *
+	 * **Examples**
+	 *
+	 * ```
+	 * // const result: AsyncResult<number, Error>
+	 * const result = Result.fromThrowableAsync((): Promise<number> => {
+	 *   if (Math.random() > 0.5) {
+	 *		throw new Error("random error")
+	 *	  } else {
+	 *		return Promise.resolve(42)
+	 *	  }
+	 * })
+	 */
+	export function fromThrowableAsync<T>(f: () => Promise<T>): AsyncResult<T, Error> {
+		async function safe() {
+			try {
+				return Ok(await f());
+			} catch (error) {
+				return Err(handleCaughtError(error));
+			}
+		}
+		return new AsyncResult(safe());
 	}
 }
