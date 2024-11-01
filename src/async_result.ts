@@ -7,9 +7,11 @@ import type {Err, Result, ResultImpl, ResultMatch, ResultMatchAsync} from "./res
  * This class is useful for chaining multiple asynchronous operations that return a `Result`.
  */
 export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
-	constructor(
-		readonly promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>> | AsyncResult<T, E>,
-	) {}
+	public readonly promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>> | AsyncResult<T, E>;
+
+	constructor(promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>> | AsyncResult<T, E>) {
+		this.promise = promise;
+	}
 
 	/**
 	 * Returns a generator that yields the contained value (if `Ok`) or an error (if `Err`).

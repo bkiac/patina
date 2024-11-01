@@ -14,30 +14,30 @@ export type ResultMatchAsync<T, E, A, B> = {
 };
 
 export class ResultImpl<T, E> {
-	private readonly kind?: true;
-	private readonly wrapped: T | E;
+	private readonly _ok?: true;
+	private readonly _value: T | E;
 
 	[Symbol.toStringTag] = "Result";
 
 	constructor(k: boolean, v: T | E) {
 		if (k) {
-			this.kind = true;
+			this._ok = true;
 		}
-		this.wrapped = v;
+		this._value = v;
 	}
 
 	/**
 	 * Returns a generator that yields the contained value (if `Ok`) or an error (if `Err`).
 	 */
 	public [Symbol.iterator](): Generator<Err<E, never>, T> {
-		const wrapped = this.wrapped;
-		if (this.kind) {
+		const v = this._value;
+		if (this._ok) {
 			return (function* () {
-				return wrapped as T;
+				return v as T;
 			})();
 		}
 		return (function* () {
-			yield Err(wrapped as E);
+			yield Err(v as E);
 			throw new Panic("Do not use this generator outside of a try block");
 		})();
 	}
@@ -50,7 +50,7 @@ export class ResultImpl<T, E> {
 	}
 
 	private unwrapFailed(message: string): never {
-		throw new Panic(message, {cause: this.wrapped});
+		throw new Panic(message, {cause: this._value});
 	}
 
 	/**
@@ -73,11 +73,11 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	match<A, B>(pattern: ResultMatch<T, E, A, B>): A | B {
-		return this.kind ? pattern.Ok(this.wrapped as T) : pattern.Err(this.wrapped as E);
+		return this._ok ? pattern.Ok(this._value as T) : pattern.Err(this._value as E);
 	}
 
 	matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A | B> {
-		return this.kind ? pattern.Ok(this.wrapped as T) : pattern.Err(this.wrapped as E);
+		return this._ok ? pattern.Ok(this._value as T) : pattern.Err(this._value as E);
 	}
 
 	/**
@@ -86,7 +86,7 @@ export class ResultImpl<T, E> {
 	 * @deprecated Use `unwrap()` instead.
 	 */
 	value(): T | undefined {
-		return this.kind ? (this.wrapped as T) : undefined;
+		return this._ok ? (this._value as T) : undefined;
 	}
 
 	/**
@@ -95,14 +95,14 @@ export class ResultImpl<T, E> {
 	 * @deprecated Use `unwrapErr()` instead.
 	 */
 	error(): E | undefined {
-		return this.kind ? undefined : (this.wrapped as E);
+		return this._ok ? undefined : (this._value as E);
 	}
 
 	/**
 	 * Returns `true` if the result is `Ok`.
 	 */
 	isOk(): this is Ok<T, E> {
-		return this.kind === true;
+		return this._ok === true;
 	}
 
 	/**
@@ -111,14 +111,14 @@ export class ResultImpl<T, E> {
 	 * Maybe not as useful as using `result.isOk() && f(result.value)`, because it doesn't narrow the type, but it's here for completeness.
 	 */
 	isOkAnd(f: (value: T) => boolean): this is Ok<T, E> {
-		return this.kind === true && f(this.wrapped as T);
+		return this._ok === true && f(this._value as T);
 	}
 
 	/**
 	 * Returns `true` if the result is `Err`.
 	 */
 	isErr(): this is Err<E, T> {
-		return this.kind === undefined;
+		return this._ok === undefined;
 	}
 
 	/**
@@ -127,7 +127,7 @@ export class ResultImpl<T, E> {
 	 * Maybe not as useful as using `result.isErr() && f(result.error)`, because it doesn't narrow the type, but it's here for completeness.
 	 */
 	isErrAnd(f: (error: E) => boolean): this is Err<E, T> {
-		return this.kind === undefined && f(this.wrapped as E);
+		return this._ok === undefined && f(this._value as E);
 	}
 
 	/**
@@ -144,7 +144,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	ok(): Option<T> {
-		return this.kind ? Some(this.wrapped as T) : None;
+		return this._ok ? Some(this._value as T) : None;
 	}
 
 	/**
@@ -161,7 +161,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	err(): Option<E> {
-		return this.kind ? None : Some(this.wrapped as E);
+		return this._ok ? None : Some(this._value as E);
 	}
 
 	/**
@@ -176,7 +176,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	map<U>(f: (value: T) => U): Result<U, E> {
-		return this.kind ? Ok(f(this.wrapped as T)) : Err(this.wrapped as E);
+		return this._ok ? Ok(f(this._value as T)) : Err(this._value as E);
 	}
 
 	/**
@@ -192,9 +192,9 @@ export class ResultImpl<T, E> {
 	 */
 	mapAsync<U>(f: (value: T) => Promise<U>): AsyncResult<U, E> {
 		return new AsyncResult(
-			this.kind
-				? f(this.wrapped as T).then((v) => Ok(v))
-				: Promise.resolve(Err(this.wrapped as E)),
+			this._ok
+				? f(this._value as T).then((v) => Ok(v))
+				: Promise.resolve(Err(this._value as E)),
 		);
 	}
 
@@ -212,11 +212,11 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B {
-		return this.kind ? f(this.wrapped as T) : defaultValue;
+		return this._ok ? f(this._value as T) : defaultValue;
 	}
 
 	mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B> {
-		return this.kind ? f(this.wrapped as T) : Promise.resolve(defaultValue);
+		return this._ok ? f(this._value as T) : Promise.resolve(defaultValue);
 	}
 
 	/**
@@ -235,14 +235,14 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	mapOrElse<A, B>(defaultValue: (error: E) => A, f: (value: T) => B): A | B {
-		return this.kind ? f(this.wrapped as T) : defaultValue(this.wrapped as E);
+		return this._ok ? f(this._value as T) : defaultValue(this._value as E);
 	}
 
 	mapOrElseAsync<A, B>(
 		defaultValue: (error: E) => Promise<A>,
 		f: (value: T) => Promise<B>,
 	): Promise<A | B> {
-		return this.kind ? f(this.wrapped as T) : defaultValue(this.wrapped as E);
+		return this._ok ? f(this._value as T) : defaultValue(this._value as E);
 	}
 
 	/**
@@ -257,7 +257,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	mapErr<F>(f: (error: E) => F): Result<T, F> {
-		return this.kind ? Ok(this.wrapped as T) : Err(f(this.wrapped as E));
+		return this._ok ? Ok(this._value as T) : Err(f(this._value as E));
 	}
 
 	/**
@@ -273,9 +273,9 @@ export class ResultImpl<T, E> {
 	 */
 	mapErrAsync<F>(f: (error: E) => Promise<F>): AsyncResult<T, F> {
 		return new AsyncResult(
-			this.kind
-				? Promise.resolve(Ok(this.wrapped as T))
-				: f(this.wrapped as E).then((v) => Err(v)),
+			this._ok
+				? Promise.resolve(Ok(this._value as T))
+				: f(this._value as E).then((v) => Err(v)),
 		);
 	}
 
@@ -290,8 +290,8 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	inspect(f: (value: T) => void): this {
-		if (this.kind) {
-			f(this.wrapped as T);
+		if (this._ok) {
+			f(this._value as T);
 		}
 		return this;
 	}
@@ -326,8 +326,8 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	inspectErr(f: (error: E) => void): this {
-		if (!this.kind) {
-			f(this.wrapped as E);
+		if (!this._ok) {
+			f(this._value as E);
 		}
 		return this;
 	}
@@ -344,9 +344,9 @@ export class ResultImpl<T, E> {
 	 */
 	inspectErrAsync(f: (error: E) => Promise<void>): AsyncResult<T, E> {
 		return new AsyncResult(
-			this.kind
-				? Promise.resolve(Ok(this.wrapped as T))
-				: f(this.wrapped as E).then(() => Err(this.wrapped as E)),
+			this._ok
+				? Promise.resolve(Ok(this._value as T))
+				: f(this._value as E).then(() => Err(this._value as E)),
 		);
 	}
 
@@ -363,14 +363,14 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	expect(message: string): T {
-		return this.kind ? (this.wrapped as T) : this.unwrapFailed(message);
+		return this._ok ? (this._value as T) : this.unwrapFailed(message);
 	}
 
 	/**
 	 * Returns the contained `Ok` value or `undefined`.
 	 */
 	unwrap(): T | undefined {
-		return this.kind ? (this.wrapped as T) : undefined;
+		return this._ok ? (this._value as T) : undefined;
 	}
 
 	/**
@@ -386,14 +386,14 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	expectErr(message: string): E {
-		return this.kind ? this.unwrapFailed(message) : (this.wrapped as E);
+		return this._ok ? this.unwrapFailed(message) : (this._value as E);
 	}
 
 	/**
 	 * Returns the contained `Err` value or `undefined`
 	 */
 	unwrapErr(): E | undefined {
-		return this.kind ? undefined : (this.wrapped as E);
+		return this._ok ? undefined : (this._value as E);
 	}
 
 	/**
@@ -420,7 +420,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	and<U, F>(other: Result<U, F>): Result<U, E | F> {
-		return (this.kind ? other : this) as Result<U, E | F>;
+		return (this._ok ? other : this) as Result<U, E | F>;
 	}
 
 	/**
@@ -437,7 +437,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	andThen<U, F>(f: (value: T) => Result<U, F>): Result<U, E | F> {
-		return (this.kind ? f(this.wrapped as T) : this) as Result<U, E | F>;
+		return (this._ok ? f(this._value as T) : this) as Result<U, E | F>;
 	}
 
 	/**
@@ -457,8 +457,8 @@ export class ResultImpl<T, E> {
 		f: (value: T) => AsyncResult<U, F> | Promise<Result<U, F>>,
 	): AsyncResult<U, E | F> {
 		return new AsyncResult(
-			(this.kind
-				? f(this.wrapped as T)
+			(this._ok
+				? f(this._value as T)
 				: Promise.resolve(this as unknown as Err<E, T>)) as Promise<Result<U, E | F>>,
 		);
 	}
@@ -476,7 +476,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	or<U, F>(other: Result<U, F>): Result<T | U, F> {
-		return (this.kind ? this : other) as Result<T | U, F>;
+		return (this._ok ? this : other) as Result<T | U, F>;
 	}
 
 	/**
@@ -493,7 +493,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	orElse<U, F>(f: (error: E) => Result<U, F>): Result<T | U, F> {
-		return (this.kind ? this : f(this.wrapped as E)) as Result<T | U, F>;
+		return (this._ok ? this : f(this._value as E)) as Result<T | U, F>;
 	}
 
 	/**
@@ -513,9 +513,9 @@ export class ResultImpl<T, E> {
 		f: (error: E) => AsyncResult<U, F> | Promise<Result<U, F>>,
 	): AsyncResult<T | U, F> {
 		return new AsyncResult(
-			(this.kind
+			(this._ok
 				? Promise.resolve(this as unknown as Ok<T, E>)
-				: f(this.wrapped as E)) as Promise<Result<T | U, F>>,
+				: f(this._value as E)) as Promise<Result<T | U, F>>,
 		);
 	}
 
@@ -533,7 +533,7 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	unwrapOr<U>(defaultValue: U): T | U {
-		return this.kind ? (this.wrapped as T) : defaultValue;
+		return this._ok ? (this._value as T) : defaultValue;
 	}
 
 	/**
@@ -550,11 +550,11 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	unwrapOrElse<U>(defaultValue: (error: E) => U): T | U {
-		return this.kind ? (this.wrapped as T) : defaultValue(this.wrapped as E);
+		return this._ok ? (this._value as T) : defaultValue(this._value as E);
 	}
 
 	unwrapOrElseAsync<U>(defaultValue: (error: E) => Promise<U>): Promise<T | U> {
-		return this.kind ? Promise.resolve(this.wrapped as T) : defaultValue(this.wrapped as E);
+		return this._ok ? Promise.resolve(this._value as T) : defaultValue(this._value as E);
 	}
 
 	/**
@@ -574,18 +574,18 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	flatten<U, F>(this: Result<ResultImpl<U, F>, E>): Result<U, E | F> {
-		return this.kind ? (this.wrapped as Result<U, F>) : Err(this.wrapped as E);
+		return this._ok ? (this._value as Result<U, F>) : Err(this._value as E);
 	}
 
 	toObject(): {isOk: true; value: T} | {isOk: false; error: E} {
-		return this.kind
-			? {isOk: true, value: this.wrapped as T}
-			: {isOk: false, error: this.wrapped as E};
+		return this._ok
+			? {isOk: true, value: this._value as T}
+			: {isOk: false, error: this._value as E};
 	}
 
 	toString(): `Ok(${string})` | `Err(${string})` {
-		const str = String(this.wrapped);
-		return this.kind ? `Ok(${str})` : `Err(${str})`;
+		const str = String(this._value);
+		return this._ok ? `Ok(${str})` : `Err(${str})`;
 	}
 
 	[symbols.inspect](): ReturnType<ResultImpl<T, E>["toString"]> {
