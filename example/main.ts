@@ -1,16 +1,16 @@
 import {
-	Result,
-	Ok,
-	Err,
-	Option,
-	Some,
-	AsyncResult,
-	None,
 	asyncFn,
-	Panic,
+	AsyncResult,
+	Err,
 	ErrorWithCause,
+	None,
+	Ok,
+	Option,
+	Panic,
+	Result,
+	Some,
 } from "../";
-import {db} from "./db";
+import { db } from "./db";
 
 function divide(a: number, b: number): Result<number, Error> {
 	if (b === 0) {
@@ -31,13 +31,13 @@ namespace DatabaseError {
 
 	export function from(error: Error): DatabaseError {
 		if (error.message === "validation error") {
-			return new ValidationError(error.message, {cause: error});
+			return new ValidationError(error.message, { cause: error });
 		}
 		if (error.message === "unreachable") {
-			return new Unreachable(error.message, {cause: error});
+			return new Unreachable(error.message, { cause: error });
 		}
 		// Add more error variants here, for now we panic if we encounter an unknown error
-		throw new Panic("unhandled database error", {cause: error});
+		throw new Panic("unhandled database error", { cause: error });
 	}
 }
 export type DatabaseError = DatabaseError.ValidationError | DatabaseError.Unreachable;

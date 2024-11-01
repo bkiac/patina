@@ -1,0 +1,29 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"allowUnusedLabels": false,
+		"allowUnreachableCode": false,
+		"exactOptionalPropertyTypes": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitOverride": true,
+		"noImplicitReturns": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"noUncheckedIndexedAccess": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true
+	},
+	"fmt": {
+		"useTabs": true,
+		"lineWidth": 100
+	},
+	"lint": {
+		"rules": {
+			"exclude": ["no-explicit-any"]
+		}
+	},
+	"tasks": {
+		"check": "deno check src/**/*.ts",
+		"fmt": "deno fmt",
+		"test": "deno test"
+	}
+}

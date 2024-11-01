@@ -1,5 +1,7 @@
-import {describe, it, expect, expectTypeOf, vi} from "vitest";
-import {Panic, Ok, Err, Result, Some, None, ErrorWithTag} from "../src";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
+import { Err, Ok, Result } from "./result.ts";
+import { None, Some } from "./option.ts";
+import { Panic } from "./error.ts";
 
 export function TestOk<T, E>(value: T): Result<T, E> {
 	return Ok(value);
@@ -227,8 +229,8 @@ describe.concurrent("flatten", () => {
 
 		const foo = TestOk<
 			| {
-					id: string;
-			  }
+				id: string;
+			}
 			| undefined,
 			Foo
 		>({
@@ -237,7 +239,7 @@ describe.concurrent("flatten", () => {
 		const bar = foo
 			.map((value) => (value === undefined ? Err(new Bar()) : Ok(value)))
 			.flatten();
-		expectTypeOf(bar).toEqualTypeOf<Result<{id: string}, Foo | Bar>>();
+		expectTypeOf(bar).toEqualTypeOf<Result<{ id: string }, Foo | Bar>>();
 	});
 });
 

@@ -1,5 +1,6 @@
-import {describe, expect, expectTypeOf, test} from "vitest";
-import {Ok, Err, Result, ResultAsync, tryBlock, tryBlockAsync, Panic} from "../src";
+import { describe, expect, expectTypeOf, test } from "vitest";
+import { Err, Ok } from "./result.ts";
+import { Panic } from "./error.ts";
 
 describe("deprecated try()", () => {
 	test("tryBlock", () => {
@@ -81,7 +82,7 @@ describe("deprecated try()", () => {
 		await expect(() =>
 			tryBlockAsync(async function* () {
 				throw panic;
-			}),
+			})
 		).rejects.toThrow(panic);
 
 		// Wrap unexpected error in panic
@@ -89,7 +90,7 @@ describe("deprecated try()", () => {
 		await expect(() =>
 			tryBlockAsync(async function* () {
 				throw error;
-			}),
+			})
 		).rejects.toThrow(Panic);
 		try {
 			await tryBlockAsync(async function* () {
@@ -180,7 +181,7 @@ test("tryBlockAsync", async () => {
 	await expect(() =>
 		tryBlockAsync(async function* () {
 			throw panic;
-		}),
+		})
 	).rejects.toThrow(panic);
 
 	// Wrap unexpected error in panic
@@ -188,7 +189,7 @@ test("tryBlockAsync", async () => {
 	await expect(() =>
 		tryBlockAsync(async function* () {
 			throw error;
-		}),
+		})
 	).rejects.toThrow(Panic);
 	try {
 		await tryBlockAsync(async function* () {

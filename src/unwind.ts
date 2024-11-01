@@ -1,11 +1,11 @@
-import {Err, Ok, Result} from "./result";
-import {ResultAsync} from "./result_async";
-import {Panic, parseError} from "./error";
+import { Err, Ok, Result } from "./result.ts";
+import { ResultAsync } from "./result_async.ts";
+import { Panic, parseError } from "./error.ts";
 
 function unknownToError(e: unknown): Error {
 	// Convert `Panic` to `Error`, preserving the message and cause
 	if (e instanceof Panic) {
-		return new Error(e.message, {cause: e});
+		return new Error(e.message, { cause: e });
 	}
 
 	// Return `Error` as is

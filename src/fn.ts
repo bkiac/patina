@@ -1,6 +1,6 @@
-import {type Result} from "./result";
-import {ResultAsync} from "./result_async";
-import type {InferErr, InferOk} from "./util";
+import { type Result } from "./result.ts";
+import { ResultAsync } from "./result_async.ts";
+import type { InferErr, InferOk } from "./util.ts";
 
 /**
  * Wraps a function that returns any shape of `Result<any, any>` and infers its return type as `Result<T, E>`.
@@ -15,6 +15,7 @@ import type {InferErr, InferOk} from "./util";
  * const wrapped = fn(divide)
  * ```
  */
+
 export function fn<A extends any[], R extends Result<any, any>>(
 	f: (...args: A) => R,
 ): (...args: A) => Result<InferOk<R>, InferErr<R>> {
@@ -36,12 +37,15 @@ export function fn<A extends any[], R extends Result<any, any>>(
  * const result = await wrapped(1, 2) // => Result<number, string>
  * ```
  */
+
 export function asyncFn<A extends any[], R extends ResultAsync<any, any>>(
 	f: (...args: A) => R,
 ): (...args: A) => ResultAsync<InferOk<Awaited<R>>, InferErr<Awaited<R>>>;
+
 export function asyncFn<A extends any[], R extends Promise<Result<any, any>>>(
 	f: (...args: A) => R,
 ): (...args: A) => ResultAsync<InferOk<Awaited<R>>, InferErr<Awaited<R>>>;
+
 export function asyncFn(f: any): any {
 	return function (...args: any[]) {
 		return new ResultAsync(f(...args));

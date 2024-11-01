@@ -1,8 +1,8 @@
-import {OptionAsync} from "./option_async";
-import {ResultAsync} from "./result_async";
-import {Panic} from "./error";
-import {Err, Ok, type Result} from "./result";
-import * as symbols from "./symbols";
+import { OptionAsync } from "./option_async.ts";
+import { ResultAsync } from "./result_async.ts";
+import { Panic } from "./error.ts";
+import { Err, Ok, type Result } from "./result.ts";
+import * as symbols from "./symbols.ts";
 
 export type OptionMatch<T, A, B> = {
 	Some: (value: T) => A;
@@ -44,7 +44,7 @@ export class OptionImpl<T> {
 		return pattern.None();
 	}
 
-	public async matchAsync<A, B>(pattern: OptionMatchAsync<T, A, B>): Promise<A | B> {
+	public matchAsync<A, B>(pattern: OptionMatchAsync<T, A, B>): Promise<A | B> {
 		if (this.#some) {
 			return pattern.Some(this.#value as T);
 		}
@@ -93,7 +93,7 @@ export class OptionImpl<T> {
 		if (this.#some) {
 			return this.#value as T;
 		}
-		throw new Panic(message, {cause: this.#value});
+		throw new Panic(message, { cause: this.#value });
 	}
 
 	/**
@@ -446,11 +446,11 @@ export class OptionImpl<T> {
 		return None;
 	}
 
-	public toObject(): {isSome: true; value: T} | {isSome: false; value: null} {
+	public toObject(): { isSome: true; value: T } | { isSome: false; value: null } {
 		if (this.#some) {
-			return {isSome: true, value: this.#value as T};
+			return { isSome: true, value: this.#value as T };
 		}
-		return {isSome: false, value: null};
+		return { isSome: false, value: null };
 	}
 
 	public toString(): `Some(${string})` | "None" {
@@ -525,6 +525,7 @@ export const None = new OptionImpl(false, undefined) as None;
  */
 export type Option<T> = Some<T> | None<T>;
 
+// deno-lint-ignore no-namespace
 export namespace Option {
 	/**
 	 * Creates an `Option` from a nullish value.
