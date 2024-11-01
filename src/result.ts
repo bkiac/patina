@@ -675,10 +675,8 @@ export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
 /**
  * Contains the success value.
  */
-export function Ok(): Ok;
-export function Ok<T>(value: T): Ok<T>;
-export function Ok<T>(value?: T): Ok<T> {
-	return new ResultImpl<T, never>(true, value as T) as Ok<T>;
+export function Ok<T>(value: T): Ok<T> {
+	return new ResultImpl<T, never>(true, value) as Ok<T>;
 }
 
 export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
@@ -708,10 +706,8 @@ export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
 /**
  * Contains the error value.
  */
-export function Err(): Err;
-export function Err<E>(error: E): Err<E>;
-export function Err<E>(error?: E): Err<E> {
-	return new ResultImpl<never, E>(false, error as E) as Err<E>;
+export function Err<E>(error: E): Err<E> {
+	return new ResultImpl<never, E>(false, error) as Err<E>;
 }
 
 /**
