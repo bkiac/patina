@@ -1,7 +1,8 @@
-import { describe, expect, expectTypeOf, it } from "vitest";
-import { AsyncResult, Err, ErrorWithTag, None, Ok, Panic, Result, Some } from "../src";
-import { TestErr, TestOk } from "./result.test";
-import { vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
+import { AsyncResult } from "./result_async.ts";
+import { Err, Ok } from "./result.ts";
+import { None, Some } from "./option.ts";
+import { Panic } from "./error.ts";
 
 function TestOkPromise<T, E = any>(value: T) {
 	return new AsyncResult<T, E>(Promise.resolve(Ok<T>(value)));

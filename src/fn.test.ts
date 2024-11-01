@@ -1,6 +1,12 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
-import { asyncFn, AsyncResult, Err, fn, Ok, Result } from "../src";
-import { TaggedError } from "./util";
+import { asyncFn, fn } from "./fn.ts";
+import { Err, Ok, Result } from "./result.ts";
+import { AsyncResult } from "./result_async.ts";
+import { ErrorWithTag } from "./error.ts";
+
+export class TaggedError extends ErrorWithTag {
+	readonly tag = "TaggedError";
+}
 
 describe.concurrent("fn", () => {
 	it("returns Ok result when provided function does not throw", () => {

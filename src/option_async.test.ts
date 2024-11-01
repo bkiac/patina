@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { None, OptionAsync, Panic, Some } from "../src";
+import { None, Some } from "./option.ts";
+import { OptionAsync } from "./option_async.ts";
+import { Panic } from "./error.ts";
 
 function promiseSome<T>(value: T) {
 	return new OptionAsync<T>(Promise.resolve(Some<T>(value)));

@@ -1,10 +1,7 @@
-import {
-	assertEquals,
-	assertStrictEquals,
-	assertType,
-} from "https://deno.land/std/testing/asserts.ts";
-import { describe, it } from "https://deno.land/std/testing/bdd.ts";
-import { Err, Ok, Result } from "../src/result.ts";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
+import { Err, Ok, Result } from "./result.ts";
+import { None, Some } from "./option.ts";
+import { Panic } from "./error.ts";
 
 export function TestOk<T, E>(value: T): Result<T, E> {
 	return Ok(value);
@@ -14,212 +11,211 @@ export function TestErr<T, E>(value: E): Result<T, E> {
 	return Err(value);
 }
 
-describe("core", () => {
+describe.concurrent("core", () => {
 	it("returns an Ok result", () => {
 		const r = Ok(42);
 
-		assertEquals(r.isOk(), true);
-		assertEquals(r.isErr(), false);
+		expect(r.isOk()).toEqual(true);
+		expect(r.isErr()).toEqual(false);
 
-		assertEquals(r.value(), 42);
-		assertStrictEquals(typeof r.value, "number");
-		assertStrictEquals(typeof r.error, "undefined");
+		expect(r.value()).toEqual(42);
+		expectTypeOf(r.value).toEqualTypeOf<() => number>();
+		expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
 
-		assertStrictEquals(typeof r.unwrap, "number");
-		assertStrictEquals(typeof r.unwrapErr, "undefined");
+		expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
+		expectTypeOf(r.unwrapErr).toEqualTypeOf<() => undefined>();
 
-		assertStrictEquals(typeof r.expect, "(msg: string) => number");
-		assertStrictEquals(typeof r.expectErr, "(msg: string) => never");
+		expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
+		expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
 	});
 
 	it("returns an Err result", () => {
 		const r = Err("error");
 
-		assertEquals(r.isOk(), false);
-		assertEquals(r.isErr(), true);
+		expect(r.isOk()).toEqual(false);
+		expect(r.isErr()).toEqual(true);
 
-		assertStrictEquals(typeof r.value, "undefined");
-		assertEquals(r.error(), "error");
-		assertStrictEquals(typeof r.error, "string");
+		expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
+		expect(r.error()).toEqual("error");
+		expectTypeOf(r.error).toEqualTypeOf<() => string>();
 
-		assertStrictEquals(typeof r.unwrap, "undefined");
-		assertStrictEquals(typeof r.unwrapErr, "string");
+		expectTypeOf(r.unwrap).toEqualTypeOf<() => undefined>();
+		expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
 
-		assertStrictEquals(typeof r.expect, "(msg: string) => never");
-		assertStrictEquals(typeof r.expectErr, "(msg: string) => string");
+		expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
+		expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
 	});
 
 	it("works as discriminated union", () => {
 		const r = TestOk<number, string>(42);
-		assertStrictEquals(typeof r.value(), "number | undefined");
-		assertStrictEquals(typeof r.error(), "string | undefined");
+		expectTypeOf(r.value()).toEqualTypeOf<number | undefined>();
+		expectTypeOf(r.error()).toEqualTypeOf<string | undefined>();
 		if (r.isOk()) {
-			assertStrictEquals(typeof r.value, "number");
-			assertStrictEquals(typeof r.error, "undefined");
+			expectTypeOf(r.value).toEqualTypeOf<() => number>();
+			expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
 
-			assertStrictEquals(typeof r.unwrap, "number");
-			assertStrictEquals(typeof r.unwrapErr, "undefined");
+			expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
+			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => undefined>();
 
-			assertStrictEquals(typeof r.expect, "(msg: string) => number");
-			assertStrictEquals(typeof r.expectErr, "(msg: string) => never");
+			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
+			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
 		} else {
-			assertStrictEquals(typeof r.value, "undefined");
-			assertStrictEquals(typeof r.error, "string");
+			expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.error).toEqualTypeOf<() => string>();
 
-			assertStrictEquals(typeof r.unwrap, "undefined");
-			assertStrictEquals(typeof r.unwrapErr, "string");
+			expectTypeOf(r.unwrap).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
 
-			assertStrictEquals(typeof r.expect, "(msg: string) => never");
-			assertStrictEquals(typeof r.expectErr, "(msg: string) => string");
+			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
+			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
 		}
 
 		if (r.isErr()) {
-			assertStrictEquals(typeof r.value, "undefined");
-			assertStrictEquals(typeof r.error, "string");
+			expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.error).toEqualTypeOf<() => string>();
 
-			assertStrictEquals(typeof r.unwrap, "undefined");
-			assertStrictEquals(typeof r.unwrapErr, "string");
+			expectTypeOf(r.unwrap).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
 
-			assertStrictEquals(typeof r.expect, "(msg: string) => never");
-			assertStrictEquals(typeof r.expectErr, "(msg: string) => string");
+			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
+			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
 		} else {
-			assertStrictEquals(typeof r.value, "number");
-			assertStrictEquals(typeof r.error, "undefined");
+			expectTypeOf(r.value).toEqualTypeOf<() => number>();
+			expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
 
-			assertStrictEquals(typeof r.unwrap, "number");
-			assertStrictEquals(typeof r.unwrapErr, "undefined");
+			expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
+			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => undefined>();
 
-			assertStrictEquals(typeof r.expect, "(msg: string) => number");
-			assertStrictEquals(typeof r.expectErr, "(msg: string) => never");
+			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
+			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
 		}
 	});
 });
 
-describe("ok", () => {
+describe.concurrent("ok", () => {
 	it("returns the value when Ok", () => {
 		const result = TestOk<number, string>(42);
-		assertEquals(result.ok(), Some(42));
+		expect(result.ok()).toEqual(Some(42));
 	});
 
 	it("returns None when Err", () => {
 		const result = TestErr<number, string>("error");
-		assertEquals(result.ok(), None);
+		expect(result.ok()).toEqual(None);
 	});
 });
 
-describe("err", () => {
+describe.concurrent("err", () => {
 	it("returns None when Ok", () => {
 		const result = TestOk<number, string>(42);
-		assertEquals(result.err(), None);
+		expect(result.err()).toEqual(None);
 	});
 
 	it("returns the error when Err", () => {
 		const result = TestErr<number, string>("error");
-		assertEquals(result.err(), Some("error"));
+		expect(result.err()).toEqual(Some("error"));
 	});
 });
 
-describe("and", () => {
+describe.concurrent("and", () => {
 	it("returns the error when Ok and Err", () => {
 		const a = TestOk<string, string>("a");
 		const b = TestErr<string, string>("b");
-		assertEquals(a.and(b).unwrapErr(), "b");
+		expect(a.and(b).unwrapErr()).toEqual("b");
 	});
 
 	it("returns the late value when Ok and Ok", () => {
 		const a = TestOk<string, string>("a");
 		const b = TestOk<string, string>("b");
-		assertEquals(a.and(b).unwrap(), "b");
+		expect(a.and(b).unwrap()).toEqual("b");
 	});
 
 	it("returns the error when Err and Ok", () => {
 		const a = TestErr<string, string>("a");
 		const b = TestOk<string, string>("b");
-		assertEquals(a.and(b).unwrapErr(), "a");
+		expect(a.and(b).unwrapErr()).toEqual("a");
 	});
 
 	it("returns the early error when Err and Err", () => {
 		const a = TestErr<number, string>("a");
 		const b = TestErr<number, string>("b");
-		assertEquals(a.and(b).unwrapErr(), "a");
+		expect(a.and(b).unwrapErr()).toEqual("a");
 	});
 });
 
-describe("andThen", () => {
+describe.concurrent("andThen", () => {
 	it("returns the mapped value for an Ok result", () => {
 		const a = TestOk<number, string>(0);
-		assertEquals(a.andThen((value) => Ok(value + 1)).unwrap(), 1);
+		expect(a.andThen((value) => Ok(value + 1)).unwrap()).toEqual(1);
 	});
 
 	it("returns the result for an Err result", () => {
 		const a = TestErr<number, string>("early error");
-		assertEquals(a.andThen((value) => Ok(value + 1)).unwrapErr(), a.unwrapErr());
+		expect(a.andThen((value) => Ok(value + 1)).unwrapErr()).toEqual(a.unwrapErr());
 	});
 });
 
-describe("andThenAsync", () => {
+describe.concurrent("andThenAsync", () => {
 	it("returns the mapped value for an Ok result", async () => {
 		const a = TestOk<number, string>(0);
-		await assertEquals(a.andThenAsync(async (value) => Ok(value + 1)).unwrap(), 1);
+		await expect(a.andThenAsync(async (value) => Ok(value + 1)).unwrap()).resolves.toEqual(1);
 	});
 
 	it("returns the result for an Err result", async () => {
 		const a = TestErr<number, string>("early error");
-		await assertEquals(
-			a.andThenAsync(async (value) => Ok(value + 1)).unwrapErr(),
+		await expect(a.andThenAsync(async (value) => Ok(value + 1)).unwrapErr()).resolves.toEqual(
 			a.unwrapErr(),
 		);
 	});
 });
 
-describe("expect", () => {
+describe.concurrent("expect", () => {
 	it("returns the value when called on an Ok result", () => {
 		const result = TestOk<number, string>(42);
 		const value = result.expect("Panic message");
-		assertEquals(value, 42);
+		expect(value).toEqual(42);
 	});
 
 	it("throws a Panic with the provided message when called on an Err result", () => {
 		const result = TestErr<number, string>("error");
 		const panicMsg = "Panic message";
-		assertThrows(() => result.expect(panicMsg), Panic);
-		assertThrows(() => result.expect(panicMsg), panicMsg);
+		expect(() => result.expect(panicMsg)).toThrow(Panic);
+		expect(() => result.expect(panicMsg)).toThrow(panicMsg);
 	});
 });
 
-describe("expectErr", () => {
+describe.concurrent("expectErr", () => {
 	it("returns the value when called on an Err result", () => {
 		const err = TestErr<number, string>("error");
-		assertEquals(err.expectErr("panic message"), "error");
+		expect(err.expectErr("panic message")).toEqual("error");
 	});
 
 	it("throws a Panic with the provided message when called on an Ok result", () => {
 		const ok = TestOk<number, string>(0);
 		const panicMsg = "Panic message";
-		assertThrows(() => ok.expectErr(panicMsg), Panic);
-		assertThrows(() => ok.expectErr(panicMsg), panicMsg);
+		expect(() => ok.expectErr(panicMsg)).toThrow(Panic);
+		expect(() => ok.expectErr(panicMsg)).toThrow(panicMsg);
 	});
 });
 
-describe("flatten", () => {
+describe.concurrent("flatten", () => {
 	it("works with an Ok<Ok> result", () => {
 		const inner = TestOk<number, string>(42);
 		const flattened = TestOk<Result<number, string>, boolean>(inner).flatten();
-		assertStrictEquals(typeof flattened, "Result<number, string | boolean>");
-		assertEquals(flattened.unwrap(), inner.unwrap());
+		expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>();
+		expect(flattened.unwrap()).toEqual(inner.unwrap());
 	});
 
 	it("works with an Ok<Err> result", () => {
 		const inner = TestErr<number, string>("error");
 		const flattened = TestOk<Result<number, string>, boolean>(inner).flatten();
-		assertStrictEquals(typeof flattened, "Result<number, string | boolean>");
-		assertEquals(flattened.unwrapErr(), inner.unwrapErr());
+		expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>();
+		expect(flattened.unwrapErr()).toEqual(inner.unwrapErr());
 	});
 
 	it("works with an Err result", () => {
 		const flattened = TestErr<Result<number, string>, boolean>(true).flatten();
-		assertStrictEquals(typeof flattened, "Result<number, string | boolean>");
-		assertEquals(flattened.unwrapErr(), true);
+		expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>();
+		expect(flattened.unwrapErr()).toEqual(true);
 	});
 
 	it("works with non-primitive value or error", () => {
@@ -243,144 +239,144 @@ describe("flatten", () => {
 		const bar = foo
 			.map((value) => (value === undefined ? Err(new Bar()) : Ok(value)))
 			.flatten();
-		assertStrictEquals(typeof bar, "Result<{id: string}, Foo | Bar>");
+		expectTypeOf(bar).toEqualTypeOf<Result<{ id: string }, Foo | Bar>>();
 	});
 });
 
-describe("inspect", () => {
+describe.concurrent("inspect", () => {
 	it("calls closure on Ok result", () => {
 		const f = vi.fn();
 		TestOk<number, string>(42).inspect(f);
-		assertEquals(f.mock.calls.length, 1);
+		expect(f).toHaveBeenCalled();
 	});
 
 	it("does not call closure on Err result", () => {
 		const f = vi.fn();
 		TestErr<number, string>("").inspect(f);
-		assertEquals(f.mock.calls.length, 0);
+		expect(f).not.toHaveBeenCalled();
 	});
 });
 
-describe("inspectAsync", () => {
+describe.concurrent("inspectAsync", () => {
 	it("calls closure on Ok result", async () => {
 		const f = vi.fn().mockResolvedValue("mocked value");
 		await TestOk<number, string>(42).inspectAsync(f);
-		assertEquals(f.mock.calls.length, 1);
+		expect(f).toHaveBeenCalled();
 	});
 
 	it("does not call closure on Err result", async () => {
 		const f = vi.fn().mockResolvedValue("mocked value");
 		await TestErr<number, string>("").inspectAsync(f);
-		assertEquals(f.mock.calls.length, 0);
+		expect(f).not.toHaveBeenCalled();
 	});
 });
 
-describe("inspectErr", () => {
+describe.concurrent("inspectErr", () => {
 	it("does not call closure on Ok result", () => {
 		const f = vi.fn();
 		TestOk<number, string>(42).inspectErr(f);
-		assertEquals(f.mock.calls.length, 0);
+		expect(f).not.toHaveBeenCalled();
 	});
 
 	it("returns this and calls closure on Err result", () => {
 		const f = vi.fn();
 		TestErr<number, string>("").inspectErr(f);
-		assertEquals(f.mock.calls.length, 1);
+		expect(f).toHaveBeenCalled();
 	});
 });
 
-describe("inspectErrAsync", () => {
+describe.concurrent("inspectErrAsync", () => {
 	it("calls closure on Err result", async () => {
 		const f = vi.fn().mockResolvedValue("mocked value");
 		await TestOk<number, string>(42).inspectErrAsync(f);
-		assertEquals(f.mock.calls.length, 0);
+		expect(f).not.toHaveBeenCalled();
 	});
 
 	it("does not call closure on Ok result", async () => {
 		const f = vi.fn().mockResolvedValue("mocked value");
 		await TestErr<number, string>("").inspectErrAsync(f);
-		assertEquals(f.mock.calls.length, 1);
+		expect(f).toHaveBeenCalled();
 	});
 });
 
-describe("map", () => {
+describe.concurrent("map", () => {
 	it("returns the mapped value for an Ok result", () => {
 		const result = TestOk<number, string>(42);
 		const result2 = result.map((value) => value * 2);
-		assertEquals(result2.unwrap(), 84);
+		expect(result2.unwrap()).toEqual(84);
 	});
 
 	it("returns the original Err for an Err result", () => {
 		const result = TestErr<number, string>("error");
 		const result2 = result.map((value) => value * 2);
-		assertEquals(result2.unwrapErr(), result.unwrapErr());
+		expect(result2.unwrapErr()).toEqual(result.unwrapErr());
 	});
 });
 
-describe("mapAsync", () => {
+describe.concurrent("mapAsync", () => {
 	it("returns the mapped value for an Ok result", async () => {
 		const a = TestOk<number, string>(42);
 		const b = a.mapAsync(async (value) => value * 2);
-		await assertEquals(b.unwrap(), 84);
+		await expect(b.unwrap()).resolves.toEqual(84);
 	});
 
 	it("returns the original Err for an Err result", async () => {
 		const a = TestErr<number, string>("error");
 		const b = a.mapAsync(async (value) => value * 2);
-		await assertEquals(b.unwrapErr(), a.unwrapErr());
+		await expect(b.unwrapErr()).resolves.toEqual(a.unwrapErr());
 	});
 });
 
-describe("mapErr", () => {
+describe.concurrent("mapErr", () => {
 	it("returns the mapped error for an Err result", () => {
 		const a = TestErr<number, string>("error");
 		const b = a.mapErr(() => "new error");
-		assertEquals(b.unwrapErr(), "new error");
+		expect(b.unwrapErr()).toEqual("new error");
 	});
 
 	it("returns the original Ok for an Err result", () => {
 		const a = TestOk<number, string>(0);
 		const b = a.mapErr(() => "new error");
-		assertEquals(b.unwrap(), 0);
+		expect(b.unwrap()).toEqual(0);
 	});
 });
 
-describe("mapErrAsync", () => {
+describe.concurrent("mapErrAsync", () => {
 	it("returns the mapped error for an Err result", async () => {
 		const a = TestErr<number, string>("error");
 		const b = a.mapErrAsync(async () => "new error");
-		await assertEquals(b.unwrapErr(), "new error");
+		await expect(b.unwrapErr()).resolves.toEqual("new error");
 	});
 
 	it("returns the original Ok for an Err result", async () => {
 		const a = TestOk<number, string>(0);
 		const b = a.mapErrAsync(async () => "new error");
-		await assertEquals(b.unwrap(), a.unwrap());
+		await expect(b.unwrap()).resolves.toEqual(a.unwrap());
 	});
 });
 
-describe("mapOr", () => {
+describe.concurrent("mapOr", () => {
 	it("returns the mapped value for an Ok result", () => {
 		const result = TestOk<number, string>(42);
 		const value = result.mapOr(0, (value) => value * 2);
-		assertEquals(value, 84);
+		expect(value).toEqual(84);
 	});
 
 	it("returns the default value for an Err result", () => {
 		const result = TestErr<number, string>("error");
 		const value = result.mapOr(0, (value) => value * 2);
-		assertEquals(value, 0);
+		expect(value).toEqual(0);
 	});
 });
 
-describe("mapOrElse", () => {
+describe.concurrent("mapOrElse", () => {
 	it("returns the mapped value for an Ok result", () => {
 		const result = TestOk<number, string>(42);
 		const value = result.mapOrElse(
 			() => 0,
 			(value) => value * 2,
 		);
-		assertEquals(value, 84);
+		expect(value).toEqual(84);
 	});
 
 	it("returns the default value from a function for an Err result", () => {
@@ -389,122 +385,119 @@ describe("mapOrElse", () => {
 			() => 0,
 			(value) => value * 2,
 		);
-		assertEquals(value, 0);
+		expect(value).toEqual(0);
 	});
 });
 
-describe("or", () => {
+describe.concurrent("or", () => {
 	it("returns the value when Ok or Err", () => {
 		const a = TestOk<string, string>("a");
 		const b = TestErr<string, string>("b");
-		assertEquals(a.or(b).unwrap(), "a");
+		expect(a.or(b).unwrap()).toEqual("a");
 	});
 
 	it("returns the early value when Ok or Ok", () => {
 		const a = TestOk<string, string>("a");
 		const b = TestOk<string, string>("b");
-		assertEquals(a.or(b).unwrap(), "a");
+		expect(a.or(b).unwrap()).toEqual("a");
 	});
 
 	it("returns the late value when Err or Ok", () => {
 		const a = TestErr<string, string>("a");
 		const b = TestOk<string, string>("b");
-		assertEquals(a.or(b).unwrap(), "b");
+		expect(a.or(b).unwrap()).toEqual("b");
 	});
 
 	it("returns the late error when Err and Err", () => {
 		const a = TestErr<string, string>("a");
 		const b = TestErr<string, string>("b");
-		assertEquals(a.or(b).unwrapErr(), "b");
+		expect(a.or(b).unwrapErr()).toEqual("b");
 	});
 });
 
-describe("orElse", () => {
+describe.concurrent("orElse", () => {
 	it("returns the result for an Ok result", () => {
 		const a = TestOk<number, string>(0);
-		assertEquals(a.orElse(() => Ok(1)).unwrap(), a.unwrap());
+		expect(a.orElse(() => Ok(1)).unwrap()).toEqual(a.unwrap());
 	});
 
 	it("returns the mapped value for an Err result", () => {
 		const a = TestErr<number, string>("early error");
-		assertEquals(a.orElse(() => Ok(1)).unwrap(), 1);
-		assertEquals(a.orElse(() => Err(1)).unwrapErr(), 1);
+		expect(a.orElse(() => Ok(1)).unwrap()).toEqual(1);
+		expect(a.orElse(() => Err(1)).unwrapErr()).toEqual(1);
 	});
 });
 
-describe("orElseAsync", () => {
+describe.concurrent("orElseAsync", () => {
 	it("returns the result for an Ok result", async () => {
 		const a = TestOk<number, string>(0);
-		await assertEquals(a.orElseAsync(async () => Ok(1)).unwrap(), 0);
+		await expect(a.orElseAsync(async () => Ok(1)).unwrap()).resolves.toEqual(0);
 	});
 
 	it("returns the mapped value for an Err result", async () => {
 		const a = TestErr<number, string>("early error");
-		await assertEquals(a.orElseAsync(async () => Ok(1)).unwrap(), 1);
-		await assertEquals(a.orElseAsync(async () => Err(1)).unwrapErr(), 1);
+		await expect(a.orElseAsync(async () => Ok(1)).unwrap()).resolves.toEqual(1);
+		await expect(a.orElseAsync(async () => Err(1)).unwrapErr()).resolves.toEqual(1);
 	});
 });
 
-describe("unwrap", () => {
+describe.concurrent("unwrap", () => {
 	it("returns the value for an Ok result", () => {
 		const result = TestOk<number, string>(42);
-		assertEquals(result.unwrap(), 42);
+		expect(result.unwrap()).toEqual(42);
 	});
 
 	it("returns undefined for an Err result", () => {
 		const result = TestErr<number, string>("error");
-		assertEquals(result.unwrap(), undefined);
+		expect(result.unwrap()).toEqual(undefined);
 	});
 });
 
-describe("unwrapErr", () => {
+describe.concurrent("unwrapErr", () => {
 	it("returns the error for an Err result", () => {
 		const result = TestErr<number, string>("error");
-		assertEquals(result.unwrapErr(), "error");
+		expect(result.unwrapErr()).toEqual("error");
 	});
 
 	it("returns undefined for an Ok result", () => {
 		const result = TestOk<number, string>(42);
-		assertEquals(result.unwrapErr(), undefined);
+		expect(result.unwrapErr()).toEqual(undefined);
 	});
 });
 
-describe("unwrapOr", () => {
+describe.concurrent("unwrapOr", () => {
 	it("returns the value for an Ok result", () => {
 		const result = TestOk<number, string>(42);
-		assertEquals(result.unwrapOr(0), 42);
+		expect(result.unwrapOr(0)).toEqual(42);
 	});
 
 	it("returns the default value for an Err result", () => {
 		const result = TestErr<number, string>("error");
-		assertEquals(result.unwrapOr(42), 42);
+		expect(result.unwrapOr(42)).toEqual(42);
 	});
 });
 
-describe("unwrapOrElse", () => {
+describe.concurrent("unwrapOrElse", () => {
 	it("returns the value for an Ok result", () => {
 		const result = TestOk<number, string>(42);
-		assertEquals(
-			result.unwrapOrElse(() => 0),
-			42,
-		);
+		expect(result.unwrapOrElse(() => 0)).toEqual(42);
 	});
 
 	it("returns the default value from a function for an Err result", () => {
 		const result = TestErr<number, string>("error");
 		const unwrapped = result.unwrapOrElse(() => 42);
-		assertEquals(unwrapped, 42);
+		expect(unwrapped).toEqual(42);
 	});
 });
 
-describe("match", () => {
+describe.concurrent("match", () => {
 	it("calls the ok function for an Ok result", () => {
 		const result = TestOk<number, string>(42);
 		const output = result.match({
 			Ok: (value) => value * 2,
 			Err: () => 0,
 		});
-		assertEquals(output, 84);
+		expect(output).toEqual(84);
 	});
 
 	it("calls the err function for an Err result", () => {
@@ -513,7 +506,7 @@ describe("match", () => {
 			Ok: (value) => value * 2,
 			Err: () => 0,
 		});
-		assertEquals(output, 0);
+		expect(output).toEqual(0);
 	});
 });
 
@@ -526,8 +519,8 @@ describe("iterator", () => {
 		}
 
 		const result = gen();
-		assertEquals(result.next().value.unwrap(), 1);
-		assertEquals(result.next().value.unwrapErr(), "error");
-		assertEquals(result.next().value.unwrap(), 2);
+		expect(result.next().value.unwrap()).toEqual(1);
+		expect(result.next().value.unwrapErr()).toEqual("error");
+		expect(result.next().value.unwrap()).toEqual(2);
 	});
 });

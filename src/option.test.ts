@@ -1,5 +1,6 @@
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
-import { Err, None, Ok, Option, Panic, Some } from "../src";
+import { None, Option, Some } from "./option.ts";
+import { Panic } from "./error.ts";
 
 function TestSome<T>(value: T): Option<T> {
 	return Some(value) as Option<T>;

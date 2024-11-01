@@ -1,5 +1,6 @@
 import { describe, expect, expectTypeOf, test } from "vitest";
-import { Err, Ok, Panic, Result, ResultAsync, tryBlock, tryBlockAsync } from "../src";
+import { Err, Ok } from "./result.ts";
+import { Panic } from "./error.ts";
 
 describe("deprecated try()", () => {
 	test("tryBlock", () => {

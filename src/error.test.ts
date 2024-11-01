@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { Panic, parseError } from "../src";
+import { Panic, parseError } from "./error.ts";
 
 it("returns an instance without params", () => {
 	const panic = new Panic();

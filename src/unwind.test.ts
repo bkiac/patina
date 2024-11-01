@@ -1,6 +1,7 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
-import { catchUnwind, catchUnwindAsync } from "../src/unwind";
-import { Panic, Result, ResultAsync } from "../src";
+import { catchUnwind, catchUnwindAsync } from "./unwind.ts";
+import { Result } from "./result.ts";
+import { Panic } from "./error.ts";
 
 const UNEXPECTED_ERROR_MESSAGE = "Unexpected error type";
 
