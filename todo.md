@@ -1,6 +1,7 @@
-- [ ] CI
-- [ ] Tests
-- [ ] Docs
-- [ ] Benchmarks
-- [ ] Build for deno, node, browser
-- [ ] Remove husky and shit
+-   [ ] CI
+-   [ ] Tests, (type tests possible with deno?)
+-   [ ] Docs
+-   [ ] Benchmarks
+-   [ ] Build for deno, node, browser: https://deno.com/learn/modules
+-   [ ] Remove husky and shit
+-   [ ] Publish: https://deno.com/blog/jsr_open_beta
