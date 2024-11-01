@@ -1,4 +1,4 @@
-import { asyncFn, asyncGenFn } from "./fn.ts";
+import { asyncFn } from "./fn.ts";
 import { Ok } from "./result.ts";
 import { tryBlockAsync } from "./try.ts";
 
