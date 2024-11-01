@@ -75,6 +75,30 @@ describe.concurrent("andThen", () => {
 	});
 });
 
+describe.concurrent("andThenAsync", () => {
+	it("returns the mapped value for a Some option", async () => {
+		const a = promiseSome(0);
+		await expect(a.andThenAsync(async (value) => Some(value + 1)).unwrap()).resolves.toEqual(1);
+	});
+
+	it("returns None for a None option", async () => {
+		const a = promiseNone();
+		await expect(a.andThenAsync(async (value) => Some(value + 1)).unwrapOr(0)).resolves.toEqual(
+			0,
+		);
+	});
+
+	it("can chain multiple async operations", async () => {
+		const a = promiseSome(1);
+		await expect(
+			a
+				.andThenAsync(async (value) => Some(value + 1))
+				.andThenAsync(async (value) => Some(value * 2))
+				.unwrap(),
+		).resolves.toEqual(4);
+	});
+});
+
 describe.concurrent("expect", () => {
 	it("returns the value when called on a Some option", async () => {
 		const option = promiseSome(42);
@@ -96,6 +120,25 @@ describe.concurrent("filter", () => {
 	it("returns None when the predicate returns false", async () => {
 		const option = promiseSome(42);
 		await expect(option.filter((value) => value !== 42)).resolves.toEqual(None);
+	});
+});
+
+describe.concurrent("filterAsync", () => {
+	it("returns the option when the predicate returns true", async () => {
+		const option = promiseSome(42);
+		await expect(option.filterAsync(async (value) => value === 42).unwrap()).resolves.toEqual(
+			42,
+		);
+	});
+
+	it("returns None when the predicate returns false", async () => {
+		const option = promiseSome(42);
+		await expect(option.filterAsync(async (value) => value !== 42)).resolves.toEqual(None);
+	});
+
+	it("returns None for a None option", async () => {
+		const option = promiseNone();
+		await expect(option.filterAsync(async (value) => true)).resolves.toEqual(None);
 	});
 });
 
@@ -139,6 +182,25 @@ describe.concurrent("map", () => {
 	});
 });
 
+describe.concurrent("mapAsync", () => {
+	it("returns the mapped value for a Some option", async () => {
+		const option = promiseSome(42);
+		await expect(option.mapAsync(async (value) => value + 1)).resolves.toEqual(Some(43));
+	});
+
+	it("returns None for a None option", async () => {
+		const option = promiseNone();
+		await expect(option.mapAsync(async (value) => value + 1)).resolves.toEqual(None);
+	});
+
+	it("can chain multiple async operations", async () => {
+		const option = promiseSome(1);
+		await expect(
+			option.mapAsync(async (value) => value + 1).mapAsync(async (value) => value * 2),
+		).resolves.toEqual(Some(4));
+	});
+});
+
 describe.concurrent("mapOr", () => {
 	it("returns the mapped value for a Some option", async () => {
 		const option = promiseSome(42);
@@ -168,6 +230,28 @@ describe.concurrent("mapOrElse", () => {
 			option.mapOrElse(
 				() => "default",
 				(value) => value + 1,
+			),
+		).resolves.toEqual("default");
+	});
+});
+
+describe.concurrent("mapOrElseAsync", () => {
+	it("returns the mapped value for a Some option", async () => {
+		const option = promiseSome(42);
+		await expect(
+			option.mapOrElseAsync(
+				async () => "default",
+				async (value) => value + 1,
+			),
+		).resolves.toEqual(43);
+	});
+
+	it("returns the default value for a None option", async () => {
+		const option = promiseNone();
+		await expect(
+			option.mapOrElseAsync(
+				async () => "default",
+				async (value) => value + 1,
 			),
 		).resolves.toEqual("default");
 	});
@@ -211,6 +295,28 @@ describe.concurrent("orElse", () => {
 	});
 });
 
+describe.concurrent("orElseAsync", () => {
+	it("returns the result for a Some option", async () => {
+		const a = promiseSome(1);
+		await expect(a.orElseAsync(async () => Some(2)).unwrap()).resolves.toEqual(1);
+	});
+
+	it("returns the mapped value for a None option", async () => {
+		const a = promiseNone();
+		await expect(a.orElseAsync(async () => Some(2)).unwrap()).resolves.toEqual(2);
+	});
+
+	it("can chain multiple async operations", async () => {
+		const a = promiseNone();
+		await expect(
+			a
+				.orElseAsync(async () => Some(1))
+				.orElseAsync(async () => Some(2))
+				.unwrap(),
+		).resolves.toEqual(1);
+	});
+});
+
 describe.concurrent("unwrap", () => {
 	it("returns the value when called on a Some option", async () => {
 		const option = promiseSome(42);
@@ -244,6 +350,18 @@ describe.concurrent("unwrapOrElse", () => {
 	it("returns the default value when called on a None option", async () => {
 		const option = promiseNone();
 		await expect(option.unwrapOrElse(() => "default")).resolves.toEqual("default");
+	});
+});
+
+describe.concurrent("unwrapOrElseAsync", () => {
+	it("returns the value when called on a Some option", async () => {
+		const option = promiseSome(42);
+		await expect(option.unwrapOrElseAsync(async () => "default")).resolves.toEqual(42);
+	});
+
+	it("returns the default value when called on a None option", async () => {
+		const option = promiseNone();
+		await expect(option.unwrapOrElseAsync(async () => "default")).resolves.toEqual("default");
 	});
 });
 
