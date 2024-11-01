@@ -550,6 +550,7 @@ If you find this library lacking, you may want to check out similar libraries:
 -   [effect](https://github.com/Effect-TS/effect)
 -   [neverthrow](https://github.com/supermacro/neverthrow)
 -   [option-t](https://github.com/option-t/option-t)
+-   [optionals](https://github.com/OliverBrotchie/optionals)
 -   [oxide.ts](https://github.com/traverse1984/oxide.ts)
 -   [qio](https://github.com/tusharmath/qio)
 -   [true-myth](https://github.com/true-myth/true-myth)
