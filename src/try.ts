@@ -14,8 +14,8 @@ import {InferErr, InferOk} from "./util";
  *
  * ```ts
  * const block = tryBlock(function* () {
- * 	const x = yield* Ok(1).try();
- * 	const y = yield* Ok(1).try();
+ * 	const x = yield* Ok(1);
+ * 	const y = yield* Ok(1);
  * 	return Ok(x + y);
  * });
  *
@@ -41,8 +41,8 @@ export function tryBlock<Y extends Err<any, never>, R extends Result<any, any>>(
  * const asyncNumber = new AsyncResult(Promise.resolve(Ok(1)));
  *
  * const block = await tryBlockAsync(async function* () {
- * 	const x = yield* Ok(1).try();
- * 	const y = yield* asyncNumber.try();
+ * 	const x = yield* Ok(1);
+ * 	const y = yield* asyncNumber;
  * 	return Ok(x + y);
  * });
  *

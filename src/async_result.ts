@@ -11,8 +11,18 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 		readonly promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>> | AsyncResult<T, E>,
 	) {}
 
+	/**
+	 * Returns a generator that yields the contained value (if `Ok`) or an error (if `Err`).
+	 */
+	async *[Symbol.asyncIterator](): AsyncGenerator<Err<E, never>, T> {
+		return yield* await this.promise.then((res) => res[Symbol.iterator]());
+	}
+
+	/**
+	 * @deprecated You can `yield*` the `Result` directly: `yield* Ok(1)` instead of `yield* Ok(1).try()`.
+	 */
 	async *try(): AsyncGenerator<Err<E, never>, T> {
-		return yield* await this.promise.then((res) => res.try());
+		return yield* this[Symbol.asyncIterator]();
 	}
 
 	then<A, B>(

@@ -26,7 +26,10 @@ export class ResultImpl<T, E> {
 		this.wrapped = v;
 	}
 
-	public try(): Generator<Err<E, never>, T> {
+	/**
+	 * Returns a generator that yields the contained value (if `Ok`) or an error (if `Err`).
+	 */
+	public [Symbol.iterator](): Generator<Err<E, never>, T> {
 		const wrapped = this.wrapped;
 		if (this.kind) {
 			return (function* () {
@@ -37,6 +40,13 @@ export class ResultImpl<T, E> {
 			yield Err(wrapped as E);
 			throw new Panic("Do not use this generator outside of a try block");
 		})();
+	}
+
+	/**
+	 * @deprecated You can `yield*` the `Result` directly: `yield* Ok(1)` instead of `yield* Ok(1).try()`.
+	 */
+	public try(): Generator<Err<E, never>, T> {
+		return this[Symbol.iterator]();
 	}
 
 	private unwrapFailed(message: string): never {
