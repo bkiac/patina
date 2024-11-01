@@ -1,5 +1,5 @@
-import {AsyncResult} from ".";
-import type {Option, OptionMatch, OptionMatchAsync} from "./option";
+import {AsyncResult} from "./async_result";
+import {None, Some, type Option, type OptionMatch, type OptionMatchAsync} from "./option";
 
 /**
  * A promise that resolves to an `Option`.
@@ -158,4 +158,12 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	async value(): Promise<T | undefined> {
 		return (await this).value();
 	}
+}
+
+export function SomeAsync<T>(value: T): AsyncOption<T> {
+	return new AsyncOption(Promise.resolve(Some(value)));
+}
+
+export function NoneAsync(): AsyncOption<never> {
+	return new AsyncOption(Promise.resolve(None));
 }
