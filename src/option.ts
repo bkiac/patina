@@ -55,7 +55,7 @@ export class OptionImpl<T> {
 	 * Returns `true` if the option is a `Some` value.
 	 */
 	public isSome(): this is Some<T> {
-		return this.#some === true;
+		return this.#some;
 	}
 
 	/**
@@ -74,7 +74,7 @@ export class OptionImpl<T> {
 	 * Returns `true` if the option is a `None` value.
 	 */
 	public isNone(): this is None<T> {
-		return this.#some !== true;
+		return !this.#some;
 	}
 
 	/**

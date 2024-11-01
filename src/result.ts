@@ -77,7 +77,7 @@ export class ResultImpl<T, E> {
 	 * Returns `true` if the result is `Ok`.
 	 */
 	public isOk(): this is Ok<T, E> {
-		return this.#ok === true;
+		return this.#ok;
 	}
 
 	/**
@@ -86,14 +86,14 @@ export class ResultImpl<T, E> {
 	 * Maybe not as useful as using `result.isOk() && f(result.value)`, because it doesn't narrow the type, but it's here for completeness.
 	 */
 	public isOkAnd(f: (value: T) => boolean): this is Ok<T, E> {
-		return this.#ok === true && f(this.#value as T);
+		return this.#ok && f(this.#value as T);
 	}
 
 	/**
 	 * Returns `true` if the result is `Err`.
 	 */
 	public isErr(): this is Err<E, T> {
-		return this.#ok === undefined;
+		return !this.#ok;
 	}
 
 	/**
