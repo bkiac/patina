@@ -60,11 +60,17 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	public match<A, B>(pattern: ResultMatch<T, E, A, B>): A | B {
-		return this.#ok ? pattern.Ok(this.#value as T) : pattern.Err(this.#value as E);
+		if (this.#ok) {
+			return pattern.Ok(this.#value as T);
+		}
+		return pattern.Err(this.#value as E);
 	}
 
-	public matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A | B> {
-		return this.#ok ? pattern.Ok(this.#value as T) : pattern.Err(this.#value as E);
+	public async matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A | B> {
+		if (this.#ok) {
+			return pattern.Ok(this.#value as T);
+		}
+		return pattern.Err(this.#value as E);
 	}
 
 	/**
@@ -754,11 +760,6 @@ export namespace Result {
 	}
 
 	/**
-	 * @deprecated Use `Result.fromThrowable()` instead.
-	 */
-	export const from = fromThrowable;
-
-	/**
 	 * Tries to resolve a promise and returns the result as a `AsyncResult`.
 	 *
 	 * This may allow a synchronous error to escape, prefer using `Result.fromThrowableAsync()` instead.
@@ -806,4 +807,9 @@ export namespace Result {
 		}
 		return new AsyncResult(safe());
 	}
+
+	/**
+	 * @deprecated Use `Result.fromThrowable()` instead.
+	 */
+	export const from = fromThrowable;
 }
