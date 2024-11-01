@@ -6,3 +6,4 @@ export * from "./async_result";
 export * from "./result";
 export * from "./try";
 export * from "./util";
+export * from "./unwind";

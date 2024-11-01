@@ -47,5 +47,5 @@ export function parseError(error: unknown): Error {
 	if (error instanceof Error) {
 		return error;
 	}
-	return new TypeError(`Invalid error type: '${String(error)}'`, {cause: error});
+	return new TypeError(`Unexpected error type: '${String(error)}'`, {cause: error});
 }
