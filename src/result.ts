@@ -1,7 +1,7 @@
-import {Panic, parseError} from "./error";
-import {type Option, Some, None} from "./option";
-import {ResultAsync} from "./result_async";
-import * as symbols from "./symbols";
+import { Panic, parseError } from "./error.ts";
+import { None, type Option, Some } from "./option.ts";
+import { ResultAsync } from "./result_async.ts";
+import * as symbols from "./symbols.ts";
 
 export type ResultMatch<T, E, A, B> = {
 	Ok: (value: T) => A;
@@ -30,6 +30,7 @@ export class ResultImpl<T, E> {
 	public [Symbol.iterator](): Generator<Err<E, never>, T> {
 		const v = this.#value;
 		if (this.#ok) {
+			// deno-lint-ignore require-yield
 			return (function* () {
 				return v as T;
 			})();
@@ -66,7 +67,7 @@ export class ResultImpl<T, E> {
 		return pattern.Err(this.#value as E);
 	}
 
-	public async matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A | B> {
+	public matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A | B> {
 		if (this.#ok) {
 			return pattern.Ok(this.#value as T);
 		}
@@ -360,7 +361,7 @@ export class ResultImpl<T, E> {
 		if (this.#ok) {
 			return this.#value as T;
 		}
-		throw new Panic(message, {cause: this.#value});
+		throw new Panic(message, { cause: this.#value });
 	}
 
 	/**
@@ -389,7 +390,7 @@ export class ResultImpl<T, E> {
 		if (!this.#ok) {
 			return this.#value as E;
 		}
-		throw new Panic(message, {cause: this.#value});
+		throw new Panic(message, { cause: this.#value });
 	}
 
 	/**
@@ -575,7 +576,7 @@ export class ResultImpl<T, E> {
 		return defaultValue(this.#value as E);
 	}
 
-	public async unwrapOrElseAsync<U>(defaultValue: (error: E) => Promise<U>): Promise<T | U> {
+	public unwrapOrElseAsync<U>(defaultValue: (error: E) => Promise<U>): Promise<T | U> {
 		if (this.#ok) {
 			return Promise.resolve(this.#value as T);
 		}
@@ -605,11 +606,11 @@ export class ResultImpl<T, E> {
 		return Err(this.#value as E);
 	}
 
-	public toObject(): {isOk: true; value: T} | {isOk: false; error: E} {
+	public toObject(): { isOk: true; value: T } | { isOk: false; error: E } {
 		if (this.#ok) {
-			return {isOk: true, value: this.#value as T};
+			return { isOk: true, value: this.#value as T };
 		}
-		return {isOk: false, error: this.#value as E};
+		return { isOk: false, error: this.#value as E };
 	}
 
 	public toString(): `Ok(${string})` | `Err(${string})` {
@@ -719,6 +720,7 @@ export function Err<E>(error: E): Err<E> {
  */
 export type Result<T, E> = Ok<T, E> | Err<E, T>;
 
+// deno-lint-ignore no-namespace
 export namespace Result {
 	function handlePanic(error: unknown) {
 		if (error instanceof Panic) {
@@ -740,10 +742,10 @@ export namespace Result {
 	 * // const result: Result<number, Error>
 	 * const result = Result.fromThrowable(() => {
 	 *   if (Math.random() > 0.5) {
-	 *		return 42
-	 *	  } else {
-	 *		throw new Error("random error")
-	 *	  }
+	 * 		return 42
+	 * 	  } else {
+	 * 		throw new Error("random error")
+	 * 	  }
 	 * })
 	 * ```
 	 */
@@ -787,10 +789,10 @@ export namespace Result {
 	 * // const result: AsyncResult<number, Error>
 	 * const result = Result.fromThrowableAsync((): Promise<number> => {
 	 *   if (Math.random() > 0.5) {
-	 *		throw new Error("random error")
-	 *	  } else {
-	 *		return Promise.resolve(42)
-	 *	  }
+	 * 		throw new Error("random error")
+	 * 	  } else {
+	 * 		return Promise.resolve(42)
+	 * 	  }
 	 * })
 	 */
 	export function fromThrowableAsync<T>(f: () => Promise<T>): ResultAsync<T, Error> {

@@ -1,0 +1,19 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"lib": ["esnext"]
+	},
+	"fmt": {
+		"useTabs": true,
+		"lineWidth": 100
+	},
+	"lint": {
+		"rules": {
+			"exclude": ["no-explicit-any"]
+		}
+	},
+	"tasks": {
+		"test": "deno test",
+		"check": "deno check src/**/*.ts"
+	}
+}

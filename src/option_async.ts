@@ -1,5 +1,5 @@
-import {ResultAsync} from "./result_async";
-import {None, Some, type Option, type OptionMatch, type OptionMatchAsync} from "./option";
+import { ResultAsync } from "./result_async.ts";
+import { None, type Option, type OptionMatch, type OptionMatchAsync, Some } from "./option.ts";
 
 /**
  * A promise that resolves to an `Option`.
