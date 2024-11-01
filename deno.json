@@ -22,7 +22,8 @@
 		}
 	},
 	"tasks": {
-		"test": "deno test",
-		"check": "deno check src/**/*.ts"
+		"check": "deno check src/**/*.ts",
+		"fmt": "deno fmt",
+		"test": "deno test"
 	}
 }

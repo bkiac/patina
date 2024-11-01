@@ -1,0 +1,6 @@
+- [ ] CI
+- [ ] Tests
+- [ ] Docs
+- [ ] Benchmarks
+- [ ] Build for deno, node, browser
+- [ ] Remove husky and shit

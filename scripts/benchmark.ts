@@ -1,5 +1,5 @@
-import {Err, Ok, asyncFn, asyncGenFn} from "../src";
-import {performance} from "perf_hooks";
+import { asyncFn, asyncGenFn, Err, Ok } from "../src";
+import { performance } from "perf_hooks";
 
 const getOne = asyncFn(async () => Ok(1));
 

@@ -1,5 +1,5 @@
-import {describe, expect, expectTypeOf, it, vi} from "vitest";
-import {Panic, None, Some, Option, Ok, Err} from "../src";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
+import { Err, None, Ok, Option, Panic, Some } from "../src";
 
 function TestSome<T>(value: T): Option<T> {
 	return Some(value) as Option<T>;

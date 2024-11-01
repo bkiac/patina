@@ -3,8 +3,8 @@ import {
 	assertStrictEquals,
 	assertType,
 } from "https://deno.land/std/testing/asserts.ts";
-import {describe, it} from "https://deno.land/std/testing/bdd.ts";
-import {Ok, Err, Result} from "../src/result.ts";
+import { describe, it } from "https://deno.land/std/testing/bdd.ts";
+import { Err, Ok, Result } from "../src/result.ts";
 
 export function TestOk<T, E>(value: T): Result<T, E> {
 	return Ok(value);
@@ -233,8 +233,8 @@ describe("flatten", () => {
 
 		const foo = TestOk<
 			| {
-					id: string;
-			  }
+				id: string;
+			}
 			| undefined,
 			Foo
 		>({

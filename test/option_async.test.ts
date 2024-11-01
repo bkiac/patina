@@ -1,5 +1,5 @@
-import {describe, it, expect, vi} from "vitest";
-import {Panic, OptionAsync, Some, None} from "../src";
+import { describe, expect, it, vi } from "vitest";
+import { None, OptionAsync, Panic, Some } from "../src";
 
 function promiseSome<T>(value: T) {
 	return new OptionAsync<T>(Promise.resolve(Some<T>(value)));

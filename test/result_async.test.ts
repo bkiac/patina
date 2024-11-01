@@ -1,7 +1,7 @@
-import {describe, it, expect, expectTypeOf} from "vitest";
-import {Err, Panic, AsyncResult, Ok, Result, ErrorWithTag, Some, None} from "../src";
-import {TestErr, TestOk} from "./result.test";
-import {vi} from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
+import { AsyncResult, Err, ErrorWithTag, None, Ok, Panic, Result, Some } from "../src";
+import { TestErr, TestOk } from "./result.test";
+import { vi } from "vitest";
 
 function TestOkPromise<T, E = any>(value: T) {
 	return new AsyncResult<T, E>(Promise.resolve(Ok<T>(value)));
@@ -136,8 +136,8 @@ describe.concurrent("flatten", () => {
 
 		const foo = TestOkPromise<
 			| {
-					id: string;
-			  }
+				id: string;
+			}
 			| undefined,
 			Foo
 		>({
@@ -146,7 +146,7 @@ describe.concurrent("flatten", () => {
 		const bar = foo
 			.map((value) => (value === undefined ? Err(new Bar()) : Ok(value)))
 			.flatten();
-		expectTypeOf(bar).toEqualTypeOf<AsyncResult<{id: string}, Foo | Bar>>();
+		expectTypeOf(bar).toEqualTypeOf<AsyncResult<{ id: string }, Foo | Bar>>();
 	});
 });
 

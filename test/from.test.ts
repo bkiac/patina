@@ -1,5 +1,5 @@
-import {describe, expect, it} from "vitest";
-import {Result} from "../src/result";
+import { describe, expect, it } from "vitest";
+import { Result } from "../src/result";
 
 describe.concurrent("fromThrowable", () => {
 	it("wraps a function call into a Result object", () => {

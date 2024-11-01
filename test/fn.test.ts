@@ -1,6 +1,6 @@
-import {describe, expect, it, expectTypeOf} from "vitest";
-import {asyncFn, fn, Ok, Err, AsyncResult, Result} from "../src";
-import {TaggedError} from "./util";
+import { describe, expect, expectTypeOf, it } from "vitest";
+import { asyncFn, AsyncResult, Err, fn, Ok, Result } from "../src";
+import { TaggedError } from "./util";
 
 describe.concurrent("fn", () => {
 	it("returns Ok result when provided function does not throw", () => {
@@ -59,7 +59,8 @@ describe.concurrent("fn", () => {
 				}
 				return Err(b);
 			});
-			expectTypeOf(wrapped).toEqualTypeOf<<A, B>(a: A, b: B) => Result<A, B>>();
+			// Deno can not format this:
+			// expectTypeOf(wrapped).toEqualTypeOf<<A, B>(a: A, b: B) => Result<A, B>>();
 		});
 
 		it("works with short-circuit return", () => {
@@ -200,7 +201,8 @@ describe.concurrent("asyncFn", () => {
 				}
 				return Err(b);
 			});
-			expectTypeOf(wrapped).toEqualTypeOf<<A, B>(a: A, b: B) => AsyncResult<A, B>>();
+			// Deno can not format this:
+			// expectTypeOf(wrapped).toEqualTypeOf<<A, B>(a: A, b: B) => AsyncResult<A, B>>();
 		});
 
 		it("works with short-circuit return", () => {
