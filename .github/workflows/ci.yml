@@ -1,32 +1,32 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+    checks:
+        runs-on: ubuntu-latest
 
-    steps:
-      - name: Setup repo
-        uses: actions/checkout@v3
+        steps:
+            - name: Setup repo
+              uses: actions/checkout@v3
 
-      - name: Setup Deno
-        uses: denoland/setup-deno@v1
-        with:
-          deno-version: v1.x
+            - name: Setup Deno
+              uses: denoland/setup-deno@v2
+              with:
+                  deno-version: v2.x
 
-      - name: Verify formatting
-        run: deno fmt --check
+            - name: Format
+              run: deno fmt --check
 
-      - name: Run linter
-        run: deno lint
+            - name: Lint
+              run: deno lint
 
-      - name: Run type check
-        run: deno task check
+            - name: Type check
+              run: deno task check
 
-      - name: Run tests
-        run: deno task test
+            - name: Test
+              run: deno task test

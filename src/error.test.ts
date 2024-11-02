@@ -30,7 +30,7 @@ it("returns an instance with message", () => {
 it("returns an instance with error", () => {
 	const panicMsg = "panic message";
 	const errorMsg = "error message";
-	let cause = new Error(errorMsg);
+	const cause = new Error(errorMsg);
 	let panic = new Panic(panicMsg, { cause });
 
 	expect(panic).toBeInstanceOf(Error);
@@ -48,8 +48,8 @@ it("returns an instance with error", () => {
 
 it("returns an instance with unknown", () => {
 	const panicMsg = "panic message";
-	let cause = "string cause";
-	let panic = new Panic(panicMsg, { cause });
+	const cause = "string cause";
+	const panic = new Panic(panicMsg, { cause });
 
 	expect(panic).toBeInstanceOf(Error);
 	expect(panic).toBeInstanceOf(Panic);

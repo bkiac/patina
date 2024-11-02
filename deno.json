@@ -14,7 +14,8 @@
 	},
 	"fmt": {
 		"useTabs": true,
-		"lineWidth": 100
+		"lineWidth": 100,
+		"indentWidth": 4
 	},
 	"lint": {
 		"rules": {
@@ -23,8 +24,10 @@
 	},
 	"tasks": {
 		"check": "deno check src/**/*.ts",
-		"fmt": "deno fmt",
-		"test": "deno test"
+		"lint": "deno lint --fix",
+		"format": "deno fmt",
+		"test": "deno test",
+		"fix": "deno run format && deno run lint && deno run check"
 	},
 	"imports": {
 		"@std/testing": "jsr:@std/testing@1.0.4",
