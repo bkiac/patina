@@ -2,9 +2,9 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import { assertSpyCall, assertSpyCalls, spy } from "@std/testing/mock";
-import { None, Some } from "./option.ts";
-import { OptionAsync } from "./option_async.ts";
-import { Panic } from "./error.ts";
+import { None, Some } from "../src/option.ts";
+import { OptionAsync } from "../src/option_async.ts";
+import { Panic } from "../src/error.ts";
 
 function promiseSome<T>(value: T) {
 	return new OptionAsync<T>(Promise.resolve(Some<T>(value)));

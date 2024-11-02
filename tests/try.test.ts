@@ -1,10 +1,10 @@
 import { describe, test } from "@std/testing/bdd";
 import { expectTypeOf } from "expect-type";
 import { expect } from "@std/expect";
-import { Err, Ok, Result } from "./result.ts";
-import { Panic } from "./error.ts";
-import { tryBlock, tryBlockAsync } from "./try.ts";
-import { ErrAsync, OkAsync, ResultAsync } from "./result_async.ts";
+import { Err, Ok, Result } from "../src/result.ts";
+import { Panic } from "../src/error.ts";
+import { tryBlock, tryBlockAsync } from "../src/try.ts";
+import { ErrAsync, OkAsync, ResultAsync } from "../src/result_async.ts";
 
 const unreachable = () => expect(true, "should not be reached").toBe(false);
 

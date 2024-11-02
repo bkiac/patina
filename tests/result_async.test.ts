@@ -3,10 +3,10 @@ import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import { expectTypeOf } from "expect-type";
 import { assertSpyCall, assertSpyCalls, spy } from "@std/testing/mock";
-import { ResultAsync } from "./result_async.ts";
-import { Err, Ok, Result } from "./result.ts";
-import { None, Some } from "./option.ts";
-import { ErrorWithTag, Panic } from "./error.ts";
+import { ResultAsync } from "../src/result_async.ts";
+import { Err, Ok, Result } from "../src/result.ts";
+import { None, Some } from "../src/option.ts";
+import { ErrorWithTag, Panic } from "../src/error.ts";
 
 function TestOkPromise<T, E>(value: T) {
 	return new ResultAsync<T, E>(Promise.resolve(Ok<T>(value)));

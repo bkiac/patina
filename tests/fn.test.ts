@@ -2,10 +2,10 @@
 import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import { expectTypeOf } from "expect-type";
-import { asyncFn, fn } from "./fn.ts";
-import { Err, Ok, Result } from "./result.ts";
-import { ResultAsync } from "./result_async.ts";
-import { ErrorWithTag } from "./error.ts";
+import { asyncFn, fn } from "../src/fn.ts";
+import { Err, Ok, Result } from "../src/result.ts";
+import { ResultAsync } from "../src/result_async.ts";
+import { ErrorWithTag } from "../src/error.ts";
 
 export class TaggedError extends ErrorWithTag {
 	readonly tag = "TaggedError";

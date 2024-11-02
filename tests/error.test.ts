@@ -1,6 +1,6 @@
 import { it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
-import { Panic, parseError } from "./error.ts";
+import { Panic, parseError } from "../src/error.ts";
 
 it("returns an instance without params", () => {
 	const panic = new Panic();

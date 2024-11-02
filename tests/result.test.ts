@@ -3,9 +3,9 @@ import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import { assertSpyCall, assertSpyCalls, spy } from "@std/testing/mock";
 import { expectTypeOf } from "expect-type";
-import { Err, Ok, Result } from "./result.ts";
-import { None, Some } from "./option.ts";
-import { ErrorWithTag, Panic } from "./error.ts";
+import { Err, Ok, Result } from "../src/result.ts";
+import { None, Some } from "../src/option.ts";
+import { ErrorWithTag, Panic } from "../src/error.ts";
 
 function TestOk<T, E>(value: T): Result<T, E> {
 	return Ok(value);

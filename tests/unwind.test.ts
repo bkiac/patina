@@ -2,10 +2,10 @@
 import { describe, it } from "@std/testing/bdd";
 import { expectTypeOf } from "expect-type";
 import { expect } from "@std/expect";
-import { catchUnwind, catchUnwindAsync } from "./unwind.ts";
-import { Result } from "./result.ts";
-import { Panic } from "./error.ts";
-import { ResultAsync } from "./result_async.ts";
+import { catchUnwind, catchUnwindAsync } from "../src/unwind.ts";
+import { Result } from "../src/result.ts";
+import { Panic } from "../src/error.ts";
+import { ResultAsync } from "../src/result_async.ts";
 
 const UNEXPECTED_ERROR_MESSAGE = "Unexpected error type";
 

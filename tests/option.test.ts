@@ -3,8 +3,8 @@ import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import { expectTypeOf } from "expect-type";
 import { assertSpyCall, assertSpyCalls, spy } from "@std/testing/mock";
-import { None, Option, Some } from "./option.ts";
-import { Panic } from "./error.ts";
+import { None, Option, Some } from "../src/option.ts";
+import { Panic } from "../src/error.ts";
 
 function TestSome<T>(value: T): Option<T> {
 	return Some(value) as Option<T>;

@@ -1,6 +1,6 @@
-import { asyncFn } from "./fn.ts";
-import { Ok } from "./result.ts";
-import { tryBlockAsync } from "./try.ts";
+import { asyncFn } from "../src/fn.ts";
+import { Ok } from "../src/result.ts";
+import { tryBlockAsync } from "../src/try.ts";
 
 // deno-lint-ignore require-await
 const getOne = asyncFn(async () => Ok(1));

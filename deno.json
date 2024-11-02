@@ -23,6 +23,7 @@
 		}
 	},
 	"tasks": {
+		"build:npm": "deno run scripts/build_npm.ts",
 		"check": "deno check src/**/*.ts",
 		"lint": "deno lint --fix",
 		"format": "deno fmt",
@@ -30,6 +31,7 @@
 		"fix": "deno run format && deno run lint && deno run check"
 	},
 	"imports": {
+		"@deno/dnt": "jsr:@deno/dnt@^0.41.3",
 		"@std/testing": "jsr:@std/testing@1.0.4",
 		"@std/expect": "jsr:@std/expect@1.0.7",
 		"expect-type": "npm:expect-type@1.1.0"
