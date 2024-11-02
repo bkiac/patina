@@ -25,5 +25,10 @@
 		"check": "deno check src/**/*.ts",
 		"fmt": "deno fmt",
 		"test": "deno test"
+	},
+	"imports": {
+		"@std/testing": "jsr:@std/testing@1.0.4",
+		"@std/expect": "jsr:@std/expect@1.0.7",
+		"expect-type": "npm:expect-type@1.1.0"
 	}
 }

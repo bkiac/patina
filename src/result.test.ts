@@ -1,11 +1,11 @@
 // deno-lint-ignore-file require-await
-// import { describe, expect, expectTypeOf, it, vi } from "vitest";
-import { describe, it } from "jsr:@std/testing/bdd";
-import { expect } from "jsr:@std/expect";
-import { assertSpyCall, assertSpyCalls, spy } from "jsr:@std/testing/mock";
+import { describe, it } from "@std/testing/bdd";
+import { expect } from "@std/expect";
+import { assertSpyCall, assertSpyCalls, spy } from "@std/testing/mock";
+import { expectTypeOf } from "expect-type";
 import { Err, Ok, Result } from "./result.ts";
 import { None, Some } from "./option.ts";
-import { Panic } from "./error.ts";
+import { ErrorWithTag, Panic } from "./error.ts";
 
 export function TestOk<T, E>(value: T): Result<T, E> {
 	return Ok(value);
@@ -23,14 +23,14 @@ describe("core", () => {
 		expect(r.isErr()).toEqual(false);
 
 		expect(r.value()).toEqual(42);
-		// expectTypeOf(r.value).toEqualTypeOf<() => number>();
-		// expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
+		expectTypeOf(r.value).toEqualTypeOf<() => number>();
+		expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
 
-		// expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
-		// expectTypeOf(r.unwrapErr).toEqualTypeOf<() => undefined>();
+		expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
+		expectTypeOf(r.unwrapErr).toEqualTypeOf<() => undefined>();
 
-		// expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
-		// expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
+		expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
+		expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
 	});
 
 	it("returns an Err result", () => {
@@ -39,59 +39,59 @@ describe("core", () => {
 		expect(r.isOk()).toEqual(false);
 		expect(r.isErr()).toEqual(true);
 
-		// expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
+		expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
 		expect(r.error()).toEqual("error");
-		// expectTypeOf(r.error).toEqualTypeOf<() => string>();
+		expectTypeOf(r.error).toEqualTypeOf<() => string>();
 
-		// expectTypeOf(r.unwrap).toEqualTypeOf<() => undefined>();
-		// expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
+		expectTypeOf(r.unwrap).toEqualTypeOf<() => undefined>();
+		expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
 
-		// expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
-		// expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
+		expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
+		expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
 	});
 
 	it("works as discriminated union", () => {
 		const r = TestOk<number, string>(42);
-		// expectTypeOf(r.value()).toEqualTypeOf<number | undefined>();
-		// expectTypeOf(r.error()).toEqualTypeOf<string | undefined>();
+		expectTypeOf(r.value()).toEqualTypeOf<number | undefined>();
+		expectTypeOf(r.error()).toEqualTypeOf<string | undefined>();
 		if (r.isOk()) {
-			// expectTypeOf(r.value).toEqualTypeOf<() => number>();
-			// expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.value).toEqualTypeOf<() => number>();
+			expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
 
-			// expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
-			// expectTypeOf(r.unwrapErr).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
+			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => undefined>();
 
-			// expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
-			// expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
+			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
+			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
 		} else {
-			// expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
-			// expectTypeOf(r.error).toEqualTypeOf<() => string>();
+			expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.error).toEqualTypeOf<() => string>();
 
-			// expectTypeOf(r.unwrap).toEqualTypeOf<() => undefined>();
-			// expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
+			expectTypeOf(r.unwrap).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
 
-			// expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
-			// expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
+			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
+			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
 		}
 
 		if (r.isErr()) {
-			// expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
-			// expectTypeOf(r.error).toEqualTypeOf<() => string>();
+			expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.error).toEqualTypeOf<() => string>();
 
-			// expectTypeOf(r.unwrap).toEqualTypeOf<() => undefined>();
-			// expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
+			expectTypeOf(r.unwrap).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
 
-			// expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
-			// expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
+			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
+			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
 		} else {
-			// expectTypeOf(r.value).toEqualTypeOf<() => number>();
-			// expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.value).toEqualTypeOf<() => number>();
+			expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
 
-			// expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
-			// expectTypeOf(r.unwrapErr).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
+			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => undefined>();
 
-			// expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
-			// expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
+			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
+			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
 		}
 	});
 });
@@ -205,46 +205,46 @@ describe("flatten", () => {
 	it("works with an Ok<Ok> result", () => {
 		const inner = TestOk<number, string>(42);
 		const flattened = TestOk<Result<number, string>, boolean>(inner).flatten();
-		// expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>();
+		expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>();
 		expect(flattened.unwrap()).toEqual(inner.unwrap());
 	});
 
 	it("works with an Ok<Err> result", () => {
 		const inner = TestErr<number, string>("error");
 		const flattened = TestOk<Result<number, string>, boolean>(inner).flatten();
-		// expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>();
+		expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>();
 		expect(flattened.unwrapErr()).toEqual(inner.unwrapErr());
 	});
 
 	it("works with an Err result", () => {
 		const flattened = TestErr<Result<number, string>, boolean>(true).flatten();
-		// expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>();
+		expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>();
 		expect(flattened.unwrapErr()).toEqual(true);
 	});
 
-	// it("works with non-primitive value or error", () => {
-	// 	class Foo extends ErrorWithTag {
-	// 		readonly tag = "foo";
-	// 	}
+	it("works with non-primitive value or error", () => {
+		class Foo extends ErrorWithTag {
+			readonly tag = "foo";
+		}
 
-	// 	class Bar extends ErrorWithTag {
-	// 		readonly tag = "bar";
-	// 	}
+		class Bar extends ErrorWithTag {
+			readonly tag = "bar";
+		}
 
-	// 	const foo = TestOk<
-	// 		| {
-	// 			id: string;
-	// 		}
-	// 		| undefined,
-	// 		Foo
-	// 	>({
-	// 		id: "1",
-	// 	});
-	// const bar = foo
-	// 	.map((value) => (value === undefined ? Err(new Bar()) : Ok(value)))
-	// 	.flatten();
-	// expectTypeOf(bar).toEqualTypeOf<Result<{ id: string }, Foo | Bar>>();
-	// });
+		const foo = TestOk<
+			| {
+				id: string;
+			}
+			| undefined,
+			Foo
+		>({
+			id: "1",
+		});
+		const bar = foo
+			.map((value) => (value === undefined ? Err(new Bar()) : Ok(value)))
+			.flatten();
+		expectTypeOf(bar).toEqualTypeOf<Result<{ id: string }, Foo | Bar>>();
+	});
 });
 
 describe("inspect", () => {
