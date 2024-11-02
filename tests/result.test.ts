@@ -1,15 +1,21 @@
-import {describe, it, expect, expectTypeOf, vi} from "vitest";
-import {Panic, Ok, Err, Result, Some, None, ErrorWithTag} from "../src";
+// deno-lint-ignore-file require-await
+import { describe, it } from "@std/testing/bdd";
+import { expect } from "@std/expect";
+import { assertSpyCall, assertSpyCalls, spy } from "@std/testing/mock";
+import { expectTypeOf } from "expect-type";
+import { Err, Ok, Result } from "../src/result.ts";
+import { None, Some } from "../src/option.ts";
+import { ErrorWithTag, Panic } from "../src/error.ts";
 
-export function TestOk<T, E>(value: T): Result<T, E> {
+function TestOk<T, E>(value: T): Result<T, E> {
 	return Ok(value);
 }
 
-export function TestErr<T, E>(value: E): Result<T, E> {
+function TestErr<T, E>(value: E): Result<T, E> {
 	return Err(value);
 }
 
-describe.concurrent("core", () => {
+describe("core", () => {
 	it("returns an Ok result", () => {
 		const r = Ok(42);
 
@@ -90,7 +96,7 @@ describe.concurrent("core", () => {
 	});
 });
 
-describe.concurrent("ok", () => {
+describe("ok", () => {
 	it("returns the value when Ok", () => {
 		const result = TestOk<number, string>(42);
 		expect(result.ok()).toEqual(Some(42));
@@ -102,7 +108,7 @@ describe.concurrent("ok", () => {
 	});
 });
 
-describe.concurrent("err", () => {
+describe("err", () => {
 	it("returns None when Ok", () => {
 		const result = TestOk<number, string>(42);
 		expect(result.err()).toEqual(None);
@@ -114,7 +120,7 @@ describe.concurrent("err", () => {
 	});
 });
 
-describe.concurrent("and", () => {
+describe("and", () => {
 	it("returns the error when Ok and Err", () => {
 		const a = TestOk<string, string>("a");
 		const b = TestErr<string, string>("b");
@@ -140,7 +146,7 @@ describe.concurrent("and", () => {
 	});
 });
 
-describe.concurrent("andThen", () => {
+describe("andThen", () => {
 	it("returns the mapped value for an Ok result", () => {
 		const a = TestOk<number, string>(0);
 		expect(a.andThen((value) => Ok(value + 1)).unwrap()).toEqual(1);
@@ -152,7 +158,7 @@ describe.concurrent("andThen", () => {
 	});
 });
 
-describe.concurrent("andThenAsync", () => {
+describe("andThenAsync", () => {
 	it("returns the mapped value for an Ok result", async () => {
 		const a = TestOk<number, string>(0);
 		await expect(a.andThenAsync(async (value) => Ok(value + 1)).unwrap()).resolves.toEqual(1);
@@ -166,7 +172,7 @@ describe.concurrent("andThenAsync", () => {
 	});
 });
 
-describe.concurrent("expect", () => {
+describe("expect", () => {
 	it("returns the value when called on an Ok result", () => {
 		const result = TestOk<number, string>(42);
 		const value = result.expect("Panic message");
@@ -181,7 +187,7 @@ describe.concurrent("expect", () => {
 	});
 });
 
-describe.concurrent("expectErr", () => {
+describe("expectErr", () => {
 	it("returns the value when called on an Err result", () => {
 		const err = TestErr<number, string>("error");
 		expect(err.expectErr("panic message")).toEqual("error");
@@ -195,7 +201,7 @@ describe.concurrent("expectErr", () => {
 	});
 });
 
-describe.concurrent("flatten", () => {
+describe("flatten", () => {
 	it("works with an Ok<Ok> result", () => {
 		const inner = TestOk<number, string>(42);
 		const flattened = TestOk<Result<number, string>, boolean>(inner).flatten();
@@ -217,7 +223,7 @@ describe.concurrent("flatten", () => {
 	});
 
 	it("works with non-primitive value or error", () => {
-		class Foo extends ErrorWithTag {
+		class _Foo extends ErrorWithTag {
 			readonly tag = "foo";
 		}
 
@@ -227,77 +233,78 @@ describe.concurrent("flatten", () => {
 
 		const foo = TestOk<
 			| {
-					id: string;
-			  }
+				id: string;
+			}
 			| undefined,
-			Foo
+			_Foo
 		>({
 			id: "1",
 		});
 		const bar = foo
 			.map((value) => (value === undefined ? Err(new Bar()) : Ok(value)))
 			.flatten();
-		expectTypeOf(bar).toEqualTypeOf<Result<{id: string}, Foo | Bar>>();
+		expectTypeOf(bar).toEqualTypeOf<Result<{ id: string }, _Foo | Bar>>();
 	});
 });
 
-describe.concurrent("inspect", () => {
+describe("inspect", () => {
 	it("calls closure on Ok result", () => {
-		const f = vi.fn();
+		const f = spy((_value: number) => {
+		});
 		TestOk<number, string>(42).inspect(f);
-		expect(f).toHaveBeenCalled();
+		assertSpyCall(f, 0, { args: [42] });
 	});
 
 	it("does not call closure on Err result", () => {
-		const f = vi.fn();
+		const f = spy(() => {});
 		TestErr<number, string>("").inspect(f);
-		expect(f).not.toHaveBeenCalled();
+		assertSpyCalls(f, 0);
 	});
 });
 
-describe.concurrent("inspectAsync", () => {
+describe("inspectAsync", () => {
 	it("calls closure on Ok result", async () => {
-		const f = vi.fn().mockResolvedValue("mocked value");
+		const f = spy(async (_value: number) => {});
 		await TestOk<number, string>(42).inspectAsync(f);
-		expect(f).toHaveBeenCalled();
+		assertSpyCall(f, 0, { args: [42] });
 	});
 
 	it("does not call closure on Err result", async () => {
-		const f = vi.fn().mockResolvedValue("mocked value");
+		const f = spy(async () => {});
 		await TestErr<number, string>("").inspectAsync(f);
-		expect(f).not.toHaveBeenCalled();
+		assertSpyCalls(f, 0);
 	});
 });
 
-describe.concurrent("inspectErr", () => {
+describe("inspectErr", () => {
 	it("does not call closure on Ok result", () => {
-		const f = vi.fn();
+		const f = spy(async () => {});
 		TestOk<number, string>(42).inspectErr(f);
-		expect(f).not.toHaveBeenCalled();
+		assertSpyCalls(f, 0);
 	});
 
 	it("returns this and calls closure on Err result", () => {
-		const f = vi.fn();
-		TestErr<number, string>("").inspectErr(f);
-		expect(f).toHaveBeenCalled();
+		const f = spy(async (_error: string) => {});
+		TestErr<number, string>("error").inspectErr(f);
+		assertSpyCall(f, 0, { args: ["error"] });
 	});
 });
 
-describe.concurrent("inspectErrAsync", () => {
+describe("inspectErrAsync", () => {
 	it("calls closure on Err result", async () => {
-		const f = vi.fn().mockResolvedValue("mocked value");
-		await TestOk<number, string>(42).inspectErrAsync(f);
-		expect(f).not.toHaveBeenCalled();
+		const f = spy(async (_error: string) => {});
+		await TestErr<number, string>("error").inspectErrAsync(f);
+		assertSpyCall(f, 0, { args: ["error"] });
 	});
 
 	it("does not call closure on Ok result", async () => {
-		const f = vi.fn().mockResolvedValue("mocked value");
-		await TestErr<number, string>("").inspectErrAsync(f);
-		expect(f).toHaveBeenCalled();
+		const f = spy(async () => {});
+		await TestOk<number, string>(42).inspectErrAsync(f);
+		assertSpyCalls(f, 0);
 	});
 });
 
-describe.concurrent("map", () => {
+describe("map", () => {
 	it("returns the mapped value for an Ok result", () => {
 		const result = TestOk<number, string>(42);
 		const result2 = result.map((value) => value * 2);
@@ -311,7 +318,7 @@ describe.concurrent("map", () => {
 	});
 });
 
-describe.concurrent("mapAsync", () => {
+describe("mapAsync", () => {
 	it("returns the mapped value for an Ok result", async () => {
 		const a = TestOk<number, string>(42);
 		const b = a.mapAsync(async (value) => value * 2);
@@ -325,7 +332,7 @@ describe.concurrent("mapAsync", () => {
 	});
 });
 
-describe.concurrent("mapErr", () => {
+describe("mapErr", () => {
 	it("returns the mapped error for an Err result", () => {
 		const a = TestErr<number, string>("error");
 		const b = a.mapErr(() => "new error");
@@ -339,7 +346,7 @@ describe.concurrent("mapErr", () => {
 	});
 });
 
-describe.concurrent("mapErrAsync", () => {
+describe("mapErrAsync", () => {
 	it("returns the mapped error for an Err result", async () => {
 		const a = TestErr<number, string>("error");
 		const b = a.mapErrAsync(async () => "new error");
@@ -353,7 +360,7 @@ describe.concurrent("mapErrAsync", () => {
 	});
 });
 
-describe.concurrent("mapOr", () => {
+describe("mapOr", () => {
 	it("returns the mapped value for an Ok result", () => {
 		const result = TestOk<number, string>(42);
 		const value = result.mapOr(0, (value) => value * 2);
@@ -367,7 +374,7 @@ describe.concurrent("mapOr", () => {
 	});
 });
 
-describe.concurrent("mapOrElse", () => {
+describe("mapOrElse", () => {
 	it("returns the mapped value for an Ok result", () => {
 		const result = TestOk<number, string>(42);
 		const value = result.mapOrElse(
@@ -387,7 +394,7 @@ describe.concurrent("mapOrElse", () => {
 	});
 });
 
-describe.concurrent("or", () => {
+describe("or", () => {
 	it("returns the value when Ok or Err", () => {
 		const a = TestOk<string, string>("a");
 		const b = TestErr<string, string>("b");
@@ -413,7 +420,7 @@ describe.concurrent("or", () => {
 	});
 });
 
-describe.concurrent("orElse", () => {
+describe("orElse", () => {
 	it("returns the result for an Ok result", () => {
 		const a = TestOk<number, string>(0);
 		expect(a.orElse(() => Ok(1)).unwrap()).toEqual(a.unwrap());
@@ -426,7 +433,7 @@ describe.concurrent("orElse", () => {
 	});
 });
 
-describe.concurrent("orElseAsync", () => {
+describe("orElseAsync", () => {
 	it("returns the result for an Ok result", async () => {
 		const a = TestOk<number, string>(0);
 		await expect(a.orElseAsync(async () => Ok(1)).unwrap()).resolves.toEqual(0);
@@ -439,7 +446,7 @@ describe.concurrent("orElseAsync", () => {
 	});
 });
 
-describe.concurrent("unwrap", () => {
+describe("unwrap", () => {
 	it("returns the value for an Ok result", () => {
 		const result = TestOk<number, string>(42);
 		expect(result.unwrap()).toEqual(42);
@@ -451,7 +458,7 @@ describe.concurrent("unwrap", () => {
 	});
 });
 
-describe.concurrent("unwrapErr", () => {
+describe("unwrapErr", () => {
 	it("returns the error for an Err result", () => {
 		const result = TestErr<number, string>("error");
 		expect(result.unwrapErr()).toEqual("error");
@@ -463,7 +470,7 @@ describe.concurrent("unwrapErr", () => {
 	});
 });
 
-describe.concurrent("unwrapOr", () => {
+describe("unwrapOr", () => {
 	it("returns the value for an Ok result", () => {
 		const result = TestOk<number, string>(42);
 		expect(result.unwrapOr(0)).toEqual(42);
@@ -475,7 +482,7 @@ describe.concurrent("unwrapOr", () => {
 	});
 });
 
-describe.concurrent("unwrapOrElse", () => {
+describe("unwrapOrElse", () => {
 	it("returns the value for an Ok result", () => {
 		const result = TestOk<number, string>(42);
 		expect(result.unwrapOrElse(() => 0)).toEqual(42);
@@ -488,7 +495,7 @@ describe.concurrent("unwrapOrElse", () => {
 	});
 });
 
-describe.concurrent("match", () => {
+describe("match", () => {
 	it("calls the ok function for an Ok result", () => {
 		const result = TestOk<number, string>(42);
 		const output = result.match({

@@ -1,8 +1,17 @@
-import {describe, expect, it, expectTypeOf} from "vitest";
-import {asyncFn, fn, Ok, Err, AsyncResult, Result} from "../src";
-import {TaggedError} from "./util";
+// deno-lint-ignore-file require-await
+import { describe, it } from "@std/testing/bdd";
+import { expect } from "@std/expect";
+import { expectTypeOf } from "expect-type";
+import { asyncFn, fn } from "../src/fn.ts";
+import { Err, Ok, Result } from "../src/result.ts";
+import { ResultAsync } from "../src/result_async.ts";
+import { ErrorWithTag } from "../src/error.ts";
 
-describe.concurrent("fn", () => {
+export class TaggedError extends ErrorWithTag {
+	readonly tag = "TaggedError";
+}
+
+describe("fn", () => {
 	it("returns Ok result when provided function does not throw", () => {
 		const wrappedFn = fn(() => Ok(42));
 		const result = wrappedFn();
@@ -59,7 +68,9 @@ describe.concurrent("fn", () => {
 				}
 				return Err(b);
 			});
-			expectTypeOf(wrapped).toEqualTypeOf<<A, B>(a: A, b: B) => Result<A, B>>();
+			expectTypeOf(wrapped).branded.toEqualTypeOf<
+				<A, B>(a: A, b: B) => Result<A, B>
+			>();
 		});
 
 		it("works with short-circuit return", () => {
@@ -87,7 +98,7 @@ describe.concurrent("fn", () => {
 				amount: bigint;
 			};
 
-			// @ts-expect-error
+			// @ts-expect-error -- This is a test
 			const foo = (): Result<Data, TaggedError> => {};
 
 			const wrapped = fn(() => {
@@ -128,7 +139,7 @@ describe.concurrent("fn", () => {
 	});
 });
 
-describe.concurrent("asyncFn", () => {
+describe("asyncFn", () => {
 	it("returns Ok result when provided async function does not throw", async () => {
 		const wrappedFn = asyncFn(async () => Promise.resolve(Ok(42)));
 		const result = await wrappedFn();
@@ -158,7 +169,7 @@ describe.concurrent("asyncFn", () => {
 			const wrapped = asyncFn(f);
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
 			expectTypeOf(wrapped).returns.toEqualTypeOf<
-				AsyncResult<number | string, number | string>
+				ResultAsync<number | string, number | string>
 			>();
 		});
 
@@ -166,21 +177,21 @@ describe.concurrent("asyncFn", () => {
 			const f = async (_arg: number) => Ok(1);
 			const wrapped = asyncFn(f);
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
-			expectTypeOf(wrapped).returns.toEqualTypeOf<AsyncResult<number, never>>();
+			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultAsync<number, never>>();
 		});
 
 		it("returns correct type with function returning Promise<Err>", () => {
 			const f = async (_arg: number) => Err(1);
 			const wrapped = asyncFn(f);
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
-			expectTypeOf(wrapped).returns.toEqualTypeOf<AsyncResult<never, number>>();
+			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultAsync<never, number>>();
 		});
 
 		it("returns correct type with function returning AsyncResult", () => {
 			const f = (_arg: number) => Result.fromPromise(Promise.resolve(1));
 			const wrapped = asyncFn(f);
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
-			expectTypeOf(wrapped).returns.toEqualTypeOf<AsyncResult<number, Error>>();
+			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultAsync<number, Error>>();
 		});
 
 		it("returns correct type with function returning Promise<Result>", () => {
@@ -190,7 +201,7 @@ describe.concurrent("asyncFn", () => {
 			};
 			const wrapped = asyncFn(f);
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
-			expectTypeOf(wrapped).returns.toEqualTypeOf<AsyncResult<number, Error>>();
+			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultAsync<number, Error>>();
 		});
 
 		it("works with generics", () => {
@@ -200,7 +211,9 @@ describe.concurrent("asyncFn", () => {
 				}
 				return Err(b);
 			});
-			expectTypeOf(wrapped).toEqualTypeOf<<A, B>(a: A, b: B) => AsyncResult<A, B>>();
+			expectTypeOf(wrapped).branded.toEqualTypeOf<
+				<A, B>(a: A, b: B) => ResultAsync<A, B>
+			>();
 		});
 
 		it("works with short-circuit return", () => {
@@ -217,7 +230,7 @@ describe.concurrent("asyncFn", () => {
 				}
 				return Ok(true);
 			});
-			expectTypeOf(wrapped).returns.toEqualTypeOf<AsyncResult<boolean, string>>();
+			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultAsync<boolean, string>>();
 		});
 	});
 });

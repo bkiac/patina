@@ -1,17 +1,30 @@
-import {describe, it, expect, expectTypeOf} from "vitest";
-import {Err, Panic, AsyncResult, Ok, Result, ErrorWithTag, Some, None} from "../src";
-import {TestErr, TestOk} from "./result.test";
-import {vi} from "vitest";
+// deno-lint-ignore-file require-await
+import { describe, it } from "@std/testing/bdd";
+import { expect } from "@std/expect";
+import { expectTypeOf } from "expect-type";
+import { assertSpyCall, assertSpyCalls, spy } from "@std/testing/mock";
+import { ResultAsync } from "../src/result_async.ts";
+import { Err, Ok, Result } from "../src/result.ts";
+import { None, Some } from "../src/option.ts";
+import { ErrorWithTag, Panic } from "../src/error.ts";
 
-function TestOkPromise<T, E = any>(value: T) {
-	return new AsyncResult<T, E>(Promise.resolve(Ok<T>(value)));
+function TestOkPromise<T, E>(value: T) {
+	return new ResultAsync<T, E>(Promise.resolve(Ok<T>(value)));
 }
 
-function TestErrPromise<E, T = any>(error: E) {
-	return new AsyncResult<T, E>(Promise.resolve(Err<E>(error)));
+function TestErrPromise<T, E>(error: E) {
+	return new ResultAsync<T, E>(Promise.resolve(Err<E>(error)));
 }
 
-describe.concurrent("ok", () => {
+function TestOk<T, E>(value: T): Result<T, E> {
+	return Ok(value);
+}
+
+function TestErr<T, E>(value: E): Result<T, E> {
+	return Err(value);
+}
+
+describe("ok", () => {
 	it("returns the value when called on an Ok result", async () => {
 		const result = TestOkPromise(42);
 		const option = result.ok();
@@ -25,7 +38,7 @@ describe.concurrent("ok", () => {
 	});
 });
 
-describe.concurrent("and", () => {
+describe("and", () => {
 	it("returns the error when Ok and Err", async () => {
 		const a = TestOkPromise(1);
 		const b = TestErrPromise("late error");
@@ -51,82 +64,82 @@ describe.concurrent("and", () => {
 	});
 });
 
-describe.concurrent("andThen", () => {
+describe("andThen", () => {
 	it("returns the mapped value for an Ok result", async () => {
 		const a = TestOkPromise(0);
 		await expect(a.andThen((value) => Ok(value + 1)).unwrap()).resolves.toEqual(1);
 	});
 
 	it("returns the result for an Err result", async () => {
-		const a = TestErrPromise("error");
+		const a = TestErrPromise<number, string>("error");
 		await expect(a.andThen((value) => Ok(value + 1)).unwrapErr()).resolves.toEqual("error");
 	});
 });
 
-describe.concurrent("andThenAsync", () => {
+describe("andThenAsync", () => {
 	it("returns the mapped value for an Ok result", async () => {
 		const a = TestOkPromise<number, string>(0);
 		await expect(a.andThenAsync(async (value) => Ok(value + 1)).unwrap()).resolves.toEqual(1);
 	});
 
 	it("returns the result for an Err result", async () => {
-		const a = TestErrPromise<number, string>(0);
+		const a = TestErrPromise<number, string>("error");
 		await expect(a.andThenAsync(async (value) => Ok(value + 1)).unwrapErr()).resolves.toEqual(
-			0,
+			"error",
 		);
 	});
 });
 
-describe.concurrent("expect", () => {
+describe("expect", () => {
 	it("returns the value when called on an Ok result", async () => {
-		const result = new AsyncResult(Promise.resolve(Ok(42)));
+		const result = TestOkPromise(42);
 		const value = await result.expect("");
-		expect(value).to.equal(42);
+		expect(value).toEqual(42);
 	});
 
 	it("throws a Panic with the provided message when called on an Err result", async () => {
 		const error = new Error("Original error");
-		const result = new AsyncResult(Promise.resolve(Err(error)));
+		const result = TestErrPromise<number, Error>(error);
 		await expect(result.expect("Panic message")).rejects.toThrow(Panic);
 	});
 });
 
-describe.concurrent("expectErr", () => {
+describe("expectErr", () => {
 	it("returns the error when called on an Err result", async () => {
-		const result = new AsyncResult(Promise.resolve(Err(new Error("Test error"))));
+		const result = TestErrPromise<number, Error>(new Error("Test error"));
 		const error = await result.expectErr("");
 		expect(error).toEqual(new Error("Test error"));
 	});
 
 	it("throws a Panic with the provided message when called on an Ok result", async () => {
-		const result = new AsyncResult(Promise.resolve(Ok()));
+		const result = TestOkPromise<number, string>(42);
 		await expect(result.expectErr("Panic message")).rejects.toThrow(Panic);
 	});
 });
 
-describe.concurrent("flatten", () => {
+describe("flatten", () => {
 	it("works with an Ok<Ok> result", async () => {
 		const inner = TestOk<number, string>(42);
 		const flattened = TestOkPromise<Result<number, string>, boolean>(inner).flatten();
-		expectTypeOf(flattened).toEqualTypeOf<AsyncResult<number, string | boolean>>();
+		expectTypeOf(flattened).toEqualTypeOf<ResultAsync<number, string | boolean>>();
 		await expect(flattened.unwrap()).resolves.toEqual(inner.unwrap());
 	});
 
 	it("works with an Ok<Err> result", async () => {
 		const inner = TestErr<number, string>("error");
 		const flattened = TestOkPromise<Result<number, string>, boolean>(inner).flatten();
-		expectTypeOf(flattened).toEqualTypeOf<AsyncResult<number, string | boolean>>();
+		expectTypeOf(flattened).toEqualTypeOf<ResultAsync<number, string | boolean>>();
 		await expect(flattened.unwrapErr()).resolves.toEqual(inner.unwrapErr());
 	});
 
 	it("works with an Err result", async () => {
-		const flattened = TestErrPromise<boolean, Result<number, string>>(true).flatten();
-		expectTypeOf(flattened).toEqualTypeOf<AsyncResult<number, string | boolean>>();
+		const flattened = TestErrPromise<Result<number, string>, boolean>(true).flatten();
+		expectTypeOf(flattened).toEqualTypeOf<ResultAsync<number, string | boolean>>();
 		await expect(flattened.unwrapErr()).resolves.toEqual(true);
 	});
 
 	it("works with non-primitive value or error", () => {
-		class Foo extends ErrorWithTag {
+		class _Foo extends ErrorWithTag {
 			readonly tag = "foo";
 		}
 
@@ -136,153 +149,153 @@ describe.concurrent("flatten", () => {
 
 		const foo = TestOkPromise<
 			| {
-					id: string;
-			  }
+				id: string;
+			}
 			| undefined,
-			Foo
+			_Foo
 		>({
 			id: "1",
 		});
 		const bar = foo
 			.map((value) => (value === undefined ? Err(new Bar()) : Ok(value)))
 			.flatten();
-		expectTypeOf(bar).toEqualTypeOf<AsyncResult<{id: string}, Foo | Bar>>();
+		expectTypeOf(bar).toEqualTypeOf<ResultAsync<{ id: string }, _Foo | Bar>>();
 	});
 });
 
-describe.concurrent("inspect", async () => {
+describe("inspect", () => {
 	it("returns result and calls closure on Ok result", async () => {
-		const fn = vi.fn();
-		await new AsyncResult(Promise.resolve(Ok(42))).inspect(fn);
-		expect(fn).toHaveBeenCalled();
+		const fn = spy((_value: number) => {});
+		await TestOkPromise(42).inspect(fn);
+		assertSpyCall(fn, 0, { args: [42] });
 	});
 
 	it("returns result and does not call closure on Err result", async () => {
-		const fn = vi.fn();
-		await new AsyncResult(Promise.resolve(Err("foo"))).inspect(fn);
-		expect(fn).not.toHaveBeenCalled();
+		const fn = spy((_value: number) => {});
+		await TestErrPromise<number, string>("foo").inspect(fn);
+		assertSpyCalls(fn, 0);
 	});
 });
 
-describe.concurrent("inspectAsync", () => {
+describe("inspectAsync", () => {
 	it("calls closure on Ok result", async () => {
-		const f = vi.fn().mockResolvedValue("mocked value");
+		const f = spy(async (_value: number) => {});
 		await TestOkPromise(42).inspectAsync(f);
-		expect(f).toHaveBeenCalled();
+		assertSpyCall(f, 0, { args: [42] });
 	});
 
 	it("does not call closure on Err result", async () => {
-		const f = vi.fn().mockResolvedValue("mocked value");
-		await TestErrPromise<number, string>(0).inspectAsync(f);
-		expect(f).not.toHaveBeenCalled();
+		const f = spy(async (_value: number) => {});
+		await TestErrPromise<number, string>("foo").inspectAsync(f);
+		assertSpyCalls(f, 0);
 	});
 });
 
-describe.concurrent("inspectErr", async () => {
+describe("inspectErr", () => {
 	it("returns result and does not call closure on Ok result", async () => {
-		const fn = vi.fn();
-		await new AsyncResult(Promise.resolve(Ok(42))).inspectErr(fn);
-		expect(fn).not.toHaveBeenCalled();
+		const fn = spy((_error: string) => {});
+		await TestOkPromise<number, string>(0).inspectErr(fn);
+		assertSpyCalls(fn, 0);
 	});
 
 	it("returns result and calls closure on Err result", async () => {
-		const fn = vi.fn();
-		await new AsyncResult(Promise.resolve(Err("foo"))).inspectErr(fn);
-		expect(fn).toHaveBeenCalled();
+		const fn = spy((_error: string) => {});
+		await TestErrPromise<number, string>("foo").inspectErr(fn);
+		assertSpyCall(fn, 0, { args: ["foo"] });
 	});
 });
 
-describe.concurrent("inspectErrAsync", () => {
+describe("inspectErrAsync", () => {
 	it("does not call closure on Ok result", async () => {
-		const f = vi.fn().mockResolvedValue("mocked value");
+		const f = spy(async (_error: string) => {});
 		await TestOkPromise<number, string>(0).inspectErrAsync(f);
-		expect(f).not.toHaveBeenCalled();
+		assertSpyCalls(f, 0);
 	});
 
-	it("calls closure on Ok result", async () => {
-		const f = vi.fn().mockResolvedValue("mocked value");
-		await TestErrPromise(42).inspectErrAsync(f);
-		expect(f).toHaveBeenCalled();
+	it("calls closure on Err result", async () => {
+		const f = spy(async (_error: string) => {});
+		await TestErrPromise<number, string>("foo").inspectErrAsync(f);
+		assertSpyCall(f, 0, { args: ["foo"] });
 	});
 });
 
-describe.concurrent("map", () => {
+describe("map", () => {
 	it("returns the mapped value for an Ok result", async () => {
-		const result = new AsyncResult(Promise.resolve(Ok(42)));
+		const result = TestOkPromise<number, string>(42);
 		const result2 = result.map((value) => value * 2);
 		await expect(result2.unwrap()).resolves.toEqual(84);
 	});
 
 	it("returns the original Err for an Err result", async () => {
 		const error = new Error("Test error");
-		const result = new AsyncResult<number, Error>(Promise.resolve(Err(error)));
+		const result = TestErrPromise<number, Error>(error);
 		const result2 = result.map((value) => value * 2);
 		const awaitedResult = await result;
 		await expect(result2.unwrapErr()).resolves.toEqual(awaitedResult.unwrapErr());
 	});
 });
 
-describe.concurrent("mapAsync", () => {
+describe("mapAsync", () => {
 	it("returns the mapped value for an Ok result", async () => {
-		const a = new AsyncResult(Promise.resolve(Ok(42)));
+		const a = TestOkPromise<number, string>(42);
 		const b = a.mapAsync(async (value) => value * 2);
 		await expect(b.unwrap()).resolves.toEqual(84);
 	});
 
 	it("returns the original Err for an Err result", async () => {
-		const a = new AsyncResult<number, string>(Promise.resolve(Err("error")));
+		const a = TestErrPromise<number, string>("error");
 		const b = a.map((value) => value * 2);
 		const awaitedResult = await a;
 		await expect(b.unwrapErr()).resolves.toEqual(awaitedResult.unwrapErr());
 	});
 });
 
-describe.concurrent("mapErr", () => {
+describe("mapErr", () => {
 	it("returns the mapped error for an Err result", async () => {
-		const a = new AsyncResult(Promise.resolve(Err("error")));
+		const a = TestErrPromise<number, string>("error");
 		const b = a.mapErr(() => "new error");
 		await expect(b.unwrapErr()).resolves.toEqual("new error");
 	});
 
 	it("returns the original Ok for an Err result", async () => {
-		const result = new AsyncResult(Promise.resolve(Ok()));
+		const result = TestOkPromise<number, string>(42);
 		const result2 = result.mapErr(() => new Error("Error"));
-		await expect(result2.unwrap()).resolves.toEqual(undefined);
+		await expect(result2.unwrap()).resolves.toEqual(42);
 	});
 });
 
-describe.concurrent("mapErr", () => {
+describe("mapErr", () => {
 	it("returns the mapped error for an Err result", async () => {
-		const a = new AsyncResult(Promise.resolve(Err("string")));
+		const a = TestErrPromise<number, string>("string");
 		const b = a.mapErrAsync(async () => "error");
 		await expect(b.unwrapErr()).resolves.toEqual("error");
 	});
 
 	it("returns the original Ok for an Err result", async () => {
-		const a = new AsyncResult(Promise.resolve(Ok()));
+		const a = TestOkPromise<number, string>(42);
 		const b = a.mapErrAsync(async () => new Error("Error"));
-		await expect(b.unwrap()).resolves.toEqual(undefined);
+		await expect(b.unwrap()).resolves.toEqual(42);
 	});
 });
 
-describe.concurrent("mapOr", () => {
+describe("mapOr", () => {
 	it("returns the mapped value for an Ok result", async () => {
-		const result = new AsyncResult(Promise.resolve(Ok(42)));
+		const result = TestOkPromise<number, string>(42);
 		const value = await result.mapOr(0, (value) => value * 2);
 		expect(value).toEqual(84);
 	});
 
 	it("returns the default value for an Err result", async () => {
 		const error = new Error("Test error");
-		const result = new AsyncResult<number, Error>(Promise.resolve(Err(error)));
+		const result = TestErrPromise<number, Error>(error);
 		const value = await result.mapOr(0, (value) => value * 2);
 		expect(value).toEqual(0);
 	});
 });
 
-describe.concurrent("mapOrElse", () => {
+describe("mapOrElse", () => {
 	it("returns the mapped value for an Ok result", async () => {
-		const result = new AsyncResult(Promise.resolve(Ok(42)));
+		const result = TestOkPromise<number, string>(42);
 		const value = await result.mapOrElse(
 			() => 0,
 			(value) => value * 2,
@@ -291,9 +304,7 @@ describe.concurrent("mapOrElse", () => {
 	});
 
 	it("returns the default value from a function for an Err result", async () => {
-		const result = new AsyncResult<number, Error>(
-			Promise.resolve(Err(new Error("Test error"))),
-		);
+		const result = TestErrPromise<number, Error>(new Error("Test error"));
 		const value = await result.mapOrElse(
 			() => 0,
 			(value) => value * 2,
@@ -302,7 +313,7 @@ describe.concurrent("mapOrElse", () => {
 	});
 });
 
-describe.concurrent("or", () => {
+describe("or", () => {
 	it("returns the value when Ok or Err", async () => {
 		const a = TestOkPromise("a");
 		const b = TestErrPromise("b");
@@ -328,7 +339,7 @@ describe.concurrent("or", () => {
 	});
 });
 
-describe.concurrent("orElse", () => {
+describe("orElse", () => {
 	it("returns the result for an Ok result", async () => {
 		const a = TestOkPromise(1);
 		await expect(a.orElse(() => Ok(1)).unwrap()).resolves.toEqual(1);
@@ -341,7 +352,7 @@ describe.concurrent("orElse", () => {
 	});
 });
 
-describe.concurrent("orElseAsync", () => {
+describe("orElseAsync", () => {
 	it("returns the result for an Ok result", async () => {
 		const a = TestOkPromise<number, string>(0);
 		await expect(a.orElseAsync(async () => Ok(1)).unwrap()).resolves.toEqual(0);
@@ -354,61 +365,61 @@ describe.concurrent("orElseAsync", () => {
 	});
 });
 
-describe.concurrent("unwrap", () => {
+describe("unwrap", () => {
 	it("returns the value for an Ok result", async () => {
-		const result = new AsyncResult(Promise.resolve(Ok(42)));
+		const result = TestOkPromise<number, string>(42);
 		await expect(result.unwrap()).resolves.toEqual(42);
 	});
 
 	it("returns undefined for an Err result", async () => {
 		const error = new Error("Test error");
-		const result = new AsyncResult(Promise.resolve(Err(error)));
+		const result = TestErrPromise<number, Error>(error);
 		await expect(result.unwrap()).resolves.toEqual(undefined);
 	});
 });
 
-describe.concurrent("unwrapErr", () => {
+describe("unwrapErr", () => {
 	it("returns the error for an Err result", async () => {
 		const error = new Error("Test error");
-		const result = new AsyncResult(Promise.resolve(Err(error)));
+		const result = TestErrPromise<number, Error>(error);
 		await expect(result.unwrapErr()).resolves.toEqual(error);
 	});
 
 	it("returns undefined for an Ok result", async () => {
-		const result = new AsyncResult(Promise.resolve(Ok(42)));
+		const result = TestOkPromise<number, string>(42);
 		await expect(result.unwrapErr()).resolves.toEqual(undefined);
 	});
 });
 
-describe.concurrent("unwrapOr", () => {
+describe("unwrapOr", () => {
 	it("returns the value for an Ok result", async () => {
-		const result = new AsyncResult(Promise.resolve(Ok(42)));
+		const result = TestOkPromise<number, string>(42);
 		await expect(result.unwrapOr(0)).resolves.toEqual(42);
 	});
 
 	it("returns the default value for an Err result", async () => {
 		const error = new Error("Test error");
-		const result = new AsyncResult(Promise.resolve(Err(error)));
+		const result = TestErrPromise<number, Error>(error);
 		await expect(result.unwrapOr(42)).resolves.toEqual(42);
 	});
 });
 
-describe.concurrent("unwrapOrElse", () => {
+describe("unwrapOrElse", () => {
 	it("returns the value for an Ok result", async () => {
-		const result = new AsyncResult(Promise.resolve(Ok(42)));
+		const result = TestOkPromise<number, string>(42);
 		await expect(result.unwrapOrElse(() => 0)).resolves.toEqual(42);
 	});
 
 	it("returns the default value from a function for an Err result", async () => {
 		const error = new Error("Test error");
-		const result = new AsyncResult(Promise.resolve(Err(error)));
+		const result = TestErrPromise<number, Error>(error);
 		await expect(result.unwrapOrElse(() => 42)).resolves.toEqual(42);
 	});
 });
 
-describe.concurrent("match", () => {
+describe("match", () => {
 	it("calls the ok function for an Ok result", async () => {
-		const result = new AsyncResult(Promise.resolve(Ok(42)));
+		const result = TestOkPromise<number, string>(42);
 		const output = result.match({
 			Ok: (value) => value * 2,
 			Err: () => 0,
@@ -418,7 +429,7 @@ describe.concurrent("match", () => {
 
 	it("calls the err function for an Err result", async () => {
 		const error = new Error("Test error");
-		const result = new AsyncResult<number, Error>(Promise.resolve(Err(error)));
+		const result = TestErrPromise<number, Error>(error);
 		const output = result.match({
 			Ok: (value) => value * 2,
 			Err: () => 0,

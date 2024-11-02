@@ -1,16 +1,9 @@
-import {
-	Result,
-	Ok,
-	Err,
-	Option,
-	Some,
-	AsyncResult,
-	None,
-	asyncFn,
-	Panic,
-	ErrorWithCause,
-} from "../";
-import {db} from "./db";
+import { db } from "./db.ts";
+import { Err, Ok, Result } from "../src/result.ts";
+import { AsyncResult } from "../src/result_async.ts";
+import { asyncFn } from "../src/fn.ts";
+import { Option } from "../src/option.ts";
+import { ErrorWithCause, Panic } from "../src/error.ts";
 
 function divide(a: number, b: number): Result<number, Error> {
 	if (b === 0) {
@@ -20,6 +13,7 @@ function divide(a: number, b: number): Result<number, Error> {
 }
 
 // You do not have to use `namespace` pattern, but I find it useful to group errors and their mappers together.
+// deno-lint-ignore no-namespace
 namespace DatabaseError {
 	export class Unreachable extends ErrorWithCause<Error> {
 		readonly tag = "DatabaseError.Unreachable";
@@ -31,13 +25,13 @@ namespace DatabaseError {
 
 	export function from(error: Error): DatabaseError {
 		if (error.message === "validation error") {
-			return new ValidationError(error.message, {cause: error});
+			return new ValidationError(error.message, { cause: error });
 		}
 		if (error.message === "unreachable") {
-			return new Unreachable(error.message, {cause: error});
+			return new Unreachable(error.message, { cause: error });
 		}
 		// Add more error variants here, for now we panic if we encounter an unknown error
-		throw new Panic("unhandled database error", {cause: error});
+		throw new Panic("unhandled database error", { cause: error });
 	}
 }
 export type DatabaseError = DatabaseError.ValidationError | DatabaseError.Unreachable;
@@ -51,7 +45,7 @@ function findGradesByStudentId(id: string): AsyncResult<Option<number[]>, Databa
 
 // Or you can use `asyncFn` to wrap functions that return `Promise<Result<T, E>>` to convert return type to `AsyncResult<T, E>`
 // Inferred type is `(studentId: string) => AsyncResult<number, Error>`
-const getAverageGrade = asyncFn(async (studentId: string) => {
+const _getAverageGrade = asyncFn(async (studentId: string) => {
 	const grades = await findGradesByStudentId(studentId)
 		.andThen((maybeGrades) => {
 			return maybeGrades.match({

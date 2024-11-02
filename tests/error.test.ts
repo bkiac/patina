@@ -1,5 +1,6 @@
-import {expect, it} from "vitest";
-import {parseError, Panic} from "../src";
+import { it } from "@std/testing/bdd";
+import { expect } from "@std/expect";
+import { Panic, parseError } from "../src/error.ts";
 
 it("returns an instance without params", () => {
 	const panic = new Panic();
@@ -29,8 +30,8 @@ it("returns an instance with message", () => {
 it("returns an instance with error", () => {
 	const panicMsg = "panic message";
 	const errorMsg = "error message";
-	let cause = new Error(errorMsg);
-	let panic = new Panic(panicMsg, {cause});
+	const cause = new Error(errorMsg);
+	let panic = new Panic(panicMsg, { cause });
 
 	expect(panic).toBeInstanceOf(Error);
 	expect(panic).toBeInstanceOf(Panic);
@@ -41,14 +42,14 @@ it("returns an instance with error", () => {
 	expect(panic.cause).toEqual(cause);
 
 	cause.name = "MyError";
-	panic = new Panic(panicMsg, {cause});
+	panic = new Panic(panicMsg, { cause });
 	expect(panic.stack).toBeDefined();
 });
 
 it("returns an instance with unknown", () => {
 	const panicMsg = "panic message";
-	let cause = "string cause";
-	let panic = new Panic(panicMsg, {cause});
+	const cause = "string cause";
+	const panic = new Panic(panicMsg, { cause });
 
 	expect(panic).toBeInstanceOf(Error);
 	expect(panic).toBeInstanceOf(Panic);

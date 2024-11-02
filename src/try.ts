@@ -1,7 +1,7 @@
-import {ResultAsync} from "./result_async";
-import {Panic} from "./error";
-import {type Result, type Err} from "./result";
-import {InferErr, InferOk} from "./util";
+import { ResultAsync } from "./result_async.ts";
+import { Panic } from "./error.ts";
+import { type Err, type Result } from "./result.ts";
+import { InferErr, InferOk } from "./util.ts";
 
 /**
  * Creates a scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a `Result`.
@@ -22,6 +22,7 @@ import {InferErr, InferOk} from "./util";
  * assert.equal(block.unwrap(), 2);
  * ```
  */
+
 export function tryBlock<Y extends Err<any, never>, R extends Result<any, any>>(
 	scope: () => Generator<Y, R>,
 ): Result<InferOk<R>, InferErr<Y> | InferErr<R>> {
@@ -49,6 +50,7 @@ export function tryBlock<Y extends Err<any, never>, R extends Result<any, any>>(
  * assert.equal(block.unwrap(), 2);
  * ```
  */
+
 export function tryBlockAsync<Y extends Err<any, never>, R extends Result<any, any>>(
 	scope: () => AsyncGenerator<Y, R>,
 ): ResultAsync<InferOk<R>, InferErr<Y> | InferErr<R>> {
