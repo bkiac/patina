@@ -1,4 +1,7 @@
-import { describe, expect, it, vi } from "vitest";
+// deno-lint-ignore-file require-await
+import { describe, it } from "@std/testing/bdd";
+import { expect } from "@std/expect";
+import { assertSpyCall, assertSpyCalls, spy } from "@std/testing/mock";
 import { None, Some } from "./option.ts";
 import { OptionAsync } from "./option_async.ts";
 import { Panic } from "./error.ts";
@@ -8,10 +11,10 @@ function promiseSome<T>(value: T) {
 }
 
 function promiseNone() {
-	return new OptionAsync<any>(Promise.resolve(None));
+	return new OptionAsync<never>(Promise.resolve(None));
 }
 
-describe.concurrent("okOr", () => {
+describe("okOr", () => {
 	it("returns the option when Some", async () => {
 		const option = promiseSome(42);
 		const err = "error";
@@ -25,7 +28,7 @@ describe.concurrent("okOr", () => {
 	});
 });
 
-describe.concurrent("okOrElse", () => {
+describe("okOrElse", () => {
 	it("returns the option when Some", async () => {
 		const option = promiseSome(42);
 		const err = "error";
@@ -39,7 +42,7 @@ describe.concurrent("okOrElse", () => {
 	});
 });
 
-describe.concurrent("and", () => {
+describe("and", () => {
 	it("returns the other option when Some and None", async () => {
 		const a = promiseSome(2);
 		const b = promiseNone();
@@ -65,7 +68,7 @@ describe.concurrent("and", () => {
 	});
 });
 
-describe.concurrent("andThen", () => {
+describe("andThen", () => {
 	it("returns the mapped value for a Some option", async () => {
 		const a = promiseSome(0);
 		await expect(a.andThen((value) => Some(value + 1)).unwrap()).resolves.toEqual(1);
@@ -77,7 +80,7 @@ describe.concurrent("andThen", () => {
 	});
 });
 
-describe.concurrent("andThenAsync", () => {
+describe("andThenAsync", () => {
 	it("returns the mapped value for a Some option", async () => {
 		const a = promiseSome(0);
 		await expect(a.andThenAsync(async (value) => Some(value + 1)).unwrap()).resolves.toEqual(1);
@@ -101,7 +104,7 @@ describe.concurrent("andThenAsync", () => {
 	});
 });
 
-describe.concurrent("expect", () => {
+describe("expect", () => {
 	it("returns the value when called on a Some option", async () => {
 		const option = promiseSome(42);
 		await expect(option.expect("error")).resolves.toEqual(42);
@@ -113,7 +116,7 @@ describe.concurrent("expect", () => {
 	});
 });
 
-describe.concurrent("filter", () => {
+describe("filter", () => {
 	it("returns the option when the predicate returns true", async () => {
 		const option = promiseSome(42);
 		await expect(option.filter((value) => value === 42).unwrap()).resolves.toEqual(42);
@@ -125,7 +128,7 @@ describe.concurrent("filter", () => {
 	});
 });
 
-describe.concurrent("filterAsync", () => {
+describe("filterAsync", () => {
 	it("returns the option when the predicate returns true", async () => {
 		const option = promiseSome(42);
 		await expect(option.filterAsync(async (value) => value === 42).unwrap()).resolves.toEqual(
@@ -140,11 +143,11 @@ describe.concurrent("filterAsync", () => {
 
 	it("returns None for a None option", async () => {
 		const option = promiseNone();
-		await expect(option.filterAsync(async (value) => true)).resolves.toEqual(None);
+		await expect(option.filterAsync(async (_value) => true)).resolves.toEqual(None);
 	});
 });
 
-describe.concurrent("flatten", () => {
+describe("flatten", () => {
 	it("returns the inner option for a Some option", async () => {
 		const option = promiseSome(Some(42));
 		await expect(option.flatten()).resolves.toEqual(Some(42));
@@ -156,23 +159,23 @@ describe.concurrent("flatten", () => {
 	});
 });
 
-describe.concurrent("inspect", () => {
+describe("inspect", () => {
 	it("calls the function when called on a Some option", async () => {
 		const option = promiseSome(42);
-		const fn = vi.fn();
+		const fn = spy((_value: number) => {});
 		await option.inspect(fn);
-		expect(fn).toHaveBeenCalledWith(42);
+		assertSpyCall(fn, 0, { args: [42] });
 	});
 
 	it("does not call the function when called on a None option", async () => {
 		const option = promiseNone();
-		const fn = vi.fn();
+		const fn = spy((_value: number) => {});
 		await option.inspect(fn);
-		expect(fn).not.toHaveBeenCalled();
+		assertSpyCalls(fn, 0);
 	});
 });
 
-describe.concurrent("map", () => {
+describe("map", () => {
 	it("returns the mapped value for a Some option", async () => {
 		const option = promiseSome(42);
 		await expect(option.map((value) => value + 1)).resolves.toEqual(Some(43));
@@ -184,7 +187,7 @@ describe.concurrent("map", () => {
 	});
 });
 
-describe.concurrent("mapAsync", () => {
+describe("mapAsync", () => {
 	it("returns the mapped value for a Some option", async () => {
 		const option = promiseSome(42);
 		await expect(option.mapAsync(async (value) => value + 1)).resolves.toEqual(Some(43));
@@ -203,7 +206,7 @@ describe.concurrent("mapAsync", () => {
 	});
 });
 
-describe.concurrent("mapOr", () => {
+describe("mapOr", () => {
 	it("returns the mapped value for a Some option", async () => {
 		const option = promiseSome(42);
 		await expect(option.mapOr("default", (value) => value + 1)).resolves.toEqual(43);
@@ -215,7 +218,7 @@ describe.concurrent("mapOr", () => {
 	});
 });
 
-describe.concurrent("mapOrElse", () => {
+describe("mapOrElse", () => {
 	it("returns the mapped value for a Some option", async () => {
 		const option = promiseSome(42);
 		await expect(
@@ -237,7 +240,7 @@ describe.concurrent("mapOrElse", () => {
 	});
 });
 
-describe.concurrent("mapOrElseAsync", () => {
+describe("mapOrElseAsync", () => {
 	it("returns the mapped value for a Some option", async () => {
 		const option = promiseSome(42);
 		await expect(
@@ -259,7 +262,7 @@ describe.concurrent("mapOrElseAsync", () => {
 	});
 });
 
-describe.concurrent("or", () => {
+describe("or", () => {
 	it("returns the option when Some and None", () => {
 		const a = promiseSome(2);
 		const b = promiseNone();
@@ -285,7 +288,7 @@ describe.concurrent("or", () => {
 	});
 });
 
-describe.concurrent("orElse", () => {
+describe("orElse", () => {
 	it("returns the result for a Some option", () => {
 		const a = promiseSome(1);
 		expect(a.orElse(() => Some(1))).toEqual(a);
@@ -297,7 +300,7 @@ describe.concurrent("orElse", () => {
 	});
 });
 
-describe.concurrent("orElseAsync", () => {
+describe("orElseAsync", () => {
 	it("returns the result for a Some option", async () => {
 		const a = promiseSome(1);
 		await expect(a.orElseAsync(async () => Some(2)).unwrap()).resolves.toEqual(1);
@@ -319,7 +322,7 @@ describe.concurrent("orElseAsync", () => {
 	});
 });
 
-describe.concurrent("unwrap", () => {
+describe("unwrap", () => {
 	it("returns the value when called on a Some option", async () => {
 		const option = promiseSome(42);
 		await expect(option.unwrap()).resolves.toEqual(42);
@@ -331,7 +334,7 @@ describe.concurrent("unwrap", () => {
 	});
 });
 
-describe.concurrent("unwrapOr", () => {
+describe("unwrapOr", () => {
 	it("returns the value when called on a Some option", async () => {
 		const option = promiseSome(42);
 		await expect(option.unwrapOr("default")).resolves.toEqual(42);
@@ -343,7 +346,7 @@ describe.concurrent("unwrapOr", () => {
 	});
 });
 
-describe.concurrent("unwrapOrElse", () => {
+describe("unwrapOrElse", () => {
 	it("returns the value when called on a Some option", async () => {
 		const option = promiseSome(42);
 		await expect(option.unwrapOrElse(() => "default")).resolves.toEqual(42);
@@ -355,7 +358,7 @@ describe.concurrent("unwrapOrElse", () => {
 	});
 });
 
-describe.concurrent("unwrapOrElseAsync", () => {
+describe("unwrapOrElseAsync", () => {
 	it("returns the value when called on a Some option", async () => {
 		const option = promiseSome(42);
 		await expect(option.unwrapOrElseAsync(async () => "default")).resolves.toEqual(42);
@@ -367,7 +370,7 @@ describe.concurrent("unwrapOrElseAsync", () => {
 	});
 });
 
-describe.concurrent("xor", () => {
+describe("xor", () => {
 	it("returns Some when Some and None", async () => {
 		const a = promiseSome(2);
 		const b = promiseNone();
@@ -393,7 +396,7 @@ describe.concurrent("xor", () => {
 	});
 });
 
-describe.concurrent("match", () => {
+describe("match", () => {
 	it("returns the mapped value for a Some option", async () => {
 		const option = promiseSome(42);
 		await expect(

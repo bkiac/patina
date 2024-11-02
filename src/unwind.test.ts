@@ -1,11 +1,15 @@
-import { describe, expect, expectTypeOf, it } from "vitest";
+// deno-lint-ignore-file require-await
+import { describe, it } from "@std/testing/bdd";
+import { expectTypeOf } from "expect-type";
+import { expect } from "@std/expect";
 import { catchUnwind, catchUnwindAsync } from "./unwind.ts";
 import { Result } from "./result.ts";
 import { Panic } from "./error.ts";
+import { ResultAsync } from "./result_async.ts";
 
 const UNEXPECTED_ERROR_MESSAGE = "Unexpected error type";
 
-describe.concurrent("catchUnwind", () => {
+describe("catchUnwind", () => {
 	it("returns Ok result when function succeeds", () => {
 		const result = catchUnwind(() => 42);
 		expectTypeOf(result).toEqualTypeOf<Result<number, Error>>();
@@ -42,7 +46,7 @@ describe.concurrent("catchUnwind", () => {
 	});
 });
 
-describe.concurrent("catchUnwindAsync", () => {
+describe("catchUnwindAsync", () => {
 	it("returns Ok result when async function succeeds", async () => {
 		const result = catchUnwindAsync(async () => 42);
 		expectTypeOf(result).toEqualTypeOf<ResultAsync<number, Error>>();

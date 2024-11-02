@@ -1,4 +1,5 @@
-import { expect, it } from "vitest";
+import { it } from "@std/testing/bdd";
+import { expect } from "@std/expect";
 import { Panic, parseError } from "./error.ts";
 
 it("returns an instance without params", () => {

@@ -7,11 +7,11 @@ import { Err, Ok, Result } from "./result.ts";
 import { None, Some } from "./option.ts";
 import { ErrorWithTag, Panic } from "./error.ts";
 
-export function TestOk<T, E>(value: T): Result<T, E> {
+function TestOk<T, E>(value: T): Result<T, E> {
 	return Ok(value);
 }
 
-export function TestErr<T, E>(value: E): Result<T, E> {
+function TestErr<T, E>(value: E): Result<T, E> {
 	return Err(value);
 }
 
@@ -223,7 +223,7 @@ describe("flatten", () => {
 	});
 
 	it("works with non-primitive value or error", () => {
-		class Foo extends ErrorWithTag {
+		class _Foo extends ErrorWithTag {
 			readonly tag = "foo";
 		}
 
@@ -236,14 +236,14 @@ describe("flatten", () => {
 				id: string;
 			}
 			| undefined,
-			Foo
+			_Foo
 		>({
 			id: "1",
 		});
 		const bar = foo
 			.map((value) => (value === undefined ? Err(new Bar()) : Ok(value)))
 			.flatten();
-		expectTypeOf(bar).toEqualTypeOf<Result<{ id: string }, Foo | Bar>>();
+		expectTypeOf(bar).toEqualTypeOf<Result<{ id: string }, _Foo | Bar>>();
 	});
 });
 
