@@ -10,6 +10,9 @@ const { version } = JSON.parse(await Deno.readTextFile("./deno.json"));
 await build({
 	typeCheck: false,
 	test: false,
+	compilerOptions: {
+		target: "Latest",
+	},
 	entryPoints: ["./src/mod.ts"],
 	outDir: "./npm",
 	shims: {},
