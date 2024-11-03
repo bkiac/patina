@@ -15,7 +15,6 @@ import type { InferErr, InferOk } from "./util.ts";
  * const wrapped = fn(divide)
  * ```
  */
-
 export function fn<A extends any[], R extends Result<any, any>>(
 	f: (...args: A) => R,
 ): (...args: A) => Result<InferOk<R>, InferErr<R>> {
@@ -37,7 +36,6 @@ export function fn<A extends any[], R extends Result<any, any>>(
  * const result = await wrapped(1, 2) // => Result<number, string>
  * ```
  */
-
 export function asyncFn<A extends any[], R extends ResultAsync<any, any>>(
 	f: (...args: A) => R,
 ): (...args: A) => ResultAsync<InferOk<Awaited<R>>, InferErr<Awaited<R>>>;
