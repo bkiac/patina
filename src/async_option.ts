@@ -13,6 +13,22 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 		this.promise = promise;
 	}
 
+	public get [Symbol.toStringTag](): "AsyncOption" {
+		return "AsyncOption";
+	}
+
+	public toJSON() {
+		return { AsyncOption: this.promise };
+	}
+
+	public toString(): string {
+		return `AsyncOption(${this.promise.toString()})`;
+	}
+
+	public [Symbol.for("nodejs.util.inspect.custom")](): string {
+		return this.toString();
+	}
+
 	public then<A, B>(
 		successCallback?: (res: Option<T>) => A | PromiseLike<A>,
 		failureCallback?: (reason: unknown) => B | PromiseLike<B>,

@@ -22,6 +22,22 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 		this.promise = promise;
 	}
 
+	public get [Symbol.toStringTag](): "AsyncResult" {
+		return "AsyncResult";
+	}
+
+	public toJSON() {
+		return { AsyncResult: this.promise };
+	}
+
+	public toString(): string {
+		return `AsyncResult(${this.promise.toString()})`;
+	}
+
+	public [Symbol.for("nodejs.util.inspect.custom")](): string {
+		return this.toString();
+	}
+
 	/**
 	 * Returns a generator that yields the contained value (if `Ok`) or an error (if `Err`).
 	 */

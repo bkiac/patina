@@ -15,14 +15,35 @@ export type OptionMatchAsync<T, A, B> = {
 };
 
 export class OptionImpl<T> {
-	public readonly [Symbol.toStringTag] = "Option";
-
 	private readonly _some: boolean;
 	private readonly _value: T | undefined;
 
 	public constructor(some: boolean, value: T | undefined) {
+		Object.defineProperty(this.constructor, "name", { value: "Option" });
 		this._some = some;
 		this._value = value;
+	}
+
+	public get [Symbol.toStringTag](): "Some" | "None" {
+		return this._some ? "Some" : "None";
+	}
+
+	public toJSON(): T | null {
+		if (this._some) {
+			return this._value as T;
+		}
+		return null;
+	}
+
+	public toString(): `Some(${string})` | "None" {
+		if (this._some) {
+			return `Some(${String(this._value)})`;
+		}
+		return "None";
+	}
+
+	public [Symbol.for("nodejs.util.inspect.custom")](): string {
+		return this.toString();
 	}
 
 	/**
@@ -240,7 +261,7 @@ export class OptionImpl<T> {
 		return defaultValue();
 	}
 
-	mapOrElseAsync<A, B>(
+	public mapOrElseAsync<A, B>(
 		defaultValue: () => Promise<A>,
 		f: (value: T) => Promise<B>,
 	): Promise<A | B> {
@@ -444,24 +465,6 @@ export class OptionImpl<T> {
 			return this._value as Option<U>;
 		}
 		return None;
-	}
-
-	public toObject(): { isSome: true; value: T } | { isSome: false; value: null } {
-		if (this._some) {
-			return { isSome: true, value: this._value as T };
-		}
-		return { isSome: false, value: null };
-	}
-
-	public toString(): `Some(${string})` | "None" {
-		if (this._some) {
-			return `Some(${String(this._value)})`;
-		}
-		return "None";
-	}
-
-	public [symbols.inspect](): ReturnType<OptionImpl<T>["toString"]> {
-		return this.toString();
 	}
 
 	// Deprecated

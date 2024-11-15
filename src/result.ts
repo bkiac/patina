@@ -14,14 +14,36 @@ export type ResultMatchAsync<T, E, A, B> = {
 };
 
 export class ResultImpl<T, E> {
-	public readonly [Symbol.toStringTag] = "Result";
-
 	private readonly _ok: boolean;
 	private readonly _value: T | E;
 
 	public constructor(ok: boolean, value: T | E) {
+		Object.defineProperty(this.constructor, "name", { value: "Result" });
 		this._ok = ok;
 		this._value = value;
+	}
+
+	public get [Symbol.toStringTag](): "Ok" | "Err" {
+		return this._ok ? "Ok" : "Err";
+	}
+
+	public toJSON(): { Ok: T } | { Err: E } {
+		if (this._ok) {
+			return { Ok: this._value as T };
+		}
+		return { Err: this._value as E };
+	}
+
+	public toString(): `Ok(${string})` | `Err(${string})` {
+		const str = String(this._value);
+		if (this._ok) {
+			return `Ok(${str})`;
+		}
+		return `Err(${str})`;
+	}
+
+	public [Symbol.for("nodejs.util.inspect.custom")](): string {
+		return this.toString();
 	}
 
 	/**
@@ -604,25 +626,6 @@ export class ResultImpl<T, E> {
 			return this._value as Result<U, F>;
 		}
 		return Err(this._value as E);
-	}
-
-	public toObject(): { isOk: true; value: T } | { isOk: false; error: E } {
-		if (this._ok) {
-			return { isOk: true, value: this._value as T };
-		}
-		return { isOk: false, error: this._value as E };
-	}
-
-	public toString(): `Ok(${string})` | `Err(${string})` {
-		const str = String(this._value);
-		if (this._ok) {
-			return `Ok(${str})`;
-		}
-		return `Err(${str})`;
-	}
-
-	public [symbols.inspect](): ReturnType<ResultImpl<T, E>["toString"]> {
-		return this.toString();
 	}
 
 	// Deprecated
