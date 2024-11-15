@@ -114,7 +114,7 @@ export class OptionImpl<T> {
 		if (this._some) {
 			return this._value as T;
 		}
-		throw new Panic(message, { cause: this._value });
+		throw new Panic(message);
 	}
 
 	/**

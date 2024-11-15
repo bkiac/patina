@@ -383,7 +383,7 @@ export class ResultImpl<T, E> {
 		if (this._ok) {
 			return this._value as T;
 		}
-		throw new Panic(message, { cause: this._value });
+		throw new Panic(`${message}: ${this._value}`, { cause: this._value });
 	}
 
 	/**
@@ -412,7 +412,7 @@ export class ResultImpl<T, E> {
 		if (!this._ok) {
 			return this._value as E;
 		}
-		throw new Panic(message, { cause: this._value });
+		throw new Panic(`${message}: ${this._value}`, { cause: this._value });
 	}
 
 	/**
