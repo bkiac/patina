@@ -3,15 +3,15 @@ import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import { assertSpyCall, assertSpyCalls, spy } from "@std/testing/mock";
 import { None, Some } from "../src/option.ts";
-import { OptionAsync } from "../src/option_async.ts";
+import { AsyncOption } from "../src/async_option.ts";
 import { Panic } from "../src/error.ts";
 
 function promiseSome<T>(value: T) {
-	return new OptionAsync<T>(Promise.resolve(Some<T>(value)));
+	return new AsyncOption<T>(Promise.resolve(Some<T>(value)));
 }
 
 function promiseNone() {
-	return new OptionAsync<never>(Promise.resolve(None));
+	return new AsyncOption<never>(Promise.resolve(None));
 }
 
 describe("okOr", () => {

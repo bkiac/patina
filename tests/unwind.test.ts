@@ -5,7 +5,7 @@ import { expect } from "@std/expect";
 import { catchUnwind, catchUnwindAsync } from "../src/unwind.ts";
 import { Result } from "../src/result.ts";
 import { Panic } from "../src/error.ts";
-import { ResultAsync } from "../src/result_async.ts";
+import { AsyncResult } from "../src/async_result.ts";
 
 const UNEXPECTED_ERROR_MESSAGE = "Unexpected error type";
 
@@ -49,7 +49,7 @@ describe("catchUnwind", () => {
 describe("catchUnwindAsync", () => {
 	it("returns Ok result when async function succeeds", async () => {
 		const result = catchUnwindAsync(async () => 42);
-		expectTypeOf(result).toEqualTypeOf<ResultAsync<number, Error>>();
+		expectTypeOf(result).toEqualTypeOf<AsyncResult<number, Error>>();
 		await expect(result.unwrap()).resolves.toEqual(42);
 	});
 

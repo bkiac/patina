@@ -1,4 +1,4 @@
-import { OptionAsync } from "./option_async.ts";
+import { AsyncOption } from "./async_option.ts";
 import {
 	Err,
 	Ok,
@@ -13,11 +13,11 @@ import {
  *
  * This class is useful for chaining multiple asynchronous operations that return a `Result`.
  */
-export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
-	public readonly promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>> | ResultAsync<T, E>;
+export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
+	public readonly promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>> | AsyncResult<T, E>;
 
 	public constructor(
-		promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>> | ResultAsync<T, E>,
+		promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>> | AsyncResult<T, E>,
 	) {
 		this.promise = promise;
 	}
@@ -61,26 +61,26 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
 		return (await this).matchAsync(matcher);
 	}
 
-	public ok(): OptionAsync<T> {
-		return new OptionAsync(this.then((result) => result.ok()));
+	public ok(): AsyncOption<T> {
+		return new AsyncOption(this.then((result) => result.ok()));
 	}
 
-	public err(): OptionAsync<E> {
-		return new OptionAsync(this.then((result) => result.err()));
+	public err(): AsyncOption<E> {
+		return new AsyncOption(this.then((result) => result.err()));
 	}
 
-	public and<U, F>(other: ResultAsync<U, F>): ResultAsync<U, E | F> {
-		return new ResultAsync(
+	public and<U, F>(other: AsyncResult<U, F>): AsyncResult<U, E | F> {
+		return new AsyncResult(
 			this.then((result) => other.then((otherResult) => result.and(otherResult))),
 		);
 	}
 
-	public andThen<U, F>(f: (value: T) => Result<U, F>): ResultAsync<U, E | F> {
-		return new ResultAsync(this.then((result) => result.andThen((value) => f(value))));
+	public andThen<U, F>(f: (value: T) => Result<U, F>): AsyncResult<U, E | F> {
+		return new AsyncResult(this.then((result) => result.andThen((value) => f(value))));
 	}
 
-	public andThenAsync<U, F>(f: (value: T) => Promise<Result<U, F>>): ResultAsync<U, E | F> {
-		return new ResultAsync(this.then((result) => result.andThenAsync((value) => f(value))));
+	public andThenAsync<U, F>(f: (value: T) => Promise<Result<U, F>>): AsyncResult<U, E | F> {
+		return new AsyncResult(this.then((result) => result.andThenAsync((value) => f(value))));
 	}
 
 	public async expect(message: string): Promise<T> {
@@ -91,40 +91,40 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
 		return (await this).expectErr(message);
 	}
 
-	public flatten<U, F>(this: ResultAsync<ResultImpl<U, F>, E>): ResultAsync<U, E | F> {
-		return new ResultAsync(this.then((result) => result.flatten()));
+	public flatten<U, F>(this: AsyncResult<ResultImpl<U, F>, E>): AsyncResult<U, E | F> {
+		return new AsyncResult(this.then((result) => result.flatten()));
 	}
 
-	public inspect(f: (value: T) => void): ResultAsync<T, E> {
-		return new ResultAsync(this.then((result) => result.inspect(f)));
+	public inspect(f: (value: T) => void): AsyncResult<T, E> {
+		return new AsyncResult(this.then((result) => result.inspect(f)));
 	}
 
-	public inspectAsync(f: (value: T) => Promise<void>): ResultAsync<T, E> {
-		return new ResultAsync(this.then((result) => result.inspectAsync(f)));
+	public inspectAsync(f: (value: T) => Promise<void>): AsyncResult<T, E> {
+		return new AsyncResult(this.then((result) => result.inspectAsync(f)));
 	}
 
-	public inspectErr(f: (error: E) => void): ResultAsync<T, E> {
-		return new ResultAsync(this.then((result) => result.inspectErr(f)));
+	public inspectErr(f: (error: E) => void): AsyncResult<T, E> {
+		return new AsyncResult(this.then((result) => result.inspectErr(f)));
 	}
 
-	public inspectErrAsync(f: (error: E) => Promise<void>): ResultAsync<T, E> {
-		return new ResultAsync(this.then((result) => result.inspectErrAsync(f)));
+	public inspectErrAsync(f: (error: E) => Promise<void>): AsyncResult<T, E> {
+		return new AsyncResult(this.then((result) => result.inspectErrAsync(f)));
 	}
 
-	public map<U>(f: (value: T) => U): ResultAsync<U, E> {
-		return new ResultAsync(this.then((result) => result.map(f)));
+	public map<U>(f: (value: T) => U): AsyncResult<U, E> {
+		return new AsyncResult(this.then((result) => result.map(f)));
 	}
 
-	public mapAsync<U>(f: (value: T) => Promise<U>): ResultAsync<U, E> {
-		return new ResultAsync(this.then((result) => result.mapAsync(f)));
+	public mapAsync<U>(f: (value: T) => Promise<U>): AsyncResult<U, E> {
+		return new AsyncResult(this.then((result) => result.mapAsync(f)));
 	}
 
-	public mapErr<F>(f: (error: E) => F): ResultAsync<T, F> {
-		return new ResultAsync(this.then((result) => result.mapErr(f)));
+	public mapErr<F>(f: (error: E) => F): AsyncResult<T, F> {
+		return new AsyncResult(this.then((result) => result.mapErr(f)));
 	}
 
-	public mapErrAsync<F>(f: (error: E) => Promise<F>): ResultAsync<T, F> {
-		return new ResultAsync(this.then((result) => result.mapErrAsync(f)));
+	public mapErrAsync<F>(f: (error: E) => Promise<F>): AsyncResult<T, F> {
+		return new AsyncResult(this.then((result) => result.mapErrAsync(f)));
 	}
 
 	public async mapOr<A, B>(defaultValue: A, f: (value: T) => B): Promise<A | B> {
@@ -138,18 +138,18 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
 		return (await this).mapOrElse(defaultValue, f);
 	}
 
-	public or<U, F>(other: ResultAsync<U, F>): ResultAsync<T | U, F> {
-		return new ResultAsync(
+	public or<U, F>(other: AsyncResult<U, F>): AsyncResult<T | U, F> {
+		return new AsyncResult(
 			this.then((thisResult) => other.then((otherResult) => thisResult.or(otherResult))),
 		);
 	}
 
-	public orElse<U, F>(f: (error: E) => Result<U, F>): ResultAsync<T | U, F> {
-		return new ResultAsync(this.then((thisResult) => thisResult.orElse((error) => f(error))));
+	public orElse<U, F>(f: (error: E) => Result<U, F>): AsyncResult<T | U, F> {
+		return new AsyncResult(this.then((thisResult) => thisResult.orElse((error) => f(error))));
 	}
 
-	public orElseAsync<U, F>(f: (error: E) => Promise<Result<U, F>>): ResultAsync<T | U, F> {
-		return new ResultAsync(
+	public orElseAsync<U, F>(f: (error: E) => Promise<Result<U, F>>): AsyncResult<T | U, F> {
+		return new AsyncResult(
 			this.then((thisResult) => thisResult.orElseAsync((error) => f(error))),
 		);
 	}
@@ -194,13 +194,10 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
 	}
 }
 
-export const AsyncResult = ResultAsync;
-export type AsyncResult<T, E> = ResultAsync<T, E>;
-
-export function OkAsync<T>(value: T): ResultAsync<T, never> {
-	return new ResultAsync(Promise.resolve(Ok(value)));
+export function AsyncOk<T>(value: T): AsyncResult<T, never> {
+	return new AsyncResult(Promise.resolve(Ok(value)));
 }
 
-export function ErrAsync<E>(error: E): ResultAsync<never, E> {
-	return new ResultAsync(Promise.resolve(Err(error)));
+export function AsyncErr<E>(error: E): AsyncResult<never, E> {
+	return new AsyncResult(Promise.resolve(Err(error)));
 }

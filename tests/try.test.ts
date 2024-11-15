@@ -4,7 +4,7 @@ import { expect } from "@std/expect";
 import { Err, Ok, Result } from "../src/result.ts";
 import { Panic } from "../src/error.ts";
 import { tryBlock, tryBlockAsync } from "../src/try.ts";
-import { ErrAsync, OkAsync, ResultAsync } from "../src/result_async.ts";
+import { AsyncErr, AsyncOk, AsyncResult } from "../src/async_result.ts";
 
 const unreachable = () => expect(true, "should not be reached").toBe(false);
 
@@ -53,34 +53,34 @@ describe("deprecated try()", () => {
 			const y = yield* Ok(1).try();
 			return Ok(x + y);
 		});
-		expectTypeOf(block5).toEqualTypeOf<ResultAsync<number, never>>();
+		expectTypeOf(block5).toEqualTypeOf<AsyncResult<number, never>>();
 		await expect(block5.unwrap()).resolves.toEqual(2);
 
 		const block1 = tryBlockAsync(async function* () {
 			yield* Err("error").try();
-			yield* ErrAsync(2).try();
+			yield* AsyncErr(2).try();
 			if (Math.random() > 0.5) {
 				return Ok("foo");
 			} else {
 				return Ok(0);
 			}
 		});
-		expectTypeOf(block1).toEqualTypeOf<ResultAsync<string | number, string | number>>();
+		expectTypeOf(block1).toEqualTypeOf<AsyncResult<string | number, string | number>>();
 
 		const block6 = tryBlockAsync(async function* () {
-			const x = yield* OkAsync(1).try();
-			const y = yield* OkAsync(1).try();
+			const x = yield* AsyncOk(1).try();
+			const y = yield* AsyncOk(1).try();
 			return Ok(x + y);
 		});
-		expectTypeOf(block6).toEqualTypeOf<ResultAsync<number, never>>();
+		expectTypeOf(block6).toEqualTypeOf<AsyncResult<number, never>>();
 		await expect(block6.unwrap()).resolves.toEqual(2);
 
 		const block7 = tryBlockAsync(async function* () {
-			const x = yield* OkAsync(1).try();
-			const y = yield* ErrAsync("error").try();
+			const x = yield* AsyncOk(1).try();
+			const y = yield* AsyncErr("error").try();
 			return Ok(x + y);
 		});
-		expectTypeOf(block7).toEqualTypeOf<ResultAsync<number, string>>();
+		expectTypeOf(block7).toEqualTypeOf<AsyncResult<number, string>>();
 		await expect(block7.unwrapErr()).resolves.toEqual("error");
 
 		// Do not catch panic
@@ -162,34 +162,34 @@ test("tryBlockAsync", async () => {
 		const y = yield* Ok(1);
 		return Ok(x + y);
 	});
-	expectTypeOf(block5).toEqualTypeOf<ResultAsync<number, never>>();
+	expectTypeOf(block5).toEqualTypeOf<AsyncResult<number, never>>();
 	await expect(block5.unwrap()).resolves.toEqual(2);
 
 	const block1 = tryBlockAsync(async function* () {
 		yield* Err("error");
-		yield* ErrAsync(2);
+		yield* AsyncErr(2);
 		if (Math.random() > 0.5) {
 			return Ok("foo");
 		} else {
 			return Ok(0);
 		}
 	});
-	expectTypeOf(block1).toEqualTypeOf<ResultAsync<string | number, string | number>>();
+	expectTypeOf(block1).toEqualTypeOf<AsyncResult<string | number, string | number>>();
 
 	const block6 = tryBlockAsync(async function* () {
-		const x = yield* OkAsync(1);
-		const y = yield* OkAsync(1);
+		const x = yield* AsyncOk(1);
+		const y = yield* AsyncOk(1);
 		return Ok(x + y);
 	});
-	expectTypeOf(block6).toEqualTypeOf<ResultAsync<number, never>>();
+	expectTypeOf(block6).toEqualTypeOf<AsyncResult<number, never>>();
 	await expect(block6.unwrap()).resolves.toEqual(2);
 
 	const block7 = tryBlockAsync(async function* () {
-		const x = yield* OkAsync(1);
-		const y = yield* ErrAsync("error");
+		const x = yield* AsyncOk(1);
+		const y = yield* AsyncErr("error");
 		return Ok(x + y);
 	});
-	expectTypeOf(block7).toEqualTypeOf<ResultAsync<number, string>>();
+	expectTypeOf(block7).toEqualTypeOf<AsyncResult<number, string>>();
 	await expect(block7.unwrapErr()).resolves.toEqual("error");
 
 	// Do not catch panic

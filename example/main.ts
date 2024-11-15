@@ -1,6 +1,6 @@
 import { db } from "./db.ts";
 import { Err, Ok, Result } from "../src/result.ts";
-import { AsyncResult } from "../src/result_async.ts";
+import { AsyncResult } from "../src/async_result.ts";
 import { asyncFn } from "../src/fn.ts";
 import { Option } from "../src/option.ts";
 import { ErrorWithCause, Panic } from "../src/error.ts";

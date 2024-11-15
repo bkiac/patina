@@ -3,17 +3,17 @@ import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import { expectTypeOf } from "expect-type";
 import { assertSpyCall, assertSpyCalls, spy } from "@std/testing/mock";
-import { ResultAsync } from "../src/result_async.ts";
+import { AsyncResult } from "../src/async_result.ts";
 import { Err, Ok, Result } from "../src/result.ts";
 import { None, Some } from "../src/option.ts";
 import { ErrorWithTag, Panic } from "../src/error.ts";
 
 function TestOkPromise<T, E>(value: T) {
-	return new ResultAsync<T, E>(Promise.resolve(Ok<T>(value)));
+	return new AsyncResult<T, E>(Promise.resolve(Ok<T>(value)));
 }
 
 function TestErrPromise<T, E>(error: E) {
-	return new ResultAsync<T, E>(Promise.resolve(Err<E>(error)));
+	return new AsyncResult<T, E>(Promise.resolve(Err<E>(error)));
 }
 
 function TestOk<T, E>(value: T): Result<T, E> {
@@ -121,20 +121,20 @@ describe("flatten", () => {
 	it("works with an Ok<Ok> result", async () => {
 		const inner = TestOk<number, string>(42);
 		const flattened = TestOkPromise<Result<number, string>, boolean>(inner).flatten();
-		expectTypeOf(flattened).toEqualTypeOf<ResultAsync<number, string | boolean>>();
+		expectTypeOf(flattened).toEqualTypeOf<AsyncResult<number, string | boolean>>();
 		await expect(flattened.unwrap()).resolves.toEqual(inner.unwrap());
 	});
 
 	it("works with an Ok<Err> result", async () => {
 		const inner = TestErr<number, string>("error");
 		const flattened = TestOkPromise<Result<number, string>, boolean>(inner).flatten();
-		expectTypeOf(flattened).toEqualTypeOf<ResultAsync<number, string | boolean>>();
+		expectTypeOf(flattened).toEqualTypeOf<AsyncResult<number, string | boolean>>();
 		await expect(flattened.unwrapErr()).resolves.toEqual(inner.unwrapErr());
 	});
 
 	it("works with an Err result", async () => {
 		const flattened = TestErrPromise<Result<number, string>, boolean>(true).flatten();
-		expectTypeOf(flattened).toEqualTypeOf<ResultAsync<number, string | boolean>>();
+		expectTypeOf(flattened).toEqualTypeOf<AsyncResult<number, string | boolean>>();
 		await expect(flattened.unwrapErr()).resolves.toEqual(true);
 	});
 
@@ -159,7 +159,7 @@ describe("flatten", () => {
 		const bar = foo
 			.map((value) => (value === undefined ? Err(new Bar()) : Ok(value)))
 			.flatten();
-		expectTypeOf(bar).toEqualTypeOf<ResultAsync<{ id: string }, _Foo | Bar>>();
+		expectTypeOf(bar).toEqualTypeOf<AsyncResult<{ id: string }, _Foo | Bar>>();
 	});
 });
 

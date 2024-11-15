@@ -1,7 +1,7 @@
 import { type Err, type Ok, type Result, ResultImpl } from "./result.ts";
 import { type Option, OptionImpl } from "./option.ts";
-import { ResultAsync } from "./result_async.ts";
-import { OptionAsync } from "./option_async.ts";
+import { AsyncResult } from "./async_result.ts";
+import { AsyncOption } from "./async_option.ts";
 
 export type InferOk<T> = T extends Ok<infer O, any> ? O : never;
 
@@ -19,22 +19,14 @@ export function isResult<T, E>(value: unknown): value is Result<T, E> {
 	return value instanceof ResultImpl;
 }
 
-export function isResultAsync<T, E>(value: unknown): value is ResultAsync<T, E> {
-	return value instanceof ResultAsync;
-}
-
-export function isAsyncResult<T, E>(value: unknown): value is ResultAsync<T, E> {
-	return value instanceof ResultAsync;
+export function isAsyncResult<T, E>(value: unknown): value is AsyncResult<T, E> {
+	return value instanceof AsyncResult;
 }
 
 export function isOption<T>(value: unknown): value is Option<T> {
 	return value instanceof OptionImpl;
 }
 
-export function isOptionAsync<T>(value: unknown): value is OptionAsync<T> {
-	return value instanceof OptionAsync;
-}
-
-export function isAsyncOption<T>(value: unknown): value is OptionAsync<T> {
-	return value instanceof OptionAsync;
+export function isAsyncOption<T>(value: unknown): value is AsyncOption<T> {
+	return value instanceof AsyncOption;
 }
