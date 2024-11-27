@@ -26,7 +26,9 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 		return "AsyncResult";
 	}
 
-	public toJSON() {
+	public toJSON(): {
+		AsyncResult: Promise<Result<T, E>> | PromiseLike<Result<T, E>> | AsyncResult<T, E>;
+	} {
 		return { AsyncResult: this.promise };
 	}
 

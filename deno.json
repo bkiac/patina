@@ -1,4 +1,5 @@
 {
+	"name": "@patina/core",
 	"version": "4.0.0",
 	"compilerOptions": {
 		"strict": true,
@@ -36,5 +37,6 @@
 		"@std/testing": "jsr:@std/testing@1.0.4",
 		"@std/expect": "jsr:@std/expect@1.0.7",
 		"expect-type": "npm:expect-type@1.1.0"
-	}
+	},
+	"exports": "./src/mod.ts"
 }

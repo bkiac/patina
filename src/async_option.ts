@@ -17,7 +17,7 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 		return "AsyncOption";
 	}
 
-	public toJSON() {
+	public toJSON(): { AsyncOption: Promise<Option<T>> | PromiseLike<Option<T>> | AsyncOption<T> } {
 		return { AsyncOption: this.promise };
 	}
 
