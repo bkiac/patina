@@ -1,3 +1,8 @@
+/**
+ * This module contains the core functionality of Patina.
+ * @module
+ */
+
 export * from "./error.ts";
 export * from "./fn.ts";
 export * from "./async_option.ts";
