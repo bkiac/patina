@@ -20,7 +20,9 @@
 		"indentWidth": 4
 	},
 	"lint": {
+		"include": ["src/**/*.ts", "test/**/*.ts"],
 		"rules": {
+			"include": ["explicit-function-return-type", "explicit-module-boundary-types"],
 			"exclude": ["no-explicit-any"]
 		}
 	},

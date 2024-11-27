@@ -32,7 +32,7 @@ export function catchUnwind<T>(fn: () => T): Result<T, Error> {
  * Wraps a function in an `AsyncResult` and catches any thrown error, even `Panics`, emulating Rust's `catch_unwind`.
  */
 export function catchUnwindAsync<T>(fn: () => Promise<T>): AsyncResult<T, Error> {
-	async function unwind() {
+	async function unwind(): Promise<Result<T, Error>> {
 		try {
 			return await Result.fromThrowableAsync(fn); // `await` is required here, otherwise the error is not caught
 		} catch (e) {

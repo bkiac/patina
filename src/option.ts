@@ -2,7 +2,7 @@ import { AsyncOption } from "./async_option.ts";
 import { AsyncResult } from "./async_result.ts";
 import { Panic } from "./error.ts";
 import { Err, Ok, type Result } from "./result.ts";
-import * as symbols from "./symbols.ts";
+import type * as symbols from "./symbols.ts";
 
 export type OptionMatch<T, A, B> = {
 	Some: (value: T) => A;

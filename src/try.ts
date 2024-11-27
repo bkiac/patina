@@ -1,7 +1,7 @@
 import { AsyncResult } from "./async_result.ts";
 import { Panic } from "./error.ts";
-import { type Err, type Result } from "./result.ts";
-import { InferErr, InferOk } from "./util.ts";
+import type { Err, Result } from "./result.ts";
+import type { InferErr, InferOk } from "./util.ts";
 
 /**
  * Creates a scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a `Result`.

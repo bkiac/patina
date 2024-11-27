@@ -1,7 +1,7 @@
 import { Panic, parseError } from "./error.ts";
 import { None, type Option, Some } from "./option.ts";
 import { AsyncResult } from "./async_result.ts";
-import * as symbols from "./symbols.ts";
+import type * as symbols from "./symbols.ts";
 
 export type ResultMatch<T, E, A, B> = {
 	Ok: (value: T) => A;
@@ -53,11 +53,11 @@ export class ResultImpl<T, E> {
 		const v = this._value;
 		if (this._ok) {
 			// deno-lint-ignore require-yield
-			return (function* () {
+			return (function* (): Generator<Err<E, never>, T> {
 				return v as T;
 			})();
 		}
-		return (function* () {
+		return (function* (): Generator<Err<E, never>, T> {
 			yield Err(v as E);
 			throw new Panic("Do not use this generator outside of a try block");
 		})();
@@ -725,14 +725,14 @@ export type Result<T, E> = Ok<T, E> | Err<E, T>;
 
 // deno-lint-ignore no-namespace
 export namespace Result {
-	function handlePanic(error: unknown) {
+	function handlePanic(error: unknown): unknown {
 		if (error instanceof Panic) {
 			throw error;
 		}
 		return error;
 	}
 
-	function handleCaughtError(error: unknown) {
+	function handleCaughtError(error: unknown): Error {
 		return parseError(handlePanic(error));
 	}
 
@@ -799,7 +799,7 @@ export namespace Result {
 	 * })
 	 */
 	export function fromThrowableAsync<T>(f: () => Promise<T>): AsyncResult<T, Error> {
-		async function safe() {
+		async function safe(): Promise<Result<T, Error>> {
 			try {
 				return Ok(await f());
 			} catch (error) {

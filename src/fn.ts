@@ -1,4 +1,4 @@
-import { type Result } from "./result.ts";
+import type { Result } from "./result.ts";
 import { AsyncResult } from "./async_result.ts";
 import type { InferErr, InferOk } from "./util.ts";
 
@@ -44,7 +44,9 @@ export function asyncFn<A extends any[], R extends Promise<Result<any, any>>>(
 	f: (...args: A) => R,
 ): (...args: A) => AsyncResult<InferOk<Awaited<R>>, InferErr<Awaited<R>>>;
 
+// deno-lint-ignore explicit-module-boundary-types
 export function asyncFn(f: any): any {
+	// deno-lint-ignore explicit-function-return-type
 	return function (...args: any[]) {
 		return new AsyncResult(f(...args));
 	};
