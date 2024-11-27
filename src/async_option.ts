@@ -1,3 +1,8 @@
+/**
+ * This module contains the `AsyncOption` class, which is a promise that resolves to an `Option`.
+ * @module
+ */
+
 import { AsyncResult } from "./async_result.ts";
 import { None, type Option, type OptionMatch, type OptionMatchAsync, Some } from "./option.ts";
 
@@ -7,8 +12,15 @@ import { None, type Option, type OptionMatch, type OptionMatchAsync, Some } from
  * This class is useful for chaining multiple asynchronous operations that return an `Option`.
  */
 export class AsyncOption<T> implements PromiseLike<Option<T>> {
+	/**
+	 * The promise that resolves to an `Option`.
+	 */
 	public readonly promise: Promise<Option<T>> | PromiseLike<Option<T>> | AsyncOption<T>;
 
+	/**
+	 * Creates a new `AsyncOption`.
+	 * @param promise - The promise that resolves to an `Option`.
+	 */
 	public constructor(promise: Promise<Option<T>> | PromiseLike<Option<T>> | AsyncOption<T>) {
 		this.promise = promise;
 	}
@@ -17,10 +29,16 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 		return "AsyncOption";
 	}
 
+	/**
+	 * Converts the `AsyncOption` to a JSON object.
+	 */
 	public toJSON(): { AsyncOption: Promise<Option<T>> | PromiseLike<Option<T>> | AsyncOption<T> } {
 		return { AsyncOption: this.promise };
 	}
 
+	/**
+	 * Converts the `AsyncOption` to a string.
+	 */
 	public toString(): string {
 		return `AsyncOption(${this.promise.toString()})`;
 	}
