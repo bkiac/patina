@@ -40,5 +40,8 @@
 		"@std/expect": "jsr:@std/expect@1.0.7",
 		"expect-type": "npm:expect-type@1.1.0"
 	},
-	"exports": "./src/mod.ts"
+	"exports": "./src/mod.ts",
+	"publish": {
+		"include": ["src/**/*.ts", "package.json", "README.md", "LICENSE"]
+	}
 }
