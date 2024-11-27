@@ -18,9 +18,17 @@ export class ResultImpl<T, E> {
 	private readonly _value: T | E;
 
 	public constructor(ok: boolean, value: T | E) {
-		Object.defineProperty(this.constructor, "name", { value: "Result" });
 		this._ok = ok;
 		this._value = value;
+
+		// Make the constructor name equal to "Result"
+		Object.defineProperty(this.constructor, "name", { value: "Result" });
+
+		Object.defineProperty(this, Symbol.iterator, {
+			enumerable: false, // Make the iterator non-enumerable to prevent it being used in loops and equality checks
+			writable: false, // Make the iterator non-writable to prevent modification
+			configurable: false, // Make the iterator non-configurable to prevent redefinition
+		});
 	}
 
 	public get [Symbol.toStringTag](): "Ok" | "Err" {

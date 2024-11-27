@@ -1,5 +1,5 @@
 // deno-lint-ignore-file require-await
-import { describe, it } from "@std/testing/bdd";
+import { describe, it, test } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import { assertSpyCall, assertSpyCalls, spy } from "@std/testing/mock";
 import { expectTypeOf } from "expect-type";
@@ -93,6 +93,29 @@ describe("core", () => {
 			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
 			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
 		}
+	});
+
+	test("equality check", () => {
+		// Check if implementing iterator does not mess up tests
+		let a: Result<number, string> = Ok(0);
+		let b: Result<number, string> = Ok(0);
+		expect(a).toEqual(b);
+
+		a = Err("error");
+		b = Err("error");
+		expect(a).toEqual(b);
+
+		a = Ok(0);
+		b = Err("error");
+		expect(a).not.toEqual(b);
+
+		a = Ok(0);
+		b = Ok(1);
+		expect(a).not.toEqual(b);
+
+		a = Err("error");
+		b = Err("other");
+		expect(a).not.toEqual(b);
 	});
 });
 
