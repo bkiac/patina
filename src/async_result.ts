@@ -20,6 +20,18 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 		promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>> | AsyncResult<T, E>,
 	) {
 		this.promise = promise;
+
+		Object.defineProperty(this, Symbol.iterator, {
+			enumerable: false, // Make the iterator non-enumerable to prevent it being used in loops and equality checks
+			writable: false, // Make the iterator non-writable to prevent modification
+			configurable: false, // Make the iterator non-configurable to prevent redefinition
+		});
+
+		Object.defineProperty(this, Symbol.asyncIterator, {
+			enumerable: false, // Make the iterator non-enumerable to prevent it being used in loops and equality checks
+			writable: false, // Make the iterator non-writable to prevent modification
+			configurable: false, // Make the iterator non-configurable to prevent redefinition
+		});
 	}
 
 	public get [Symbol.toStringTag](): "AsyncResult" {
