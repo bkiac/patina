@@ -193,20 +193,25 @@ export class OptionImpl<T> {
 	}
 
 	/**
-	 * Returns the contained `Some` value, if exists.
-	 *
-	 * Throws `Panic` with the provided message if the value is `None`.
+	 * Returns the contained `Some` value, if exists. Otherwise, throws a `Panic` with the provided message.
 	 *
 	 * @param message - The message to throw if the value is `None`.
+	 * @throws `Panic` with the provided message if the value is `None`.
 	 * @returns The contained value.
+	 *
+	 * It is recommended that `expect()` messages are used to describe the reason you expect the `Option` should be `Some`.
+	 *
+	 * ```ts
+	 * const cfg = config.load().expect("config file should exist")
+	 * ```
 	 *
 	 * @example
 	 * ```
-	 * const x = Some(0).expect("The world is ending")
-	 * assertEquals(x, 0)
+	 * const x = Some("value").expect("value should exist")
+	 * assertEquals(x, "value")
 	 *
-	 * const y = None.expect("The world is ending")
-	 * assertThrows(() => y)
+	 * const y = None.expect("value should exist")
+	 * assertThrows(() => y, "value should exist") // `Panic` with message "value should exist"
 	 * ```
 	 */
 	public expect(message: string): T {
