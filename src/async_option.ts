@@ -258,15 +258,28 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	}
 
 	/**
-	 * Calls a function with the value of a `Some` value, or does nothing if the `AsyncOption` is `None`.
+	 * Calls a function with the contained value if `Some`.
+	 * 
+	 * Returns the original option.
 	 *
-	 * @param f - The function to call with the value of a `Some` value.
-	 * @returns The `AsyncOption`.
+	 * @param f - The function to call with the contained value.
+	 * @returns The original option.
 	 *
 	 * @example
 	 * ```
-	 * const x = await AsyncSome(0).inspect((x) => console.log(x))
-	 * const y = await AsyncNone.inspect((x) => console.log(x)) // does nothing
+	 * const list = [1, 2, 3]
+	 * 
+	 * function findItem(index: number): AsyncOption<number> {
+	 *     return index < list.length ? AsyncSome(list[index]) : AsyncNone
+	 * }
+	 * 
+	 * // prints "got: 2"
+	 * const x = await findItem(1)
+	 *     .inspect((x) => console.log(`got: ${x}`))
+	 *     .expect("list should be long enough")
+	 * 
+	 * // prints nothing
+	 * await findItem(5).inspect((x) => console.log(`got: ${x}`))
 	 * ```
 	 */
 	public inspect(f: (value: T) => void): AsyncOption<T> {
@@ -274,20 +287,34 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	}
 
 	/**
-	 * Returns the value of a `Some` value, or throws an error if the `AsyncOption` is `None`.
+	 * Calls an async function with the contained value if `Some`.
+	 * 
+	 * Returns the original option.
 	 *
-	 * @param message - The error message.
-	 * @throws `Panic` with `message` if the `AsyncOption` is `None`.
-	 * @returns The value of a `Some` value.
+	 * @param f - The async function to call with the contained value.
+	 * @returns The original option.
 	 *
 	 * @example
 	 * ```
-	 * const x = await AsyncSome(0).expect("error")
-	 * assertEquals(x, 0)
-	 *
-	 * assertThrows(async () => await AsyncNone.expect("error"), "error")
+	 * const list = [1, 2, 3]
+	 * 
+	 * function findItem(index: number): AsyncOption<number> {
+	 *     return index < list.length ? AsyncSome(list[index]) : AsyncNone
+	 * }
+	 * 
+	 * // prints "got: 2"
+	 * const x = await findItem(1)
+	 *     .inspectAsync(async (x) => console.log(`got: ${x}`))
+	 *     .expect("list should be long enough")
+	 * 
+	 * // prints nothing
+	 * await findItem(5).inspectAsync(async (x) => console.log(`got: ${x}`))
 	 * ```
 	 */
+	public inspectAsync(f: (value: T) => Promise<void>): AsyncOption<T> {
+		return new AsyncOption(this.then((option) => option.inspectAsync(f)));
+	}
+
 	public async expect(message: string): Promise<T> {
 		return (await this).expect(message);
 	}

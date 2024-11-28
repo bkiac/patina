@@ -369,21 +369,24 @@ export class OptionImpl<T> {
 	}
 
 	/**
-	 * Calls `f` if the `Option` is `Some`.
+	 * Calls a function with the contained value if `Some`.
+	 * 
+	 * Returns the original option.
 	 *
-	 * @param f - The function to apply to the contained value.
-	 * @returns The same `Option<T>`.
+	 * @param f - The function to call with the contained value.
+	 * @returns The original option.
 	 *
 	 * @example
 	 * ```
-	 * Some(0).inspect((value) => {
-	 * 	console.log(value)
-	 * })
-	 *
-	 * const y = None.inspect((value) => {
-	 * 	// No output
-	 * 	console.log(value)
-	 * })
+	 * const list = [1, 2, 3]
+	 * 
+	 * // prints "got: 2"
+	 * const x = Option.fromNullish(list[1])
+	 *     .inspect((x) => console.log(`got: ${x}`))
+	 *     .expect("list should be long enough")
+	 * 
+	 * // prints nothing
+	 * Option.fromNullish(list[5]).inspect((x) => console.log(`got: ${x}`))
 	 * ```
 	 */
 	public inspect(f: (value: T) => void): this {
@@ -394,21 +397,24 @@ export class OptionImpl<T> {
 	}
 
 	/**
-	 * Calls `f` if the `Option` is `Some`.
+	 * Calls an async function with the contained value if `Some`.
+	 * 
+	 * Returns the original option.
 	 *
-	 * @param f - The function to apply to the contained value.
-	 * @returns The same `Option<T>`.
+	 * @param f - The async function to call with the contained value.
+	 * @returns The original option.
 	 *
 	 * @example
 	 * ```
-	 * await Some(0).inspectAsync(async (value) => {
-	 * 	console.log(value)
-	 * })
-	 *
-	 * const y = await None.inspectAsync(async (value) => {
-	 * 	// No output
-	 * 	console.log(value)
-	 * })
+	 * const list = [1, 2, 3]
+	 * 
+	 * // prints "got: 2"
+	 * const x = await Option.fromNullish(list[1])
+	 *     .inspectAsync(async (x) => console.log(`got: ${x}`))
+	 *     .expect("list should be long enough")
+	 * 
+	 * // prints nothing
+	 * await Option.fromNullish(list[5]).inspectAsync(async (x) => console.log(`got: ${x}`))
 	 * ```
 	 */
 	public inspectAsync(f: (value: T) => Promise<void>): AsyncOption<T> {
