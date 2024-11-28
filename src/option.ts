@@ -863,17 +863,26 @@ export class OptionImpl<T> {
 	}
 
 	/**
-	 * Converts from `Option<Option<U>>` to `Option<U>`.
-	 *
-	 * @returns A flattened `Option<U>`.
+	 * Converts from `Option<Option<T>>` to `Option<T>`.
+	 * 
+	 * @returns A flattened `Option<T>`.
 	 *
 	 * @example
 	 * ```
-	 * let x = Some(Some(0)).flatten()
-	 * assertEquals(x, Some(0))
-	 *
-	 * x = Some(None).flatten()
-	 * assertEquals(x, None)
+	 * // Basic usage:
+	 * let x: Option<Option<number>> = Some(Some(6))
+	 * assertEquals(x.flatten(), Some(6))
+	 * 
+	 * let x: Option<Option<number>> = Some(None)
+	 * assertEquals(x.flatten(), None)
+	 * 
+	 * let x: Option<Option<number>> = None
+	 * assertEquals(x.flatten(), None)
+	 * 
+	 * // Flattening only removes one level of nesting at a time:
+	 * let x: Option<Option<Option<number>>> = Some(Some(Some(6)))
+	 * assertEquals(x.flatten(), Some(Some(6)))
+	 * assertEquals(x.flatten().flatten(), Some(6))
 	 * ```
 	 */
 	public flatten<U>(this: Option<Option<U>>): Option<U> {

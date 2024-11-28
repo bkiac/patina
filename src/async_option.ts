@@ -345,17 +345,21 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	}
 
 	/**
-	 * Converts from `AsyncOption<Option<U>>` to `AsyncOption<U>`.
-	 *
-	 * @returns The `AsyncOption`.
+	 * Converts from `AsyncOption<Option<T>>` to `AsyncOption<T>`.
+	 * 
+	 * @returns A flattened `AsyncOption<T>`.
 	 *
 	 * @example
 	 * ```
-	 * const x = await AsyncSome(Some(0)).flatten()
-	 * assertEquals(x, Some(0))
-	 *
-	 * const y = await AsyncSome(None).flatten()
-	 * assertEquals(y, None)
+	 * // Basic usage:
+	 * let x: AsyncOption<Option<number>> = AsyncSome(Some(6))
+	 * assertEquals(await x.flatten(), Some(6))
+	 * 
+	 * let x: AsyncOption<Option<number>> = AsyncSome(None)
+	 * assertEquals(await x.flatten(), None)
+	 * 
+	 * let x: AsyncOption<Option<number>> = AsyncNone
+	 * assertEquals(await x.flatten(), None)
 	 * ```
 	 */
 	public flatten<U>(this: AsyncOption<Option<U>>): AsyncOption<U> {
