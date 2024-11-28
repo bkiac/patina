@@ -71,76 +71,388 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 		);
 	}
 
+	/**
+	 * Matches the `AsyncOption` to its content.
+	 *
+	 * @param matcher - The matcher to match the `AsyncOption` against.
+	 * @returns The result of the match.
+	 *
+	 * @example
+	 * ```
+	 * const x = await AsyncSome(0).match({
+	 * 	Some: (value) => value + 1,
+	 * 	None: () => 0
+	 * })
+	 * assertEquals(x, 1)
+	 *
+	 * const y = await AsyncNone.match({
+	 * 	Some: (value) => value + 1,
+	 * 	None: () => 0
+	 * })
+	 * assertEquals(y, 0)
+	 * ```
+	 */
 	public async match<A, B>(matcher: OptionMatch<T, A, B>): Promise<A | B> {
 		return (await this).match(matcher);
 	}
 
+	/**
+	 * Matches the `AsyncOption` to its content asynchronously.
+	 *
+	 * @param matcher - The matcher to match the `AsyncOption` against.
+	 * @returns The result of the match.
+	 *
+	 * @example
+	 * ```
+	 * const x = await AsyncSome(0).matchAsync({
+	 * 	Some: async (value) => value + 1,
+	 * 	None: async () => 0
+	 * })
+	 * assertEquals(x, 1)
+	 *
+	 * const y = await AsyncNone.matchAsync({
+	 * 	Some: async (value) => value + 1,
+	 * 	None: async () => 0
+	 * })
+	 * assertEquals(y, 0)
+	 * ```
+	 */
 	public async matchAsync<A, B>(matcher: OptionMatchAsync<T, A, B>): Promise<A | B> {
 		return (await this).matchAsync(matcher);
 	}
 
+	/**
+	 * Converts the `AsyncOption` to an `AsyncResult` with an error value.
+	 *
+	 * @param err - The error value.
+	 * @returns The `AsyncResult`.
+	 *
+	 * @example
+	 * ```
+	 * const x = await AsyncSome(0).okOr("error")
+	 * assertEquals(x, Ok(0))
+	 *
+	 * const y = await AsyncNone.okOr("error")
+	 * assertEquals(y, Err("error"))
+	 * ```
+	 */
 	public okOr<E>(err: E): AsyncResult<T, E> {
 		return new AsyncResult(this.then((option) => option.okOr(err)));
 	}
 
+	/**
+	 * Converts the `AsyncOption` to an `AsyncResult` with an error value.
+	 *
+	 * @param err - The function to compute the error value.
+	 * @returns The `AsyncResult`.
+	 *
+	 * @example
+	 * ```
+	 * const x = await AsyncSome(0).okOrElse(() => "error")
+	 * assertEquals(x, Ok(0))
+	 *
+	 * const y = await AsyncNone.okOrElse(() => "error")
+	 * assertEquals(y, Err("error"))
+	 * ```
+	 */
 	public okOrElse<E>(err: () => E): AsyncResult<T, E> {
 		return new AsyncResult(this.then((option) => option.okOrElse(err)));
 	}
 
+	/**
+	 * Converts the `AsyncOption` to an `AsyncResult` with an error value.
+	 *
+	 * @param err - The function to compute the error value.
+	 * @returns The `AsyncResult`.
+	 *
+	 * @example
+	 * ```
+	 * const x = await AsyncSome(0).okOrElseAsync(() => Promise.resolve("error"))
+	 * assertEquals(x, Ok(0))
+	 *
+	 * const y = await AsyncNone.okOrElseAsync(() => Promise.resolve("error"))
+	 * assertEquals(y, Err("error"))
+	 * ```
+	 */
 	public okOrElseAsync<E>(err: () => Promise<E>): AsyncResult<T, E> {
 		return new AsyncResult(this.then((option) => option.okOrElseAsync(err)));
 	}
 
+	/**
+	 * Returns `None` if the `AsyncOption` is `None`, otherwise returns `other`.
+	 *
+	 * @param other - The `AsyncOption` to return if the `AsyncOption` is `Some`.
+	 * @returns The `AsyncOption`.
+	 *
+	 * @example
+	 * ```
+	 * const x = await AsyncSome(0).and(AsyncSome(1))
+	 * assertEquals(x, Some(1))
+	 *
+	 * const y = await AsyncNone.and(AsyncSome(1))
+	 * assertEquals(y, None)
+	 * ```
+	 */
 	public and<U>(other: AsyncOption<U>): AsyncOption<U> {
 		return new AsyncOption(
 			this.then((option) => other.then((otherOption) => option.and(otherOption))),
 		);
 	}
 
+	/**
+	 * Returns the result of applying a function to the value of a `Some` value, or `None` if the `AsyncOption` is `None`.
+	 *
+	 * @param f - The function to apply to the value of a `Some` value.
+	 * @returns The `AsyncOption`.
+	 *
+	 * @example
+	 * ```
+	 * const x = await AsyncSome(0).andThen((x) => Some(x + 1))
+	 * assertEquals(x, Some(1))
+	 *
+	 * const y = await AsyncNone.andThen((x) => Some(x + 1))
+	 * assertEquals(y, None)
+	 *
+	 * const z = await AsyncSome(0).andThen((x) => None)
+	 * assertEquals(z, None)
+	 * ```
+	 */
 	public andThen<U>(f: (value: T) => Option<U>): AsyncOption<U> {
 		return new AsyncOption(this.then((option) => option.andThen((value) => f(value))));
 	}
 
+	/**
+	 * Returns the result of applying a function to the value of a `Some` value, or `None` if the `AsyncOption` is `None`.
+	 *
+	 * @param f - The function to apply to the value of a `Some` value.
+	 * @returns The `AsyncOption`.
+	 *
+	 * @example
+	 * ```
+	 * const x = await AsyncSome(0).andThenAsync(async (x) => Some(x + 1))
+	 * assertEquals(x, Some(1))
+	 *
+	 * const y = await AsyncNone.andThenAsync(async (x) => Some(x + 1))
+	 * assertEquals(y, None)
+	 *
+	 * const z = await AsyncSome(0).andThenAsync(async (x) => None)
+	 * assertEquals(z, None)
+	 * ```
+	 */
 	public andThenAsync<U>(f: (value: T) => Promise<Option<U>> | AsyncOption<U>): AsyncOption<U> {
 		return new AsyncOption(this.then((option) => option.andThenAsync(f)));
 	}
 
+	/**
+	 * Calls a function with the value of a `Some` value, or does nothing if the `AsyncOption` is `None`.
+	 *
+	 * @param f - The function to call with the value of a `Some` value.
+	 * @returns The `AsyncOption`.
+	 *
+	 * @example
+	 * ```
+	 * const x = await AsyncSome(0).inspect((x) => console.log(x))
+	 * const y = await AsyncNone.inspect((x) => console.log(x)) // does nothing
+	 * ```
+	 */
 	public inspect(f: (value: T) => void): AsyncOption<T> {
 		return new AsyncOption(this.then((option) => option.inspect(f)));
 	}
 
+	/**
+	 * Returns the value of a `Some` value, or throws an error if the `AsyncOption` is `None`.
+	 *
+	 * @param message - The error message.
+	 * @throws `Panic` with `message` if the `AsyncOption` is `None`.
+	 * @returns The value of a `Some` value.
+	 *
+	 * @example
+	 * ```
+	 * const x = await AsyncSome(0).expect("error")
+	 * assertEquals(x, 0)
+	 *
+	 * assertThrows(async () => await AsyncNone.expect("error"), "error")
+	 * ```
+	 */
 	public async expect(message: string): Promise<T> {
 		return (await this).expect(message);
 	}
 
+	/**
+	 * Returns `None` if the `AsyncOption` is `None`, otherwise returns `Some` if the `AsyncOption` is `Some`.
+	 *
+	 * @param f - The function to filter the value of a `Some` value.
+	 * @returns The `AsyncOption`.
+	 *
+	 * @example
+	 * ```
+	 * const x = await AsyncSome(1).filter((x) => x > 0)
+	 * assertEquals(x, Some(1))
+	 *
+	 * const y = await AsyncSome(0).filter((x) => x > 1)
+	 * assertEquals(y, None)
+	 *
+	 * const z = await AsyncNone.filter((x) => x > 0)
+	 * assertEquals(z, None)
+	 * ```
+	 */
 	public filter(f: (value: T) => boolean): AsyncOption<T> {
 		return new AsyncOption(this.then((option) => option.filter(f)));
 	}
 
+	/**
+	 * Returns `None` if the `AsyncOption` is `None`, otherwise returns `Some` if the `AsyncOption` is `Some`.
+	 *
+	 * @param f - The function to filter the value of a `Some` value.
+	 * @returns The `AsyncOption`.
+	 *
+	 * @example
+	 * ```
+	 * const x = await AsyncSome(1).filterAsync(async (x) => x > 0)
+	 * assertEquals(x, Some(1))
+	 *
+	 * const y = await AsyncSome(0).filterAsync(async (x) => x > 1)
+	 * assertEquals(y, None)
+	 *
+	 * const z = await AsyncNone.filterAsync(async (x) => x > 0)
+	 * ```
+	 */
 	public filterAsync(f: (value: T) => Promise<boolean>): AsyncOption<T> {
 		return new AsyncOption(this.then((option) => option.filterAsync(f)));
 	}
 
+	/**
+	 * Converts from `AsyncOption<Option<U>>` to `AsyncOption<U>`.
+	 *
+	 * @returns The `AsyncOption`.
+	 *
+	 * @example
+	 * ```
+	 * const x = await AsyncSome(Some(0)).flatten()
+	 * assertEquals(x, Some(0))
+	 *
+	 * const y = await AsyncSome(None).flatten()
+	 * assertEquals(y, None)
+	 * ```
+	 */
 	public flatten<U>(this: AsyncOption<Option<U>>): AsyncOption<U> {
 		return new AsyncOption(this.then((option) => option.flatten()));
 	}
 
+	/**
+	 * Maps the `AsyncOption` to a new `AsyncOption`.
+	 *
+	 * @param f - The function to map the `AsyncOption` to a new `AsyncOption`.
+	 * @returns The `AsyncOption`.
+	 *
+	 * @example
+	 * ```
+	 * const x = await AsyncSome(0).map((x) => x + 1)
+	 * assertEquals(x, Some(1))
+	 *
+	 * const y = await AsyncNone.map((x) => x + 1)
+	 * assertEquals(y, None)
+	 * ```
+	 */
 	public map<U>(f: (value: T) => U): AsyncOption<U> {
 		return new AsyncOption(this.then((option) => option.map(f)));
 	}
 
+	/**
+	 * Maps the `AsyncOption` to a new `AsyncOption`.
+	 *
+	 * @param f - The function to map the `AsyncOption` to a new `AsyncOption`.
+	 * @returns The `AsyncOption`.
+	 *
+	 * @example
+	 * ```
+	 * const x = await AsyncSome(0).mapAsync(async (x) => x + 1)
+	 * assertEquals(x, Some(1))
+	 *
+	 * const y = await AsyncNone.mapAsync(async (x) => x + 1)
+	 * assertEquals(y, None)
+	 * ```
+	 */
 	public mapAsync<U>(f: (value: T) => Promise<U>): AsyncOption<U> {
 		return new AsyncOption(this.then((option) => option.mapAsync(f)));
 	}
 
+	/**
+	 * Maps the `AsyncOption` to a value or a default value.
+	 *
+	 * @param defaultValue - The default value.
+	 * @param f - The function to map the `AsyncOption` to a value.
+	 * @returns The value or the default value.
+	 *
+	 * @example
+	 * ```
+	 * const x = await AsyncSome(0).mapOr(1, (x) => x + 1)
+	 * assertEquals(x, 1)
+	 *
+	 * const y = await AsyncNone.mapOr(1, (x) => x + 1)
+	 * assertEquals(y, 1)
+	 * ```
+	 */
 	public async mapOr<A, B>(defaultValue: A, f: (value: T) => B): Promise<A | B> {
 		return (await this).mapOr(defaultValue, f);
 	}
 
+	/**
+	 * Returns the provided default value (if none), or computes a default value by applying a function to the contained value (if any).
+	 *
+	 * @param defaultValue - The default value to return if the option is `None`.
+	 * @param f - The function to apply to the contained value.
+	 * @returns The result of the function application, if the option is `Some`, otherwise the provided default value.
+	 *
+	 * @example
+	 * ```
+	 * const x = await Some(0).mapOrAsync("default", async (v) => v + 1)
+	 * assertEquals(x, 1)
+	 *
+	 * const y = await None.mapOrAsync("default", async (v) => v + 1)
+	 * assertEquals(y, "default")
+	 * ```
+	 */
+	public async mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B> {
+		return (await this).mapOrAsync(defaultValue, f);
+	}
+
+	/**
+	 * Maps the `AsyncOption` to a value or a default value.
+	 *
+	 * @param defaultValue - The function to compute the default value.
+	 * @param f - The function to map the `AsyncOption` to a value.
+	 * @returns The value or the default value.
+	 *
+	 * @example
+	 * ```
+	 * const x = await AsyncSome(0).mapOrElse(() => 1, (x) => x + 1)
+	 * assertEquals(x, 1)
+	 *
+	 * const y = await AsyncNone.mapOrElse(() => 1, (x) => x + 1)
+	 * assertEquals(y, 1)
+	 * ```	
+	 */
 	public async mapOrElse<A, B>(defaultValue: () => A, f: (value: T) => B): Promise<A | B> {
 		return (await this).mapOrElse(defaultValue, f);
 	}
 
+	/**
+	 * Maps the `AsyncOption` to a value or a default value.
+	 *
+	 * @param defaultValue - The function to compute the default value.
+	 * @param f - The function to map the `AsyncOption` to a value.
+	 * @returns The value or the default value.
+	 *
+	 * @example
+	 * ```
+	 * const x = await AsyncSome(0).mapOrElseAsync(async () => 1, async (x) => x + 1)
+	 * assertEquals(x, 1)
+	 *
+	 * const y = await AsyncNone.mapOrElseAsync(async () => 1, async (x) => x + 1)
+	 * assertEquals(y, 1)
+	 * ```
+	 */
 	public async mapOrElseAsync<A, B>(
 		defaultValue: () => Promise<A>,
 		f: (value: T) => Promise<B>,
@@ -198,6 +510,4 @@ export function AsyncSome<T>(value: T): AsyncOption<T> {
 	return new AsyncOption(Promise.resolve(Some(value)));
 }
 
-export function AsyncNone(): AsyncOption<never> {
-	return new AsyncOption(Promise.resolve(None));
-}
+export const AsyncNone: AsyncOption<never> = new AsyncOption(Promise.resolve(None));

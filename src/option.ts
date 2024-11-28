@@ -91,7 +91,7 @@ export class OptionImpl<T> {
 	 * 	Some: (value) => value + 1,
 	 * 	None: () => 0
 	 * })
-	 * assertEquals(x, 43)
+	 * assertEquals(x, 1)
 	 *
 	 * const y = None.match({
 	 * 	Some: (value) => value + 1,
@@ -119,7 +119,7 @@ export class OptionImpl<T> {
 	 * 	Some: async (value) => value + 1,
 	 * 	None: async () => 0
 	 * })
-	 * assertEquals(x, 43)
+	 * assertEquals(x, 1)
 	 *
 	 * const y = await None.matchAsync({
 	 * 	Some: async (value) => value + 1,
@@ -210,8 +210,7 @@ export class OptionImpl<T> {
 	 * const x = Some("value").expect("value should exist")
 	 * assertEquals(x, "value")
 	 *
-	 * const y = None.expect("value should exist")
-	 * assertThrows(() => y, "value should exist") // `Panic` with message "value should exist"
+	 * assertThrows(() => None.expect("value should exist"), "value should exist")
 	 * ```
 	 */
 	public expect(message: string): T {
@@ -334,7 +333,7 @@ export class OptionImpl<T> {
 	 * @example
 	 * ```
 	 * const x = Some(0).map((v) => v + 1)
-	 * assertEquals(x, Some(43))
+	 * assertEquals(x, Some(1))
 	 *
 	 * const y = None.map((v) => v + 1)
 	 * assertEquals(y, None)
@@ -356,7 +355,7 @@ export class OptionImpl<T> {
 	 * @example
 	 * ```
 	 * const x = await Some(0).mapAsync(async (v) => v + 1)
-	 * assertEquals(x, Some(43))
+	 * assertEquals(x, Some(1))
 	 *
 	 * const y = await None.mapAsync(async (v) => v + 1)
 	 * assertEquals(y, None)
@@ -429,7 +428,7 @@ export class OptionImpl<T> {
 	 * @example
 	 * ```
 	 * const x = Some(0).mapOr(0, (v) => v + 1)
-	 * assertEquals(x, 43)
+	 * assertEquals(x, 1)
 	 *
 	 * const y = None.mapOr(0, (v) => v + 1)
 	 * assertEquals(y, 0)
@@ -443,7 +442,7 @@ export class OptionImpl<T> {
 	}
 
 	/**
-	 * Returns the provided default result (if none), or computes a default value by applying a function to the contained value (if any).
+	 * Returns the provided default value (if none), or computes a default value by applying a function to the contained value (if any).
 	 *
 	 * @param defaultValue - The default value to return if the option is `None`.
 	 * @param f - The function to apply to the contained value.
@@ -451,18 +450,18 @@ export class OptionImpl<T> {
 	 *
 	 * @example
 	 * ```
-	 * const x = await Some(0).mapOrElseAsync(async () => 0, async (v) => v + 1)
-	 * assertEquals(x, 43)
+	 * const x = await Some(0).mapOrAsync("default", async (v) => v + 1)
+	 * assertEquals(x, 1)
 	 *
-	 * const y = await None.mapOrElseAsync(async () => 0, async (v) => v + 1)
-	 * assertEquals(y, 0)
+	 * const y = await None.mapOrAsync("default", async (v) => v + 1)
+	 * assertEquals(y, "default")
 	 * ```
 	 */
-	public mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B> {
+	public async mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B> {
 		if (this._some) {
 			return f(this._value as T);
 		}
-		return Promise.resolve(defaultValue);
+		return defaultValue;
 	}
 
 	/**
@@ -498,7 +497,7 @@ export class OptionImpl<T> {
 	 * @example
 	 * ```
 	 * const x = await Some(0).mapOrElseAsync(async () => 0, async (v) => v + 1)
-	 * assertEquals(x, 43)
+	 * assertEquals(x, 1)
 	 *
 	 * const y = await None.mapOrElseAsync(async () => 0, async (v) => v + 1)
 	 * assertEquals(y, 0)
@@ -617,7 +616,7 @@ export class OptionImpl<T> {
 	 * @example
 	 * ```
 	 * let x = Some(0).andThen((x) => Some(x + 1))
-	 * assertEquals(x, Some(43))
+	 * assertEquals(x, Some(1))
 	 *
 	 * x = Some(0).andThen(x => None)
 	 * assertEquals(x, None)
@@ -642,7 +641,7 @@ export class OptionImpl<T> {
 	 * @example
 	 * ```
 	 * let x = await Some(0).andThenAsync(async (x) => Some(x + 1))
-	 * assertEquals(x, Some(43))
+	 * assertEquals(x, Some(1))
 	 *
 	 * x = await Some(0).andThenAsync(async (x) => None)
 	 * assertEquals(x, None)
