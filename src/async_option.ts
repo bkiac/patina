@@ -293,21 +293,25 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	}
 
 	/**
-	 * Returns `None` if the `AsyncOption` is `None`, otherwise returns `Some` if the `AsyncOption` is `Some`.
+	 * Returns `None` if the option resolves `None`, otherwise calls `predicate` with the wrapped value and returns:
+	 * - `Some(t)` if predicate returns `true` (where t is the wrapped value), and
+	 * - `None` if predicate returns `false`.
+	 * 
+	 * This function works similar to `Array.prototype.filter()`. You can imagine the `AsyncOption<T>` being 
+	 * an array over one or zero elements. `filter()` lets you decide which elements to keep.
 	 *
-	 * @param f - The function to filter the value of a `Some` value.
-	 * @returns The `AsyncOption`.
+	 * @param predicate - The predicate to apply to the contained value.
+	 * @returns The option if predicate returns `true`, otherwise `None`.
 	 *
 	 * @example
 	 * ```
-	 * const x = await AsyncSome(1).filter((x) => x > 0)
-	 * assertEquals(x, Some(1))
-	 *
-	 * const y = await AsyncSome(0).filter((x) => x > 1)
-	 * assertEquals(y, None)
-	 *
-	 * const z = await AsyncNone.filter((x) => x > 0)
-	 * assertEquals(z, None)
+	 * function isEven(n: number): boolean {
+	 *     return n % 2 === 0
+	 * }
+	 * 
+	 * assertEquals(await AsyncNone.filter(isEven), None)
+	 * assertEquals(await AsyncSome(3).filter(isEven), None)
+	 * assertEquals(await AsyncSome(4).filter(isEven), Some(4))
 	 * ```
 	 */
 	public filter(f: (value: T) => boolean): AsyncOption<T> {
@@ -315,20 +319,25 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	}
 
 	/**
-	 * Returns `None` if the `AsyncOption` is `None`, otherwise returns `Some` if the `AsyncOption` is `Some`.
+	 * Returns `None` if the option is `None`, otherwise calls `predicate` with the wrapped value and returns:
+	 * - `Some(t)` if predicate returns `true` (where t is the wrapped value), and
+	 * - `None` if predicate returns `false`.
+	 * 
+	 * This function works similar to `Array.prototype.filter()`. You can imagine the `Option<T>` being 
+	 * an array over one or zero elements. `filter()` lets you decide which elements to keep.
 	 *
-	 * @param f - The function to filter the value of a `Some` value.
-	 * @returns The `AsyncOption`.
+	 * @param predicate - The predicate to apply to the contained value.
+	 * @returns The option if predicate returns `true`, otherwise `None`.
 	 *
 	 * @example
 	 * ```
-	 * const x = await AsyncSome(1).filterAsync(async (x) => x > 0)
-	 * assertEquals(x, Some(1))
-	 *
-	 * const y = await AsyncSome(0).filterAsync(async (x) => x > 1)
-	 * assertEquals(y, None)
-	 *
-	 * const z = await AsyncNone.filterAsync(async (x) => x > 0)
+	 * async function isEven(n: number): Promise<boolean> {
+	 *     return n % 2 === 0
+	 * }
+	 * 
+	 * assertEquals(await AsyncNone.filterAsync(isEven), None)
+	 * assertEquals(await AsyncSome(3).filterAsync(isEven), None)
+	 * assertEquals(await AsyncSome(4).filterAsync(isEven), Some(4))
 	 * ```
 	 */
 	public filterAsync(f: (value: T) => Promise<boolean>): AsyncOption<T> {

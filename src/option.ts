@@ -666,9 +666,9 @@ export class OptionImpl<T> {
 	 *     return x === 0 ? None : Some((100 / x).toString())
 	 * }
 	 * 
-	 * assertEquals(Some(2).andThenAsync(divideThenToString), Some("50"))
-	 * assertEquals(Some(0).andThenAsync(divideThenToString), None) // division by zero!
-	 * assertEquals(None.andThenAsync(divideThenToString), None)
+	 * assertEquals(await Some(2).andThenAsync(divideThenToString), Some("50"))
+	 * assertEquals(await Some(0).andThenAsync(divideThenToString), None) // division by zero!
+	 * assertEquals(await None.andThenAsync(divideThenToString), None)
 	 * 
 	 * // Chaining fallible operations
 	 * const arr2d = [["A0", "A1"], ["B0", "B1"]]
@@ -693,22 +693,24 @@ export class OptionImpl<T> {
 
 	/**
 	 * Returns `None` if the option is `None`, otherwise calls `predicate` with the wrapped value and returns:
-	 * - `Some<T>` if predicate returns `true`, and
+	 * - `Some(t)` if predicate returns `true` (where t is the wrapped value), and
 	 * - `None` if predicate returns `false`.
+	 * 
+	 * This function works similar to `Array.prototype.filter()`. You can imagine the `Option<T>` being 
+	 * an array over one or zero elements. `filter()` lets you decide which elements to keep.
 	 *
 	 * @param predicate - The predicate to apply to the contained value.
-	 * @returns The result of the predicate application, if the option is `Some`, otherwise `None`.
+	 * @returns The option if predicate returns `true`, otherwise `None`.
 	 *
 	 * @example
 	 * ```
-	 * let x = Some(1).filter((x) => x > 0)
-	 * assertEquals(x, Some(1))
-	 *
-	 * x = Some(0).filter((x) => x > 1)
-	 * assertEquals(x, None)
-	 *
-	 * x = None.filter((x) => x > 0)
-	 * assertEquals(x, None)
+	 * function isEven(n: number): boolean {
+	 *     return n % 2 === 0
+	 * }
+	 * 
+	 * assertEquals(None.filter(isEven), None)
+	 * assertEquals(Some(3).filter(isEven), None)
+	 * assertEquals(Some(4).filter(isEven), Some(4))
 	 * ```
 	 */
 	public filter(predicate: (value: T) => boolean): Option<T> {
@@ -720,22 +722,24 @@ export class OptionImpl<T> {
 
 	/**
 	 * Returns `None` if the option is `None`, otherwise calls `predicate` with the wrapped value and returns:
-	 * - `Some<T>` if predicate returns `true`, and
+	 * - `Some(t)` if predicate returns `true` (where t is the wrapped value), and
 	 * - `None` if predicate returns `false`.
+	 * 
+	 * This function works similar to `Array.prototype.filter()`. You can imagine the `Option<T>` being 
+	 * an array over one or zero elements. `filter()` lets you decide which elements to keep.
 	 *
 	 * @param predicate - The predicate to apply to the contained value.
-	 * @returns The result of the predicate application, if the option is `Some`, otherwise `None`.
+	 * @returns The option if predicate returns `true`, otherwise `None`.
 	 *
 	 * @example
 	 * ```
-	 * let x = await Some(1).filterAsync(async (x) => x > 0)
-	 * assertEquals(x, Some(1))
-	 *
-	 * x = await Some(0).filterAsync(async (x) => x > 1)
-	 * assertEquals(x, None)
-	 *
-	 * x = await None.filterAsync(async (x) => x > 0)
-	 * assertEquals(x, None)
+	 * async function isEven(n: number): Promise<boolean> {
+	 *     return n % 2 === 0
+	 * }
+	 * 
+	 * assertEquals(await None.filterAsync(isEven), None)
+	 * assertEquals(await Some(3).filterAsync(isEven), None)
+	 * assertEquals(await Some(4).filterAsync(isEven), Some(4))
 	 * ```
 	 */
 	public filterAsync(predicate: (value: T) => Promise<boolean>): AsyncOption<T> {
