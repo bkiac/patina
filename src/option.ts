@@ -613,20 +613,35 @@ export class OptionImpl<T> {
 
 	/**
 	 * Returns `None` if the option is `None`, otherwise calls `f` with the wrapped value and returns the result.
+	 * 
+	 * Often used to chain fallible operations that may return `None`.
 	 *
 	 * @param f - The function to apply to the contained value.
 	 * @returns The result of the function application, if the option is `Some`, otherwise `None`.
 	 *
 	 * @example
 	 * ```
-	 * let x = Some(0).andThen((x) => Some(x + 1))
-	 * assertEquals(x, Some(1))
-	 *
-	 * x = Some(0).andThen(x => None)
-	 * assertEquals(x, None)
-	 *
-	 * x = None.andThen((x) => Some(x + 1))
-	 * assertEquals(x, None)
+	 * function divideThenToString(x: number): Option<string> {
+	 *     // Division by zero returns None
+	 *     return x === 0 ? None : Some((100 / x).toString())
+	 * }
+	 * 
+	 * assertEquals(Some(2).andThen(divideThenToString), Some("50"))
+	 * assertEquals(Some(0).andThen(divideThenToString), None) // division by zero!
+	 * assertEquals(None.andThen(divideThenToString), None)
+	 * 
+	 * // Chaining fallible operations
+	 * const arr2d = [["A0", "A1"], ["B0", "B1"]]
+	 * 
+	 * const item01 = Option.fromNullish(arr2d[0]).andThen((row) => 
+	 *     Option.fromNullish(row[1])
+	 * )
+	 * assertEquals(item01, Some("A1"))
+	 * 
+	 * const item20 = Option.fromNullish(arr2d[2]).andThen((row) => 
+	 *     Option.fromNullish(row[0])
+	 * )
+	 * assertEquals(item20, None)
 	 * ```
 	 */
 	public andThen<U>(f: (value: T) => Option<U>): Option<U> {
@@ -638,20 +653,35 @@ export class OptionImpl<T> {
 
 	/**
 	 * Returns `None` if the option is `None`, otherwise calls `f` with the wrapped value and returns the result.
+	 * 
+	 * Often used to chain fallible operations that may return `None`.
 	 *
 	 * @param f - The function to apply to the contained value.
 	 * @returns The result of the function application, if the option is `Some`, otherwise `None`.
 	 *
 	 * @example
 	 * ```
-	 * let x = await Some(0).andThenAsync(async (x) => Some(x + 1))
-	 * assertEquals(x, Some(1))
-	 *
-	 * x = await Some(0).andThenAsync(async (x) => None)
-	 * assertEquals(x, None)
-	 *
-	 * x = await None.andThenAsync(async (x) => Some(x + 1))
-	 * assertEquals(x, None)
+	 * async function divideThenToString(x: number): Promise<Option<string>> {
+	 *     // Division by zero returns None
+	 *     return x === 0 ? None : Some((100 / x).toString())
+	 * }
+	 * 
+	 * assertEquals(Some(2).andThenAsync(divideThenToString), Some("50"))
+	 * assertEquals(Some(0).andThenAsync(divideThenToString), None) // division by zero!
+	 * assertEquals(None.andThenAsync(divideThenToString), None)
+	 * 
+	 * // Chaining fallible operations
+	 * const arr2d = [["A0", "A1"], ["B0", "B1"]]
+	 * 
+	 * const item01 = Option.fromNullish(arr2d[0]).andThenAsync(async (row) => 
+	 *     Option.fromNullish(row[1])
+	 * )
+	 * assertEquals(item01, Some("A1"))
+	 * 
+	 * const item20 = Option.fromNullish(arr2d[2]).andThenAsync(async (row) => 
+	 *     Option.fromNullish(row[0])
+	 * )
+	 * assertEquals(item20, None)
 	 * ```
 	 */
 	public andThenAsync<U>(f: (value: T) => Promise<Option<U>> | AsyncOption<U>): AsyncOption<U> {

@@ -210,21 +210,23 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	}
 
 	/**
-	 * Returns the result of applying a function to the value of a `Some` value, or `None` if the `AsyncOption` is `None`.
+	 * Returns `None` if the option resolves `None`, otherwise calls `f` with the wrapped value and returns the result.
+	 * 
+	 * Often used to chain fallible operations that may return `None`.
 	 *
-	 * @param f - The function to apply to the value of a `Some` value.
-	 * @returns The `AsyncOption`.
+	 * @param f - The function to apply to the contained value.
+	 * @returns The result of the function application, if the option resolves to `Some`, otherwise `None`.
 	 *
 	 * @example
 	 * ```
-	 * const x = await AsyncSome(0).andThen((x) => Some(x + 1))
-	 * assertEquals(x, Some(1))
-	 *
-	 * const y = await AsyncNone.andThen((x) => Some(x + 1))
-	 * assertEquals(y, None)
-	 *
-	 * const z = await AsyncSome(0).andThen((x) => None)
-	 * assertEquals(z, None)
+	 * function divideThenToString(x: number): Option<string> {
+	 *     // Division by zero returns None
+	 *     return x === 0 ? None : Some((100 / x).toString())
+	 * }
+	 * 
+	 * assertEquals(await AsyncSome(2).andThen(divideThenToString), Some("50"))
+	 * assertEquals(await AsyncSome(0).andThen(divideThenToString), None) // division by zero!
+	 * assertEquals(await AsyncNone.andThen(divideThenToString), None)
 	 * ```
 	 */
 	public andThen<U>(f: (value: T) => Option<U>): AsyncOption<U> {
@@ -232,21 +234,23 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	}
 
 	/**
-	 * Returns the result of applying a function to the value of a `Some` value, or `None` if the `AsyncOption` is `None`.
+	 * Returns `None` if the option resolves `None`, otherwise calls `f` with the wrapped value and returns the result.
+	 * 
+	 * Often used to chain fallible operations that may return `None`.
 	 *
-	 * @param f - The function to apply to the value of a `Some` value.
-	 * @returns The `AsyncOption`.
+	 * @param f - The function to apply to the contained value.
+	 * @returns The result of the function application, if the option resolves to `Some`, otherwise `None`.
 	 *
 	 * @example
 	 * ```
-	 * const x = await AsyncSome(0).andThenAsync(async (x) => Some(x + 1))
-	 * assertEquals(x, Some(1))
-	 *
-	 * const y = await AsyncNone.andThenAsync(async (x) => Some(x + 1))
-	 * assertEquals(y, None)
-	 *
-	 * const z = await AsyncSome(0).andThenAsync(async (x) => None)
-	 * assertEquals(z, None)
+	 * async function divideThenToString(x: number): Promise<Option<string>> {
+	 *     // Division by zero returns None
+	 *     return x === 0 ? None : Some((100 / x).toString())
+	 * }
+	 * 
+	 * assertEquals(await AsyncSome(2).andThenAsync(divideThenToString), Some("50"))
+	 * assertEquals(await AsyncSome(0).andThenAsync(divideThenToString), None) // division by zero!
+	 * assertEquals(await AsyncNone.andThenAsync(divideThenToString), None)
 	 * ```
 	 */
 	public andThenAsync<U>(f: (value: T) => Promise<Option<U>> | AsyncOption<U>): AsyncOption<U> {
