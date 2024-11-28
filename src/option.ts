@@ -581,23 +581,27 @@ export class OptionImpl<T> {
 
 	/**
 	 * Returns `None` if the option is `None`, otherwise returns `other`.
-	 *
-	 * @param other - The option to return if the option is `Some`.
-	 * @returns The result of the operation.
-	 *
+	 * 
+	 * @param other - The option to return if this option is `Some`.
+	 * @returns The other option if this option is `Some`, otherwise `None`.
+	 * 
 	 * @example
 	 * ```
-	 * let x = Some(0).and(Some(1))
-	 * assertEquals(x, Some(1))
-	 *
-	 * x = Some(0).and(None)
-	 * assertEquals(x, None)
-	 *
-	 * x = None.and(Some(1))
-	 * assertEquals(x, None)
-	 *
-	 * x = None.and(None)
-	 * assertEquals(x, None)
+	 * let x = Some(2)
+	 * let y = None
+	 * assertEquals(x.and(y), None)
+	 * 
+	 * let x = None
+	 * let y = Some("foo")
+	 * assertEquals(x.and(y), None)
+	 * 
+	 * let x = Some(2)
+	 * let y = Some("foo")
+	 * assertEquals(x.and(y), Some("foo"))
+	 * 
+	 * let x = None
+	 * let y = None
+	 * assertEquals(x.and(y), None)
 	 * ```
 	 */
 	public and<U>(other: Option<U>): Option<U> {

@@ -179,18 +179,28 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	}
 
 	/**
-	 * Returns `None` if the `AsyncOption` is `None`, otherwise returns `other`.
-	 *
-	 * @param other - The `AsyncOption` to return if the `AsyncOption` is `Some`.
-	 * @returns The `AsyncOption`.
-	 *
+	 * Returns `None` if the option is `None`, otherwise returns `other`.
+	 * 
+	 * @param other - The async option to return if this option is `Some`.
+	 * @returns The other option if this option is `Some`, otherwise `None`.
+	 * 
 	 * @example
 	 * ```
-	 * const x = await AsyncSome(0).and(AsyncSome(1))
-	 * assertEquals(x, Some(1))
-	 *
-	 * const y = await AsyncNone.and(AsyncSome(1))
-	 * assertEquals(y, None)
+	 * let x = AsyncSome(2)
+	 * let y = AsyncNone
+	 * assertEquals(await x.and(y), None)
+	 * 
+	 * let x = AsyncNone
+	 * let y = AsyncSome("foo")
+	 * assertEquals(await x.and(y), None)
+	 * 
+	 * let x = AsyncSome(2)
+	 * let y = AsyncSome("foo") 
+	 * assertEquals(await x.and(y), Some("foo"))
+	 * 
+	 * let x = AsyncNone
+	 * let y = AsyncNone
+	 * assertEquals(await x.and(y), None)
 	 * ```
 	 */
 	public and<U>(other: AsyncOption<U>): AsyncOption<U> {
