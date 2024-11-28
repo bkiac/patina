@@ -570,6 +570,32 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 		return (await this).unwrapOrElseAsync(f);
 	}
 
+	
+	/**
+	 * Returns `Some` if exactly one of `this`, `other` is `Some`, otherwise returns `None`.
+	 *
+	 * @param other - The option to compare with.
+	 * @returns `Some` if exactly one of the options is `Some`, otherwise `None`.
+	 *
+	 * @example
+	 * ```
+	 * let x = AsyncSome(2)
+	 * let y = AsyncNone
+	 * assertEquals(await x.xor(y), Some(2))
+	 * 
+	 * let x = AsyncNone
+	 * let y = AsyncSome(2)
+	 * assertEquals(await x.xor(y), Some(2))
+	 * 
+	 * let x = AsyncSome(2)
+	 * let y = AsyncSome(2)
+	 * assertEquals(await x.xor(y), None)
+	 * 
+	 * let x = AsyncNone
+	 * let y = AsyncNone
+	 * assertEquals(await x.xor(y), None)
+	 * ```
+	 */
 	public xor<U>(other: AsyncOption<U>): AsyncOption<T | U> {
 		return new AsyncOption(
 			this.then((thisOption) => other.then((otherOption) => thisOption.xor(otherOption))),

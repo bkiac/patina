@@ -831,24 +831,28 @@ export class OptionImpl<T> {
 	}
 
 	/**
-	 * Returns `Some` if exactly one of `this` and `other` is `Some`, otherwise returns `None`.
+	 * Returns `Some` if exactly one of `this`, `other` is `Some`, otherwise returns `None`.
 	 *
 	 * @param other - The option to compare with.
-	 * @returns The result of the operation.
+	 * @returns `Some` if exactly one of the options is `Some`, otherwise `None`.
 	 *
 	 * @example
 	 * ```
-	 * let x = Some(0).xor(Some(1))
-	 * assertEquals(x, None)
-	 *
-	 * x = Some(0).xor(None)
-	 * assertEquals(x, Some(0))
-	 *
-	 * x = None.xor(Some(1))
-	 * assertEquals(x, Some(1))
-	 *
-	 * x = None.xor(None)
-	 * assertEquals(x, None)
+	 * let x = Some(2)
+	 * let y = None
+	 * assertEquals(x.xor(y), Some(2))
+	 * 
+	 * let x = None
+	 * let y = Some(2)
+	 * assertEquals(x.xor(y), Some(2))
+	 * 
+	 * let x = Some(2)
+	 * let y = Some(2)
+	 * assertEquals(x.xor(y), None)
+	 * 
+	 * let x = None
+	 * let y = None
+	 * assertEquals(x.xor(y), None)
 	 * ```
 	 */
 	public xor<U>(other: Option<U>): Option<T | U> {
