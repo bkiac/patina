@@ -181,11 +181,11 @@ export class OptionImpl<T> {
 	 *
 	 * @example
 	 * ```
-	 * const x = None
+	 * let x = Some(2)
+	 * assertEquals(x.isNone(), false)
+	 * 
+	 * let x = None
 	 * assertEquals(x.isNone(), true)
-	 *
-	 * const y = Some(0)
-	 * assertEquals(y.isNone(), false)
 	 * ```
 	 */
 	public isNone(): this is None<T> {
