@@ -787,22 +787,17 @@ export class OptionImpl<T> {
 	/**
 	 * Returns the option if it contains a value, otherwise calls `f` and returns the result.
 	 *
-	 * @param f - The function to apply to the contained value.
-	 * @returns The result of the function application, if the option is `Some`, otherwise the provided default value.
+	 * @param f - The function to call if the option is `None`.
+	 * @returns This option if it is `Some`, otherwise the result of calling `f`.
 	 *
 	 * @example
 	 * ```
-	 * let x = Some(0).orElse(() => Some(1))
-	 * assertEquals(x, Some(0))
-	 *
-	 * x = Some(0).orElse(() => None)
-	 * assertEquals(x, Some(0))
-	 *
-	 * x = None.orElse(() => Some(1))
-	 * assertEquals(x, Some(1))
-	 *
-	 * x = None.orElse(() => None)
-	 * assertEquals(x, None)
+	 * function nobody(): Option<string> { return None }
+	 * function vikings(): Option<string> { return Some("vikings") }
+	 * 
+	 * assertEquals(Some("barbarians").orElse(vikings), Some("barbarians"))
+	 * assertEquals(None.orElse(vikings), Some("vikings"))
+	 * assertEquals(None.orElse(nobody), None)
 	 * ```
 	 */
 	public orElse<U>(f: () => Option<U>): Option<T | U> {
@@ -815,22 +810,17 @@ export class OptionImpl<T> {
 	/**
 	 * Returns the option if it contains a value, otherwise calls `f` and returns the result.
 	 *
-	 * @param f - The function to apply to the contained value.
-	 * @returns The result of the function application, if the option is `Some`, otherwise the provided default value.
+	 * @param f - The async function to call if the option is `None`.
+	 * @returns This option if it is `Some`, otherwise the result of calling `f`.
 	 *
 	 * @example
 	 * ```
-	 * let x = await Some(0).orElseAsync(async () => Some(1))
-	 * assertEquals(x, Some(0))
-	 *
-	 * x = await Some(0).orElseAsync(async () => None)
-	 * assertEquals(x, Some(0))
-	 *
-	 * x = await None.orElseAsync(async () => Some(1))
-	 * assertEquals(x, Some(1))
-	 *
-	 * x = await None.orElseAsync(async () => None)
-	 * assertEquals(x, None)
+	 * async function nobody(): Promise<Option<string>> { return None }
+	 * async function vikings(): Promise<Option<string>> { return Some("vikings") }
+	 * 
+	 * assertEquals(await Some("barbarians").orElseAsync(vikings), Some("barbarians"))
+	 * assertEquals(await None.orElseAsync(vikings), Some("vikings"))
+	 * assertEquals(await None.orElseAsync(nobody), None)
 	 * ```
 	 */
 	public orElseAsync<U>(f: () => Promise<Option<U>> | AsyncOption<U>): AsyncOption<T | U> {

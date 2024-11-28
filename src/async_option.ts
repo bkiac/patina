@@ -514,10 +514,42 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 		);
 	}
 
+	/**
+	 * Returns the option if it resolves to a value, otherwise calls `f` and returns the result.
+	 *
+	 * @param f - The function to call if the option is `None`.
+	 * @returns This option if it resolves to a value, otherwise the result of calling `f`.
+	 *
+	 * @example
+	 * ```
+	 * function nobody(): Option<string> { return None }
+	 * function vikings(): Option<string> { return Some("vikings") }
+	 * 
+	 * assertEquals(await AsyncSome("barbarians").orElse(vikings), Some("barbarians"))
+	 * assertEquals(await AsyncNone.orElse(vikings), Some("vikings"))
+	 * assertEquals(await AsyncNone.orElse(nobody), None)
+	 * ```
+	 */
 	public orElse<U>(f: () => Option<U>): AsyncOption<T | U> {
 		return new AsyncOption(this.then((thisOption) => thisOption.orElse(() => f())));
 	}
 
+	/**
+	 * Returns the option if it resolves to a value, otherwise calls `f` and returns the result.
+	 *
+	 * @param f - The function to call if the option is `None`.
+	 * @returns This option if it resolves to a value, otherwise the result of calling `f`.
+	 *
+	 * @example
+	 * ```
+	 * async function nobody(): Promise<Option<string>> { return None }
+	 * async function vikings(): Promise<Option<string>> { return Some("vikings") }
+	 * 
+	 * assertEquals(await AsyncSome("barbarians").orElseAsync(vikings), Some("barbarians"))
+	 * assertEquals(await AsyncNone.orElseAsync(vikings), Some("vikings"))
+	 * assertEquals(await AsyncNone.orElseAsync(nobody), None)
+	 * ```
+	 */
 	public orElseAsync<U>(f: () => Promise<Option<U>> | AsyncOption<U>): AsyncOption<T | U> {
 		return new AsyncOption(this.then((thisOption) => thisOption.orElseAsync(() => f())));
 	}
