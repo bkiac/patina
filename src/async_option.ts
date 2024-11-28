@@ -319,7 +319,7 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	}
 
 	/**
-	 * Returns `None` if the option is `None`, otherwise calls `predicate` with the wrapped value and returns:
+	 * Returns `None` if the option resolves to `None`, otherwise calls `predicate` with the wrapped value and returns:
 	 * - `Some(t)` if predicate returns `true` (where t is the wrapped value), and
 	 * - `None` if predicate returns `false`.
 	 * 
@@ -483,6 +483,31 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 		return (await this).mapOrElseAsync(defaultValue, f);
 	}
 
+	/**
+	 * Returns the option if it resolves to a value, otherwise returns `other`.
+	 *
+	 * @param other - The option to return if this option is `None`.
+	 * @returns This option if it resolves to a value, otherwise the provided option.
+	 *
+	 * @example
+	 * ```
+	 * let x = AsyncSome(2)
+	 * let y = AsyncNone
+	 * assertEquals(await x.or(y), Some(2))
+	 * 
+	 * let x = AsyncNone
+	 * let y = AsyncSome(100)
+	 * assertEquals(await x.or(y), Some(100))
+	 * 
+	 * let x = AsyncSome(2)
+	 * let y = AsyncSome(100)
+	 * assertEquals(await x.or(y), Some(2))
+	 * 
+	 * let x = AsyncNone
+	 * let y = AsyncNone
+	 * assertEquals(await x.or(y), None)
+	 * ```
+	 */
 	public or<U>(other: AsyncOption<U>): AsyncOption<T | U> {
 		return new AsyncOption(
 			this.then((thisOption) => other.then((otherOption) => thisOption.or(otherOption))),

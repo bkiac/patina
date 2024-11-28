@@ -755,22 +755,26 @@ export class OptionImpl<T> {
 	/**
 	 * Returns the option if it contains a value, otherwise returns `other`.
 	 *
-	 * @param other - The option to return if the option is `None`.
-	 * @returns The result of the operation.
+	 * @param other - The option to return if this option is `None`.
+	 * @returns This option if it is `Some`, otherwise the provided option.
 	 *
 	 * @example
 	 * ```
-	 * let x = Some(0).or(Some(1))
-	 * assertEquals(x, Some(0))
-	 *
-	 * x = Some(0).or(None)
-	 * assertEquals(x, Some(0))
-	 *
-	 * x = None.or(Some(1))
-	 * assertEquals(x, Some(1))
-	 *
-	 * x = None.or(None)
-	 * assertEquals(x, None)
+	 * let x = Some(2)
+	 * let y = None
+	 * assertEquals(x.or(y), Some(2))
+	 * 
+	 * let x = None
+	 * let y = Some(100)
+	 * assertEquals(x.or(y), Some(100))
+	 * 
+	 * let x = Some(2)
+	 * let y = Some(100)
+	 * assertEquals(x.or(y), Some(2))
+	 * 
+	 * let x = None
+	 * let y = None
+	 * assertEquals(x.or(y), None)
 	 * ```
 	 */
 	public or<U>(other: Option<U>): Option<T | U> {
