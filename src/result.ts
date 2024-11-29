@@ -398,7 +398,7 @@ export class ResultImpl<T, E> {
 		if (this._ok) {
 			return f(this._value as T);
 		}
-		return defaultValue;
+		return Promise.resolve(defaultValue);
 	}
 
 	/**
