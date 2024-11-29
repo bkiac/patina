@@ -343,7 +343,7 @@ export class ResultImpl<T, E> {
 	 * ```typescript
 	 * const x = await Result.fromThrowable(() => parseInt("4"))
 	 *     .inspectAsync(async (x) => console.log(`original: ${x}`)) // prints: original: 4
-	 *     .map(x => Math.pow(x, 3))
+	 *     .map((x) => Math.pow(x, 3))
 	 *     .expect("failed to parse number");
 	 * ```
 	 */
@@ -357,11 +357,16 @@ export class ResultImpl<T, E> {
 	/**
 	 * Calls the provided function with the contained error (if `Err`).
 	 *
-	 * **Examples**
+	 * Returns the original result, making it useful for debugging in the middle of method chains.
 	 *
-	 * ```
-	 * const x = Err("error")
-	 * x.inspectErr((e) => console.error(e))
+	 * @param f - The function to call with the contained error
+	 * @returns The original result, unchanged
+	 *
+	 * @example
+	 * ```typescript
+	 * const result = Result.fromThrowable(() => readFileSync("address.txt", "utf8"))
+	 *     .inspectErr((e) => console.error(`failed to read file: ${e}`))
+	 *     .map((contents) => processContents(contents));
 	 * ```
 	 */
 	public inspectErr(f: (error: E) => void): this {
