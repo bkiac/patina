@@ -354,18 +354,24 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Maps a `Result<T, E>` to `A | B` by applying fallback function `defaultValue` to a contained `Err` value, or function `f` to a contained `Ok` value.
+	 * Maps a `Result<T, E>` to `A | B` by applying fallback function `defaultValue` to a contained `Err` value,
+	 * or function `f` to a contained `Ok` value.
 	 *
-	 * **Examples**
+	 * This function can be used to unpack a successful result while handling an error.
 	 *
-	 * ```
-	 * const k = 21
+	 * @param defaultValue - The function to call with the error if the result is `Err`
+	 * @param f - The function to call with the value if the result is `Ok`
+	 * @returns The result of either function application
 	 *
-	 * let x: Result<string, string> = Ok("foo")
-	 * assert.strictEqual(x.mapOrElse(() => k * 2, (v) => v.length), 3)
+	 * @example
+	 * ```typescript
+	 * const k = 21;
 	 *
-	 * x = Err("bar")
-	 * assert.strictEqual(x.mapOrElse(() => k * 2, (v) => v.length), 42)
+	 * let x: Result<string, string> = Ok("foo");
+	 * assertEquals(x.mapOrElse((e) => k * 2, (v) => v.length), 3);
+	 *
+	 * let x: Result<string, string> = Err("bar");
+	 * assertEquals(x.mapOrElse((e) => k * 2, (v) => v.length), 42);
 	 * ```
 	 */
 	public mapOrElse<A, B>(defaultValue: (error: E) => A, f: (value: T) => B): A | B {
@@ -375,6 +381,27 @@ export class ResultImpl<T, E> {
 		return defaultValue(this._value as E);
 	}
 
+	/**
+	 * Maps a `Result<T, E>` to `Promise<A | B>` by applying fallback function `defaultValue` to a contained `Err` value,
+	 * or function `f` to a contained `Ok` value.
+	 *
+	 * This function can be used to unpack a successful result while handling an error.
+	 *
+	 * @param defaultValue - The function to call with the error if the result is `Err`
+	 * @param f - The function to call with the value if the result is `Ok`
+	 * @returns The result of either function application
+	 *
+	 * @example
+	 * ```typescript
+	 * const k = 21;
+	 *
+	 * let x: Result<string, string> = Ok("foo");
+	 * assertEquals(await x.mapOrElseAsync(async (e) => k * 2, (v) => v.length), 3);
+	 *
+	 * let x: Result<string, string> = Err("bar");
+	 * assertEquals(await x.mapOrElseAsync(async (e) => k * 2, async (v) => v.length), 42);
+	 * ```
+	 */
 	public mapOrElseAsync<A, B>(
 		defaultValue: (error: E) => Promise<A>,
 		f: (value: T) => Promise<B>,
