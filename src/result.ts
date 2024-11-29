@@ -583,13 +583,18 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Calls the provided async function with the contained error (if `Err`).
+	 * Calls the provided function with the contained error (if `Err`).
 	 *
-	 * **Examples**
+	 * Returns the original result, making it useful for debugging in the middle of method chains.
 	 *
-	 * ```
-	 * const x = Err("error")
-	 * x.inspectErrAsync((e) => Promise.resolve(console.error(e)))
+	 * @param f - The function to call with the contained error
+	 * @returns Original result converted to an async result
+	 *
+	 * @example
+	 * ```typescript
+	 * const result = Result.fromThrowable(() => readFileSync("address.txt", "utf8"))
+	 *     .inspectErrAsync(async (e) => console.error(`failed to read file: ${e}`))
+	 *     .map((contents) => processContents(contents));
 	 * ```
 	 */
 	public inspectErrAsync(f: (error: E) => Promise<void>): AsyncResult<T, E> {
