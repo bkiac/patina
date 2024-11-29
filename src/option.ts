@@ -202,7 +202,7 @@ export class OptionImpl<T> {
 	 * Returns the contained `Some` value, if exists. Otherwise, throws a `Panic` with the provided message.
 	 *
 	 * @param message - The message to throw if the value is `None`.
-	 * @throws `Panic` with the provided message if the value is `None`.
+	 * @throws {Panic} If the value is `None`, with a message containing the passed message and the content of the `None` as cause.
 	 * @returns The contained value.
 	 *
 	 * It is recommended that `expect()` messages are used to describe the reason you expect the `Option` should be `Some`.

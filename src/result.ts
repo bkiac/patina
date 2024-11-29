@@ -379,14 +379,31 @@ export class ResultImpl<T, E> {
 	/**
 	 * Returns the contained `Ok` value.
 	 *
-	 * Throws `Panic` if the value is an `Err`, with a message containing `message` and content of the `Err` as `cause`.
+	 * Because this function may throw, its use is generally discouraged. Instead, prefer to:
+	 * - Use pattern matching with `match()` and handle the `Err` case explicitly
+	 * - Use `unwrapOr()`, `unwrapOrElse()`, or similar methods
 	 *
-	 * **Examples**
+	 * @param message - A message explaining why you expect this Result to be Ok
+	 * @throws {Panic} If the value is an `Err`, with a message containing the passed message and the content of the `Err` as cause
+	 * @returns The contained `Ok` value
 	 *
+	 * @example
+	 * ```typescript
+	 * const x: Result<number, string> = Err("emergency failure");
+	 * x.expect("Testing expect"); // throws Panic: Testing expect: emergency failure
 	 * ```
-	 * const x = Err("emergency failure")
-	 * x.expect("Testing expect") // throws Panic: Testing expect
+	 *
+	 * It is recommended that expect messages describe the reason you expect the Result should be Ok.
+	 *
+	 * @example
+	 * ```typescript
+	 * const path = Result.fromThrowable(() => readFileSync("/etc/important.conf", "utf8"))
+	 *     .expect("config file should exist");
 	 * ```
+	 *
+	 * **Tip**: When writing expect messages, focus on the word "should" - for example:
+	 * - "env variable should be set by ..."
+	 * - "the given binary should be available and executable ..."
 	 */
 	public expect(message: string): T {
 		if (this._ok) {
