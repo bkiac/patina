@@ -580,11 +580,11 @@ export class OptionImpl<T> {
 	 *
 	 * @example
 	 * ```
-	 * const x = Some(0).okOrElse(() => "failed")
-	 * assertEquals(x, Ok(0))
+	 * let x = Some("foo")
+	 * assertEquals(x.okOrElse(() => 0), Ok("foo"))
 	 *
-	 * const y = None.okOrElse(() => "failed")
-	 * assertEquals(y, Err("failed"))
+	 * let x = None
+	 * assertEquals(x.okOrElse(() => 0), Err(0))
 	 * ```
 	 */
 	public okOrElse<E>(err: () => E): Result<T, E> {
@@ -597,16 +597,16 @@ export class OptionImpl<T> {
 	/**
 	 * Transforms the `Option<T>` into a `AsyncResult<T, E>`, mapping `Some(v)` to `Ok(v)` and `None` to `Err(err())`.
 	 *
-	 * @param err - The function to compute the error to return if the option is `None`.
+	 * @param err - The async function to compute the error to return if the option is `None`.
 	 * @returns The result of the transformation.
 	 *
 	 * @example
 	 * ```
-	 * const x = await Some(0).okOrElseAsync(async () => "failed")
-	 * assertEquals(x, Ok(0))
+	 * let x = Some("foo")
+	 * assertEquals(await x.okOrElseAsync(async () => 0), Ok("foo"))
 	 *
-	 * const y = await None.okOrElseAsync(async () => "failed")
-	 * assertEquals(y, Err("failed"))
+	 * let x = None
+	 * assertEquals(await x.okOrElseAsync(async () => 0), Err(0))
 	 * ```
 	 */
 	public okOrElseAsync<E>(err: () => Promise<E>): AsyncResult<T, E> {
