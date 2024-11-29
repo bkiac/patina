@@ -64,7 +64,7 @@ export function asyncFn<
 >(
 	f: (...args: A) => R,
 ): (...args: A) => AsyncResult<InferOk<Awaited<R>>, InferErr<Awaited<R>>> {
-	return function (...args: any[]): AsyncResult<InferOk<Awaited<R>>, InferErr<Awaited<R>>> {
+	return function (...args: A): AsyncResult<InferOk<Awaited<R>>, InferErr<Awaited<R>>> {
 		return new AsyncResult(f(...args));
 	};
 }
