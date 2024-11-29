@@ -665,7 +665,7 @@ export class ResultImpl<T, E> {
 	 * const y: Result<number, string> = Err("emergency failure");
 	 * assertEquals(y.unwrapErr(), "emergency failure");
 	 *
-	 * const z = Result.fromThrowable(...) // Result<T, E>
+	 * const z = Result.fromThrowable(...); // Result<T, E>
 	 * if (z.isErr()) {
 	 *     const e = z.unwrapErr() // `e` has type `E`
 	 * } else {
@@ -891,14 +891,18 @@ export class ResultImpl<T, E> {
 	/**
 	 * Returns the contained `Ok` value or a provided default.
 	 *
-	 * **Examples**
+	 * @param defaultValue - The value to return if the result is `Err`
+	 * @returns The contained value if `Ok`, otherwise the provided default value
 	 *
-	 * ```
-	 * const x: Result<number, string> = Ok(2)
-	 * assert.strictEqual(x.unwrapOr(0), 2)
+	 * @example
+	 * ```typescript
+	 * const defaultValue = 2
 	 *
-	 * const y: Result<number, string> = Err("error")
-	 * assert.strictEqual(y.unwrapOr(0), 0)
+	 * let x: Result<number, string> = Ok(9)
+	 * assertEquals(x.unwrapOr(defaultValue), 9)
+	 *
+	 * let x: Result<number, string> = Err("error")
+	 * assertEquals(x.unwrapOr(defaultValue), defaultValue)
 	 * ```
 	 */
 	public unwrapOr<U>(defaultValue: U): T | U {
