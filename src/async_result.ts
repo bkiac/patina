@@ -1,3 +1,8 @@
+/**
+ * This module contains the `AsyncResult` class, which is a promise that resolves to a `Result`.
+ * @module
+ */
+
 import { AsyncOption } from "./async_option.ts";
 import {
 	Err,

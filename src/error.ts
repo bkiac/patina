@@ -1,4 +1,9 @@
 /**
+ * This module contains error types and utility functions for working with errors.
+ * @module
+ */
+
+/**
  * A special error to indicate an unrecoverable error.
  *
  * This error is not caught by any function of the library, and is meant to be used to indicate a critical error that should not be caught.
