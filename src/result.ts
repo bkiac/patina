@@ -1159,16 +1159,18 @@ export namespace Result {
 	/**
 	 * Tries to execute a function and returns the result as a `Result`.
 	 *
-	 * **Examples**
+	 * @param f - The function to execute
+	 * @returns The result of the function
 	 *
-	 * ```
+	 * @example
+	 * ```typescript
 	 * // const result: Result<number, Error>
 	 * const result = Result.fromThrowable(() => {
 	 *   if (Math.random() > 0.5) {
-	 * 		return 42
-	 * 	  } else {
-	 * 		throw new Error("random error")
-	 * 	  }
+	 *     return 42
+	 *   } else {
+	 *     throw new Error("random error")
+	 *   }
 	 * })
 	 * ```
 	 */
@@ -1185,9 +1187,21 @@ export namespace Result {
 	 *
 	 * This may allow a synchronous error to escape, prefer using `Result.fromThrowableAsync()` instead.
 	 *
-	 * **Examples**
+	 * @example
+	 * ```typescript
+	 * function findUser(id: string): Promise<User> {
+	 *    throw new Error("not found") // synchronous error
+	 * }
 	 *
+	 * // synchronous error here will not be caught
+	 * const result = Result.fromPromise(findUser("123")) //
 	 * ```
+	 *
+	 * @param promise - A safe promise to resolve
+	 * @returns The result of the promise
+	 *
+	 * @example
+	 * ```typescript
 	 * // const result: AsyncResult<number, Error>
 	 * const result = Result.fromPromise(Promise.resolve(42))
 	 * ```
@@ -1206,16 +1220,28 @@ export namespace Result {
 	 *
 	 * This is safer then `Result.fromPromise()` because it will not allow a synchronous error to escape.
 	 *
-	 * **Examples**
+	 * @example
+	 * ```typescript
+	 * function findUser(id: string): Promise<User> {
+	 *    throw new Error("not found") // synchronous error
+	 * }
 	 *
+	 * // synchronous error here will be caught
+	 * const result = Result.fromThrowableAsync(async () => findUser("123"))
 	 * ```
+	 *
+	 * @param f - The async function to execute
+	 * @returns The result of the async function
+	 *
+	 * @example
+	 * ```typescript
 	 * // const result: AsyncResult<number, Error>
 	 * const result = Result.fromThrowableAsync((): Promise<number> => {
 	 *   if (Math.random() > 0.5) {
-	 * 		throw new Error("random error")
-	 * 	  } else {
-	 * 		return Promise.resolve(42)
-	 * 	  }
+	 *     throw new Error("random error")
+	 *   } else {
+	 *     return Promise.resolve(42)
+	 *   }
 	 * })
 	 */
 	export function fromThrowableAsync<T>(f: () => Promise<T>): AsyncResult<T, Error> {
