@@ -23,15 +23,6 @@ export class ResultImpl<T, E> {
 
 		// Make the constructor name equal to "Result"
 		Object.defineProperty(this.constructor, "name", { value: "Result" });
-
-		Object.defineProperty(this, Symbol.iterator, {
-			// Make the iterator non-enumerable to prevent it being used in loops and equality checks
-			enumerable: false,
-			// Make the iterator non-writable to prevent modification
-			writable: false,
-			// Make the iterator non-configurable to prevent redefinition
-			configurable: false,
-		});
 	}
 
 	public get [Symbol.toStringTag](): "Ok" | "Err" {
@@ -62,18 +53,19 @@ export class ResultImpl<T, E> {
 	 *
 	 * See `tryBlock()` and `tryBlockAsync()` for more information.
 	 */
-	public [Symbol.iterator](): Generator<Err<E, never>, T> {
+	public *[Symbol.iterator](): Generator<Err<E, never>, T> {
 		const v = this._value;
+
 		if (this._ok) {
-			// deno-lint-ignore require-yield
-			return (function* (): Generator<Err<E, never>, T> {
-				return v as T;
-			})();
+			return v as T;
 		}
-		return (function* (): Generator<Err<E, never>, T> {
-			yield Err(v as E);
-			throw new Panic("Do not use this generator outside of a try block");
-		})();
+
+		// deno-lint-ignore no-this-alias
+		const self = this;
+		// @ts-expect-error -- This is structurally equivalent and safe
+		yield self;
+		// @ts-expect-error -- This is structurally equivalent and safe
+		return self as T;
 	}
 
 	/**

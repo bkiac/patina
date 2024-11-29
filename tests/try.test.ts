@@ -125,6 +125,29 @@ describe("deprecated try()", () => {
 	});
 });
 
+// Make sure that implementing the iterator does not interfere with equality checks
+test("equality check", () => {
+	let a: Result<number, string> = Ok(0);
+	let b: Result<number, string> = Ok(0);
+	expect(a).toEqual(b);
+
+	a = Err("error");
+	b = Err("error");
+	expect(a).toEqual(b);
+
+	a = Ok(0);
+	b = Err("error");
+	expect(a).not.toEqual(b);
+
+	a = Ok(0);
+	b = Ok(1);
+	expect(a).not.toEqual(b);
+
+	a = Err("error");
+	b = Err("other");
+	expect(a).not.toEqual(b);
+});
+
 test("tryBlock", () => {
 	const block = tryBlock(function* () {
 		const x = yield* Ok(1);
