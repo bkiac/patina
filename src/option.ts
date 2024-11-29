@@ -471,11 +471,11 @@ export class OptionImpl<T> {
 	 * assertEquals(await x.mapOrAsync(42, async (v) => v.length), 42)
 	 * ```
 	 */
-	public async mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B> {
+	public mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B> {
 		if (this._some) {
 			return f(this._value as T);
 		}
-		return defaultValue;
+		return Promise.resolve(defaultValue);
 	}
 
 	/**
