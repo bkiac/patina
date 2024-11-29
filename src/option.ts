@@ -156,8 +156,6 @@ export class OptionImpl<T> {
 	/**
 	 * Returns `true` if the option is `Some` and the contained value is equal to `value`.
 	 *
-	 * Maybe not as useful as using `option.isSome() && f(option.unwrap())`, because it doesn't narrow the type, but it's here for completeness.
-	 *
 	 * @param predicate - The predicate to check the contained value against.
 	 * @returns `true` if the option is `Some` and the contained value matches the predicate, otherwise `false`.
 	 *

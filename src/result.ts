@@ -106,6 +106,29 @@ export class ResultImpl<T, E> {
 
 	/**
 	 * Returns `true` if the result is `Ok`.
+	 *
+	 * Works as a type guard to narrow the type of the result to `Ok<T>`.
+	 *
+	 * @returns `true` if the result is `Ok`, otherwise `false`
+	 *
+	 * @example
+	 * ```typescript
+	 * const x = Ok(2);
+	 * assertEquals(x.isOk(), true);
+	 *
+	 * const x = Err("Some error message");
+	 * assertEquals(x.isOk(), false);
+	 *
+	 * // Type narrowing example:
+	 * const x = Result.fromThrowable(() => someOperation());
+	 * if (x.isOk()) {
+	 *     // x is now typed as Ok<T>
+	 *     const value = x.unwrap(); // value has type T
+	 * } else {
+	 *     // x is now typed as Err<E>
+	 *     const error = x.unwrapErr(); // error has type E
+	 * }
+	 * ```
 	 */
 	public isOk(): this is Ok<T, E> {
 		return this._ok;
@@ -114,7 +137,22 @@ export class ResultImpl<T, E> {
 	/**
 	 * Returns `true` if the result is `Ok` and the value satisfies the predicate.
 	 *
-	 * Maybe not as useful as using `result.isOk() && f(result.value)`, because it doesn't narrow the type, but it's here for completeness.
+	 * Works as a type guard to narrow the type of the result to `Ok<T>`.
+	 *
+	 * @param f - The predicate to check the contained value against
+	 * @returns `true` if the result is `Ok` and the value matches the predicate, otherwise `false`
+	 *
+	 * @example
+	 * ```typescript
+	 * const x = Ok(2);
+	 * assertEquals(x.isOkAnd((x) => x > 1), true);
+	 *
+	 * const x = Ok(0);
+	 * assertEquals(x.isOkAnd((x) => x > 1), false);
+	 *
+	 * const x = Err("error");
+	 * assertEquals(x.isOkAnd((x) => x > 1), false);
+	 * ```
 	 */
 	public isOkAnd(f: (value: T) => boolean): this is Ok<T, E> {
 		return this._ok && f(this._value as T);
@@ -122,6 +160,26 @@ export class ResultImpl<T, E> {
 
 	/**
 	 * Returns `true` if the result is `Err`.
+	 *
+	 * Works as a type guard to narrow the type of the result to `Err<E>`.
+	 *
+	 * @returns `true` if the result is `Err`, otherwise `false`
+	 *
+	 * @example
+	 * ```typescript
+	 * const x = Ok(-3);
+	 * assertEquals(x.isErr(), false);
+	 *
+	 * const x = Err("Some error message");
+	 * assertEquals(x.isErr(), true);
+	 *
+	 * // Type narrowing example:
+	 * const x = Result.fromThrowable(() => someOperation());
+	 * if (x.isErr()) {
+	 *     // x is now typed as Err<E>
+	 *     const error = x.unwrapErr(); // error has type E
+	 * }
+	 * ```
 	 */
 	public isErr(): this is Err<E, T> {
 		return !this._ok;
@@ -130,7 +188,22 @@ export class ResultImpl<T, E> {
 	/**
 	 * Returns `true` if the result is `Err` and the error satisfies the predicate.
 	 *
-	 * Maybe not as useful as using `result.isErr() && f(result.error)`, because it doesn't narrow the type, but it's here for completeness.
+	 * Works as a type guard to narrow the type of the result to `Err<E>`.
+	 *
+	 * @param f - The predicate to check the contained error against
+	 * @returns `true` if the result is `Err` and the error matches the predicate, otherwise `false`
+	 *
+	 * @example
+	 * ```typescript
+	 * const x = Err("error");
+	 * assertEquals(x.isErrAnd((e) => e.length > 3), true);
+	 *
+	 * const x = Err("err");
+	 * assertEquals(x.isErrAnd((e) => e.length > 3), false);
+	 *
+	 * const x = Ok(123);
+	 * assertEquals(x.isErrAnd((e) => e.length > 3), false);
+	 * ```
 	 */
 	public isErrAnd(f: (error: E) => boolean): this is Err<E, T> {
 		return !this._ok && f(this._value as E);
