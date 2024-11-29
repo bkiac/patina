@@ -413,7 +413,32 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Returns the contained `Ok` value or `undefined`.
+	 * Returns the contained `Ok` value, if exists, otherwise returns `undefined`.
+	 *
+	 * Because this function may return `undefined`, its use is generally discouraged.
+	 * Instead, prefer to:
+	 * - Use pattern matching with `match()` and handle the `Err` case explicitly
+	 * - Use `unwrapOr()`, `unwrapOrElse()`, or similar methods
+	 *
+	 * Type is narrowed to `T` if the result is already checked to be `Ok`.
+	 *
+	 * @returns The contained value, if exists, otherwise `undefined`.
+	 *
+	 * @example
+	 * ```typescript
+	 * const x = Ok(2)
+	 * assertEquals(x.unwrap(), 2)
+	 *
+	 * const y = Err("emergency failure")
+	 * assertEquals(y.unwrap(), undefined)
+	 *
+	 * const z = Result.fromThrowable(...) // Result<T, E>
+	 * if (z.isOk()) {
+	 *     const a = z.unwrap() // `a` has type `T`
+	 * } else {
+	 *     const b = z.unwrap() // `b` has type `undefined`
+	 * }
+	 * ```
 	 */
 	public unwrap(): T | undefined {
 		if (this._ok) {
