@@ -77,17 +77,19 @@ export class ResultImpl<T, E> {
 	/**
 	 * Matches the result with two functions.
 	 *
-	 * **Examples**
+	 * @param pattern - The pattern to match the result against
+	 * @returns The result of the matched function
 	 *
+	 * @example
 	 * ```
 	 * const x: Result<number, string> = Ok(2)
-	 * assert.strictEqual(x.match({
+	 * assertEquals(x.match({
 	 * 	Ok: (v) => v * 2,
 	 * 	Err: (e) => e.length,
 	 * }), 4)
 	 *
 	 * const y: Result<number, string> = Err("error")
-	 * assert.strictEqual(y.match({
+	 * assertEquals(y.match({
 	 * 	Ok: (v) => v * 2,
 	 * 	Err: (e) => e.length,
 	 * }), 5)
@@ -100,6 +102,27 @@ export class ResultImpl<T, E> {
 		return pattern.Err(this._value as E);
 	}
 
+	/**
+	 * Matches the result with two async functions.
+	 *
+	 * @param pattern - The pattern to match the result against
+	 * @returns A promise that resolves to the result of the matched function
+	 *
+	 * @example
+	 * ```
+	 * const x: Result<number, string> = Ok(2)
+	 * assertEquals(await x.matchAsync({
+	 * 	Ok: async (v) => v * 2,
+	 * 	Err: async (e) => e.length,
+	 * }), 4)
+	 *
+	 * const y: Result<number, string> = Err("error")
+	 * assertEquals(await y.matchAsync({
+	 * 	Ok: (v) => v * 2,
+	 * 	Err: (e) => e.length,
+	 * }), 5)
+	 * ```
+	 */
 	public matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A | B> {
 		if (this._ok) {
 			return pattern.Ok(this._value as T);
