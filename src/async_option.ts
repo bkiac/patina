@@ -141,7 +141,7 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	}
 
 	/**
-	 * Transforms the `AsyncOption<T>` into a `AsyncResult<T, E>`, mapping `Some(v)` to `Ok(v)` and `None` to `Err(err())`.
+	 * Transforms the `AsyncOption<T>` into a `Result<T, E>`, mapping `Some(v)` to `Ok(v)` and `None` to `Err(err())`.
 	 *
 	 * @param err - The function to compute the error to return if the option is `None`.
 	 * @returns The result of the transformation.
@@ -160,18 +160,18 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	}
 
 	/**
-	 * Transforms the `AsyncOption<T>` into a `AsyncResult<T, E>`, mapping `Some(v)` to `Ok(v)` and `None` to `Err(err())`.
+	 * Converts the `AsyncOption` to an `AsyncResult` with an error value.
 	 *
-	 * @param err - The async function to compute the error to return if the option is `None`.
-	 * @returns The result of the transformation.
+	 * @param err - The function to compute the error value.
+	 * @returns The `AsyncResult`.
 	 *
 	 * @example
 	 * ```
-	 * let x = Some("foo")
-	 * assertEquals(await x.okOrElseAsync(async () => 0), Ok("foo"))
+	 * const x = await AsyncSome(0).okOrElseAsync(() => Promise.resolve("error"))
+	 * assertEquals(x, Ok(0))
 	 *
-	 * let x = None
-	 * assertEquals(await x.okOrElseAsync(async () => 0), Err(0))
+	 * const y = await AsyncNone.okOrElseAsync(() => Promise.resolve("error"))
+	 * assertEquals(y, Err("error"))
 	 * ```
 	 */
 	public okOrElseAsync<E>(err: () => Promise<E>): AsyncResult<T, E> {
@@ -610,10 +610,47 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 		return new AsyncOption(this.then((thisOption) => thisOption.orElseAsync(() => f())));
 	}
 
+	/**
+	 * Returns the contained `Some` value, if exists, otherwise returns `undefined`.
+	 *
+	 * Type is narrowed to `T` if the option is already checked to be `Some`.
+	 *
+	 * @returns The contained value, if exists, otherwise `undefined`.
+	 *
+	 * @example
+	 * ```
+	 * const x = AsyncSome("air")
+	 * assertEquals(await x.unwrap(), "air")
+	 *
+	 * const y = None
+	 * assertEquals(await y.unwrap(), undefined)
+	 *
+	 * const z = await Promise.resolve(Option.fromNullish(...)) // Option<T>
+	 * if (z.isSome()) {
+	 * 	const a = await z.unwrap() // `a` has type `T`
+	 * } else {
+	 * 	const b = z.unwrap() // `b` has type `undefined`
+	 * }
+	 * ```
+	 */
 	public async unwrap(): Promise<T | undefined> {
 		return (await this).unwrap();
 	}
 
+	/**
+	 * Returns the contained `Some` value, if exists.
+	 *
+	 * Otherwise, returns the provided default value.
+	 *
+	 * @param defaultValue - The default value to return if the option is `None`.
+	 * @returns The contained value, if exists, otherwise the provided default value.
+	 *
+	 * @example
+	 * ```
+	 * assertEquals(await AsyncSome("car").unwrapOr("bike"), "car")
+	 * assertEquals(await AsyncNone.unwrapOr("bike"), "bike")
+	 * ```
+	 */
 	public async unwrapOr<U>(defaultValue: U): Promise<T | U> {
 		return (await this).unwrapOr(defaultValue);
 	}

@@ -235,19 +235,17 @@ export class OptionImpl<T> {
 	 *
 	 * @example
 	 * ```
-	 * const x = Some(0).unwrap()
-	 * assertEquals(x, 0)
+	 * const x = Some("air")
+	 * assertEquals(x.unwrap(), "air")
 	 *
-	 * const y = None.unwrap()
-	 * assertEquals(y, undefined)
+	 * const y = None
+	 * assertEquals(y.unwrap(), undefined)
 	 *
 	 * const z = Option.fromNullish(...) // Option<T>
 	 * if (z.isSome()) {
 	 * 	const a = z.unwrap() // `a` has type `T`
-	 * 	assertEquals(typeof a, "number")
 	 * } else {
 	 * 	const b = z.unwrap() // `b` has type `undefined`
-	 * 	assertEquals(typeof b, "undefined")
 	 * }
 	 * ```
 	 */
@@ -268,11 +266,8 @@ export class OptionImpl<T> {
 	 *
 	 * @example
 	 * ```
-	 * const x = Some(0).unwrapOr(0)
-	 * assertEquals(x, 0)
-	 *
-	 * const y = None.unwrapOr(0)
-	 * assertEquals(y, 0)
+	 * assertEquals(Some("car").unwrapOr("bike"), "car")
+	 * assertEquals(None.unwrapOr("bike"), "bike")
 	 * ```
 	 */
 	public unwrapOr<U>(defaultValue: U): T | U {
