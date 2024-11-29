@@ -144,7 +144,7 @@ export class OptionImpl<T> {
 	 * ```
 	 * let x = Some(2)
 	 * assertEquals(x.isSome(), true)
-	 * 
+	 *
 	 * let x = None
 	 * assertEquals(x.isSome(), false)
 	 * ```
@@ -165,10 +165,10 @@ export class OptionImpl<T> {
 	 * ```
 	 * let x = Some(2)
 	 * assertEquals(x.isSomeAnd(x => x > 1), true)
-	 * 
+	 *
 	 * x = Some(0)
 	 * assertEquals(x.isSomeAnd(x => x > 1), false)
-	 * 
+	 *
 	 * x = None
 	 * assertEquals(x.isSomeAnd(x => x > 1), false)
 	 * ```
@@ -189,7 +189,7 @@ export class OptionImpl<T> {
 	 * ```
 	 * let x = Some(2)
 	 * assertEquals(x.isNone(), false)
-	 * 
+	 *
 	 * let x = None
 	 * assertEquals(x.isNone(), true)
 	 * ```
@@ -341,7 +341,7 @@ export class OptionImpl<T> {
 	 * let maybeSomeString = Some("Hello, World!")
 	 * let maybeSomeLen = maybeSomeString.map((s) => s.length)
 	 * assertEquals(maybeSomeLen, Some(13))
-	 * 
+	 *
 	 * let x = None
 	 * assertEquals(x.map(s => s.length), None)
 	 * ```
@@ -364,7 +364,7 @@ export class OptionImpl<T> {
 	 * let maybeSomeString = Some("Hello, World!")
 	 * let maybeSomeLen = await maybeSomeString.mapAsync(async (s) => s.length)
 	 * assertEquals(maybeSomeLen, Some(13))
-	 * 
+	 *
 	 * let x = None
 	 * assertEquals(await x.mapAsync(async (s) => s.length), None)
 	 * ```
@@ -378,7 +378,7 @@ export class OptionImpl<T> {
 
 	/**
 	 * Calls a function with the contained value if `Some`.
-	 * 
+	 *
 	 * Returns the original option.
 	 *
 	 * @param f - The function to call with the contained value.
@@ -387,12 +387,12 @@ export class OptionImpl<T> {
 	 * @example
 	 * ```
 	 * const list = [1, 2, 3]
-	 * 
+	 *
 	 * // prints "got: 2"
 	 * const x = Option.fromNullish(list[1])
 	 *     .inspect((x) => console.log(`got: ${x}`))
 	 *     .expect("list should be long enough")
-	 * 
+	 *
 	 * // prints nothing
 	 * Option.fromNullish(list[5]).inspect((x) => console.log(`got: ${x}`))
 	 * ```
@@ -406,7 +406,7 @@ export class OptionImpl<T> {
 
 	/**
 	 * Calls an async function with the contained value if `Some`.
-	 * 
+	 *
 	 * Returns the original option.
 	 *
 	 * @param f - The async function to call with the contained value.
@@ -415,12 +415,12 @@ export class OptionImpl<T> {
 	 * @example
 	 * ```
 	 * const list = [1, 2, 3]
-	 * 
+	 *
 	 * // prints "got: 2"
 	 * const x = await Option.fromNullish(list[1])
 	 *     .inspectAsync(async (x) => console.log(`got: ${x}`))
 	 *     .expect("list should be long enough")
-	 * 
+	 *
 	 * // prints nothing
 	 * await Option.fromNullish(list[5]).inspectAsync(async (x) => console.log(`got: ${x}`))
 	 * ```
@@ -443,7 +443,7 @@ export class OptionImpl<T> {
 	 * ```
 	 * let x = Some("foo")
 	 * assertEquals(x.mapOr(42, (v) => v.length), 3)
-	 * 
+	 *
 	 * let x = None
 	 * assertEquals(x.mapOr(42, (v) => v.length), 42)
 	 * ```
@@ -466,7 +466,7 @@ export class OptionImpl<T> {
 	 * ```
 	 * let x = Some("foo")
 	 * assertEquals(await x.mapOrAsync(42, async (v) => v.length), 3)
-	 * 
+	 *
 	 * let x = None
 	 * assertEquals(await x.mapOrAsync(42, async (v) => v.length), 42)
 	 * ```
@@ -481,17 +481,38 @@ export class OptionImpl<T> {
 	/**
 	 * Returns the provided default result (if none), or computes a default value by applying a function to the contained value (if any).
 	 *
-	 * @param defaultValue - The default value to return if the option is `None`.
+	 * @param defaultValue - The function to compute the default value.
 	 * @param f - The function to apply to the contained value.
-	 * @returns The result of the async function application, if the option is `Some`, otherwise the provided default value.
+	 * @returns The result of the function application, if the option is `Some`, otherwise the computed default value.
 	 *
 	 * @example
 	 * ```
-	 * const x = Some("foo").mapOrElse(() => 0, (v) => v.length)
-	 * assertEquals(x, 3)
+	 * const k = 21
 	 *
-	 * const y = None.mapOrElse(() => 0, (v) => v.length)
-	 * assertEquals(y, 0)
+	 * let x = Some("foo")
+	 * assertEquals(x.mapOrElse(() => 2 * k, (v) => v.length), 3)
+	 *
+	 * let x = None
+	 * assertEquals(x.mapOrElse(() => 2 * k, (v) => v.length), 42)
+	 *
+	 * // Handling a Result-based fallback
+	 * // This example parses a command line argument (if present), or reads from a file
+	 * function parseConfig(): Result<number, Error> {
+	 *     return Option.fromNullish(args[2])
+	 *         .mapOrElse(
+	 *             () => {
+	 *                 return Result.fromThrowable(() => {
+	 *                     return readFileSync("/etc/someconfig.conf", "utf8");
+	 *                 });
+	 *             },
+	 *             Ok,
+	 *         )
+	 *         .andThen((str) =>
+	 *             Result.fromThrowable(() => {
+	 *                 return parseInt(str);
+	 *             })
+	 *         );
+	 * }
 	 * ```
 	 */
 	public mapOrElse<A, B>(defaultValue: () => A, f: (value: T) => B): A | B {
@@ -502,19 +523,21 @@ export class OptionImpl<T> {
 	}
 
 	/**
-	 * Returns the provided default result (if none), or computes a default value by applying a function to the contained value (if any).
+	 * Returns the provided default result (if none), or computes a default value by applying an async function to the contained value (if any).
 	 *
-	 * @param defaultValue - The default value to return if the option is `None`.
-	 * @param f - The function to apply to the contained value.
-	 * @returns The result of the function application, if the option is `Some`, otherwise the provided default value.
+	 * @param defaultValue - The async function to compute the default value.
+	 * @param f - The async function to apply to the contained value.
+	 * @returns The result of the async function application, if the option is `Some`, otherwise the computed default value.
 	 *
 	 * @example
 	 * ```
-	 * const x = await Some(0).mapOrElseAsync(async () => 0, async (v) => v + 1)
-	 * assertEquals(x, 1)
+	 * const k = 21
 	 *
-	 * const y = await None.mapOrElseAsync(async () => 0, async (v) => v + 1)
-	 * assertEquals(y, 0)
+	 * let x = Some("foo")
+	 * assertEquals(await x.mapOrElseAsync(async () => 2 * k, async (v) => v.length), 3)
+	 *
+	 * let x = None
+	 * assertEquals(await x.mapOrElseAsync(async () => 2 * k, async (v) => v.length), 42)
 	 * ```
 	 */
 	public mapOrElseAsync<A, B>(
@@ -595,24 +618,24 @@ export class OptionImpl<T> {
 
 	/**
 	 * Returns `None` if the option is `None`, otherwise returns `other`.
-	 * 
+	 *
 	 * @param other - The option to return if this option is `Some`.
 	 * @returns The other option if this option is `Some`, otherwise `None`.
-	 * 
+	 *
 	 * @example
 	 * ```
 	 * let x = Some(2)
 	 * let y = None
 	 * assertEquals(x.and(y), None)
-	 * 
+	 *
 	 * let x = None
 	 * let y = Some("foo")
 	 * assertEquals(x.and(y), None)
-	 * 
+	 *
 	 * let x = Some(2)
 	 * let y = Some("foo")
 	 * assertEquals(x.and(y), Some("foo"))
-	 * 
+	 *
 	 * let x = None
 	 * let y = None
 	 * assertEquals(x.and(y), None)
@@ -627,7 +650,7 @@ export class OptionImpl<T> {
 
 	/**
 	 * Returns `None` if the option is `None`, otherwise calls `f` with the wrapped value and returns the result.
-	 * 
+	 *
 	 * Often used to chain fallible operations that may return `None`.
 	 *
 	 * @param f - The function to apply to the contained value.
@@ -639,20 +662,20 @@ export class OptionImpl<T> {
 	 *     // Division by zero returns None
 	 *     return x === 0 ? None : Some((100 / x).toString())
 	 * }
-	 * 
+	 *
 	 * assertEquals(Some(2).andThen(divideThenToString), Some("50"))
 	 * assertEquals(Some(0).andThen(divideThenToString), None) // division by zero!
 	 * assertEquals(None.andThen(divideThenToString), None)
-	 * 
+	 *
 	 * // Chaining fallible operations
 	 * const arr2d = [["A0", "A1"], ["B0", "B1"]]
-	 * 
-	 * const item01 = Option.fromNullish(arr2d[0]).andThen((row) => 
+	 *
+	 * const item01 = Option.fromNullish(arr2d[0]).andThen((row) =>
 	 *     Option.fromNullish(row[1])
 	 * )
 	 * assertEquals(item01, Some("A1"))
-	 * 
-	 * const item20 = Option.fromNullish(arr2d[2]).andThen((row) => 
+	 *
+	 * const item20 = Option.fromNullish(arr2d[2]).andThen((row) =>
 	 *     Option.fromNullish(row[0])
 	 * )
 	 * assertEquals(item20, None)
@@ -667,7 +690,7 @@ export class OptionImpl<T> {
 
 	/**
 	 * Returns `None` if the option is `None`, otherwise calls `f` with the wrapped value and returns the result.
-	 * 
+	 *
 	 * Often used to chain fallible operations that may return `None`.
 	 *
 	 * @param f - The function to apply to the contained value.
@@ -679,20 +702,20 @@ export class OptionImpl<T> {
 	 *     // Division by zero returns None
 	 *     return x === 0 ? None : Some((100 / x).toString())
 	 * }
-	 * 
+	 *
 	 * assertEquals(await Some(2).andThenAsync(divideThenToString), Some("50"))
 	 * assertEquals(await Some(0).andThenAsync(divideThenToString), None) // division by zero!
 	 * assertEquals(await None.andThenAsync(divideThenToString), None)
-	 * 
+	 *
 	 * // Chaining fallible operations
 	 * const arr2d = [["A0", "A1"], ["B0", "B1"]]
-	 * 
-	 * const item01 = Option.fromNullish(arr2d[0]).andThenAsync(async (row) => 
+	 *
+	 * const item01 = Option.fromNullish(arr2d[0]).andThenAsync(async (row) =>
 	 *     Option.fromNullish(row[1])
 	 * )
 	 * assertEquals(item01, Some("A1"))
-	 * 
-	 * const item20 = Option.fromNullish(arr2d[2]).andThenAsync(async (row) => 
+	 *
+	 * const item20 = Option.fromNullish(arr2d[2]).andThenAsync(async (row) =>
 	 *     Option.fromNullish(row[0])
 	 * )
 	 * assertEquals(item20, None)
@@ -709,8 +732,8 @@ export class OptionImpl<T> {
 	 * Returns `None` if the option is `None`, otherwise calls `predicate` with the wrapped value and returns:
 	 * - `Some(t)` if predicate returns `true` (where t is the wrapped value), and
 	 * - `None` if predicate returns `false`.
-	 * 
-	 * This function works similar to `Array.prototype.filter()`. You can imagine the `Option<T>` being 
+	 *
+	 * This function works similar to `Array.prototype.filter()`. You can imagine the `Option<T>` being
 	 * an array over one or zero elements. `filter()` lets you decide which elements to keep.
 	 *
 	 * @param predicate - The predicate to apply to the contained value.
@@ -721,7 +744,7 @@ export class OptionImpl<T> {
 	 * function isEven(n: number): boolean {
 	 *     return n % 2 === 0
 	 * }
-	 * 
+	 *
 	 * assertEquals(None.filter(isEven), None)
 	 * assertEquals(Some(3).filter(isEven), None)
 	 * assertEquals(Some(4).filter(isEven), Some(4))
@@ -738,8 +761,8 @@ export class OptionImpl<T> {
 	 * Returns `None` if the option is `None`, otherwise calls `predicate` with the wrapped value and returns:
 	 * - `Some(t)` if predicate returns `true` (where t is the wrapped value), and
 	 * - `None` if predicate returns `false`.
-	 * 
-	 * This function works similar to `Array.prototype.filter()`. You can imagine the `Option<T>` being 
+	 *
+	 * This function works similar to `Array.prototype.filter()`. You can imagine the `Option<T>` being
 	 * an array over one or zero elements. `filter()` lets you decide which elements to keep.
 	 *
 	 * @param predicate - The predicate to apply to the contained value.
@@ -750,7 +773,7 @@ export class OptionImpl<T> {
 	 * async function isEven(n: number): Promise<boolean> {
 	 *     return n % 2 === 0
 	 * }
-	 * 
+	 *
 	 * assertEquals(await None.filterAsync(isEven), None)
 	 * assertEquals(await Some(3).filterAsync(isEven), None)
 	 * assertEquals(await Some(4).filterAsync(isEven), Some(4))
@@ -777,15 +800,15 @@ export class OptionImpl<T> {
 	 * let x = Some(2)
 	 * let y = None
 	 * assertEquals(x.or(y), Some(2))
-	 * 
+	 *
 	 * let x = None
 	 * let y = Some(100)
 	 * assertEquals(x.or(y), Some(100))
-	 * 
+	 *
 	 * let x = Some(2)
 	 * let y = Some(100)
 	 * assertEquals(x.or(y), Some(2))
-	 * 
+	 *
 	 * let x = None
 	 * let y = None
 	 * assertEquals(x.or(y), None)
@@ -808,7 +831,7 @@ export class OptionImpl<T> {
 	 * ```
 	 * function nobody(): Option<string> { return None }
 	 * function vikings(): Option<string> { return Some("vikings") }
-	 * 
+	 *
 	 * assertEquals(Some("barbarians").orElse(vikings), Some("barbarians"))
 	 * assertEquals(None.orElse(vikings), Some("vikings"))
 	 * assertEquals(None.orElse(nobody), None)
@@ -831,7 +854,7 @@ export class OptionImpl<T> {
 	 * ```
 	 * async function nobody(): Promise<Option<string>> { return None }
 	 * async function vikings(): Promise<Option<string>> { return Some("vikings") }
-	 * 
+	 *
 	 * assertEquals(await Some("barbarians").orElseAsync(vikings), Some("barbarians"))
 	 * assertEquals(await None.orElseAsync(vikings), Some("vikings"))
 	 * assertEquals(await None.orElseAsync(nobody), None)
@@ -855,15 +878,15 @@ export class OptionImpl<T> {
 	 * let x = Some(2)
 	 * let y = None
 	 * assertEquals(x.xor(y), Some(2))
-	 * 
+	 *
 	 * let x = None
 	 * let y = Some(2)
 	 * assertEquals(x.xor(y), Some(2))
-	 * 
+	 *
 	 * let x = Some(2)
 	 * let y = Some(2)
 	 * assertEquals(x.xor(y), None)
-	 * 
+	 *
 	 * let x = None
 	 * let y = None
 	 * assertEquals(x.xor(y), None)
@@ -878,7 +901,7 @@ export class OptionImpl<T> {
 
 	/**
 	 * Converts from `Option<Option<T>>` to `Option<T>`.
-	 * 
+	 *
 	 * @returns A flattened `Option<T>`.
 	 *
 	 * @example
@@ -886,13 +909,13 @@ export class OptionImpl<T> {
 	 * // Basic usage:
 	 * let x: Option<Option<number>> = Some(Some(6))
 	 * assertEquals(x.flatten(), Some(6))
-	 * 
+	 *
 	 * let x: Option<Option<number>> = Some(None)
 	 * assertEquals(x.flatten(), None)
-	 * 
+	 *
 	 * let x: Option<Option<number>> = None
 	 * assertEquals(x.flatten(), None)
-	 * 
+	 *
 	 * // Flattening only removes one level of nesting at a time:
 	 * let x: Option<Option<Option<number>>> = Some(Some(Some(6)))
 	 * assertEquals(x.flatten(), Some(Some(6)))
