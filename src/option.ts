@@ -558,11 +558,11 @@ export class OptionImpl<T> {
 	 *
 	 * @example
 	 * ```
-	 * const x = Some(0).okOr("failed")
-	 * assertEquals(x, Ok(0))
+	 * let x = Some("foo")
+	 * assertEquals(x.okOr(0), Ok("foo"))
 	 *
-	 * const y = None.okOr("failed")
-	 * assertEquals(y, Err("failed"))
+	 * let x = None
+	 * assertEquals(x.okOr(0), Err(0))
 	 * ```
 	 */
 	public okOr<E>(err: E): Result<T, E> {

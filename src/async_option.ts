@@ -122,18 +122,18 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	}
 
 	/**
-	 * Converts the `AsyncOption` to an `AsyncResult` with an error value.
+	 * Transforms the `AsyncOption<T>` into a `AsyncResult<T, E>`, mapping `Some(v)` to `Ok(v)` and `None` to `Err(err)`.
 	 *
-	 * @param err - The error value.
-	 * @returns The `AsyncResult`.
+	 * @param err - The error to return if the option is `None`.
+	 * @returns The result of the transformation.
 	 *
 	 * @example
 	 * ```
-	 * const x = await AsyncSome(0).okOr("error")
-	 * assertEquals(x, Ok(0))
+	 * let x = Some("foo")
+	 * assertEquals(x.okOr(0), Ok("foo"))
 	 *
-	 * const y = await AsyncNone.okOr("error")
-	 * assertEquals(y, Err("error"))
+	 * let x = None
+	 * assertEquals(x.okOr(0), Err(0))
 	 * ```
 	 */
 	public okOr<E>(err: E): AsyncResult<T, E> {
