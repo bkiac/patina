@@ -157,16 +157,17 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Converts from `Result<T, E>` to `Option<E>`.
+	 * Converts from `Result<T, E>` to `Option<E>`, discarding the success value if any.
 	 *
-	 * **Examples**
+	 * @returns An `Option` containing the error value if this is `Err`, or `None` if this is `Ok`.
 	 *
+	 * @example
 	 * ```
-	 * const x: Result<number, string> = Ok(2)
-	 * assert.strictDeepEqual(x.err(), None)
+	 * const x: Result<number, string> = Ok(2);
+	 * assertEquals(x.err(), None);
 	 *
-	 * const y: Result<number, string> = Err("Nothing here")
-	 * assert.strictDeepEqual(y.err(), Some("Nothing here"))
+	 * const x: Result<number, string> = Err("Nothing here");
+	 * assertEquals(x.err(), Some("Nothing here"));
 	 * ```
 	 */
 	public err(): Option<E> {
