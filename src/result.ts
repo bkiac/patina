@@ -355,15 +355,18 @@ export class ResultImpl<T, E> {
 
 	/**
 	 * Returns the provided default (if `Err`), or applies a function to the contained value (if `Ok`).
-	 *
-	 * **Examples**
-	 *
-	 * ```
-	 * const x: Result<string, string> = Ok("foo");
-	 * assert.strictEqual(x.mapOr(42, (v) => v.length), 3);
-	 *
-	 * const y: Result<string, string> = Err("bar");
-	 * assert.strictEqual(y.mapOr(42, (v) => v.length), 42);
+	 * 
+	 * @param defaultValue - The value to return if the result is `Err`
+	 * @param f - The function to apply to the contained value if the result is `Ok`
+	 * @returns The default value if `Err`, otherwise the result of applying `f` to the contained value
+	 * 
+	 * @example
+	 * ```typescript
+	 * let x: Result<string, string> = Ok("foo")
+	 * assertEquals(x.mapOr(42, (v) => v.length), 3)
+	 * 
+	 * let x: Result<string, string> = Err("bar")
+	 * assertEquals(x.mapOr(42, (v) => v.length), 42)
 	 * ```
 	 */
 	public mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B {
@@ -373,6 +376,22 @@ export class ResultImpl<T, E> {
 		return defaultValue;
 	}
 
+	/**
+	 * Returns the provided default (if `Err`), or applies a function to the contained value (if `Ok`).
+	 * 
+	 * @param defaultValue - The value to return if the result is `Err`
+	 * @param f - The function to apply to the contained value if the result is `Ok`
+	 * @returns The default value if `Err`, otherwise the result of applying `f` to the contained value
+	 * 
+	 * @example
+	 * ```typescript
+	 * let x: Result<string, string> = Ok("foo")
+	 * assertEquals(await x.mapOrAsync(42, async (v) => v.length), 3)
+	 * 
+	 * let x: Result<string, string> = Err("bar")
+	 * assertEquals(await x.mapOrAsync(42, async (v) => v.length), 42)
+	 * ```
+	 */
 	public mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B> {
 		if (this._ok) {
 			return f(this._value as T);
@@ -1173,7 +1192,6 @@ export namespace Result {
 			promise.then(
 				(value) => Ok(value),
 				(error) => Err(handleCaughtError(error)),
-			),
 		);
 	}
 
