@@ -400,10 +400,6 @@ export class ResultImpl<T, E> {
 	 * const path = Result.fromThrowable(() => readFileSync("/etc/important.conf", "utf8"))
 	 *     .expect("config file should exist");
 	 * ```
-	 *
-	 * **Tip**: When writing expect messages, focus on the word "should" - for example:
-	 * - "env variable should be set by ..."
-	 * - "the given binary should be available and executable ..."
 	 */
 	public expect(message: string): T {
 		if (this._ok) {
@@ -450,13 +446,18 @@ export class ResultImpl<T, E> {
 	/**
 	 * Returns the contained `Err` value.
 	 *
-	 * Throws `Panic` if the value is an `Ok`, with a message containing `message` and content of the `Ok` as `cause`.
+	 * Because this function may throw, its use is generally discouraged. Instead, prefer to:
+	 * - Use pattern matching with `match()` and handle the `Ok` case explicitly
+	 * - Use similar methods that don't throw
 	 *
-	 * **Examples**
+	 * @param message - A message explaining why you expect this Result to be Err
+	 * @throws {Panic} If the value is an `Ok`, with a message containing the passed message and the content of the `Ok` as cause
+	 * @returns The contained Err value
 	 *
-	 * ```
-	 * const x = Ok(2)
-	 * x.expectErr("Testing expectErr") // throws Panic: Testing expectErr
+	 * @example
+	 * ```typescript
+	 * const x: Result<number, string> = Ok(10);
+	 * x.expectErr("Testing expectErr"); // throws Panic: Testing expectErr: 10
 	 * ```
 	 */
 	public expectErr(message: string): E {
@@ -467,7 +468,32 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Returns the contained `Err` value or `undefined`
+	 * Returns the contained `Err` value, if exists, otherwise returns `undefined`.
+	 *
+	 * Because this function may return `undefined`, its use is generally discouraged.
+	 * Instead, prefer to:
+	 * - Use pattern matching with `match()` and handle the `Ok` case explicitly
+	 * - Use similar methods that handle both cases
+	 *
+	 * Type is narrowed to `E` if the result is already checked to be `Err`.
+	 *
+	 * @returns The contained error value, if exists, otherwise `undefined`.
+	 *
+	 * @example
+	 * ```typescript
+	 * const x: Result<number, string> = Ok(2);
+	 * assertEquals(x.unwrapErr(), undefined);
+	 *
+	 * const y: Result<number, string> = Err("emergency failure");
+	 * assertEquals(y.unwrapErr(), "emergency failure");
+	 *
+	 * const z = Result.fromThrowable(...) // Result<T, E>
+	 * if (z.isErr()) {
+	 *     const e = z.unwrapErr() // `e` has type `E`
+	 * } else {
+	 *     const u = z.unwrapErr() // `u` has type `undefined`
+	 * }
+	 * ```
 	 */
 	public unwrapErr(): E | undefined {
 		if (!this._ok) {
