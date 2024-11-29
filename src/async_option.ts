@@ -434,27 +434,7 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	}
 
 	/**
-	 * Maps the `AsyncOption` to a value or a default value.
-	 *
-	 * @param defaultValue - The default value.
-	 * @param f - The function to map the `AsyncOption` to a value.
-	 * @returns The value or the default value.
-	 *
-	 * @example
-	 * ```
-	 * const x = await AsyncSome(0).mapOr(1, (x) => x + 1)
-	 * assertEquals(x, 1)
-	 *
-	 * const y = await AsyncNone.mapOr(1, (x) => x + 1)
-	 * assertEquals(y, 1)
-	 * ```
-	 */
-	public async mapOr<A, B>(defaultValue: A, f: (value: T) => B): Promise<A | B> {
-		return (await this).mapOr(defaultValue, f);
-	}
-
-	/**
-	 * Returns the provided default value (if none), or computes a default value by applying a function to the contained value (if any).
+	 * Returns the provided default result (if none), or applies a function to the contained value (if any).
 	 *
 	 * @param defaultValue - The default value to return if the option is `None`.
 	 * @param f - The function to apply to the contained value.
@@ -462,11 +442,31 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	 *
 	 * @example
 	 * ```
-	 * const x = await Some(0).mapOrAsync("default", async (v) => v + 1)
-	 * assertEquals(x, 1)
+	 * let x = AsyncSome("foo")
+	 * assertEquals(await x.mapOr(42, v => v.length), 3)
+	 * 
+	 * let x = None
+	 * assertEquals(x.mapOr(42, v => v.length), 42)
+	 * ```
+	 */
+	public async mapOr<A, B>(defaultValue: A, f: (value: T) => B): Promise<A | B> {
+		return (await this).mapOr(defaultValue, f);
+	}
+
+	/**
+	 * Returns the provided default result (if none), or applies an async function to the contained value (if any).
 	 *
-	 * const y = await None.mapOrAsync("default", async (v) => v + 1)
-	 * assertEquals(y, "default")
+	 * @param defaultValue - The default value to return if the option is `None`.
+	 * @param f - The async function to apply to the contained value.
+	 * @returns The result of the async function application, if the option is `Some`, otherwise the provided default value.
+	 *
+	 * @example
+	 * ```
+	 * let x = AsyncSome("foo")
+	 * assertEquals(await x.mapOrAsync(42, async (v) => v.length), 3)
+	 * 
+	 * let x = AsyncNone
+	 * assertEquals(await x.mapOrAsync(42, async (v) => v.length), 42)
 	 * ```
 	 */
 	public async mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B> {

@@ -441,11 +441,11 @@ export class OptionImpl<T> {
 	 *
 	 * @example
 	 * ```
-	 * const x = Some(0).mapOr(0, (v) => v + 1)
-	 * assertEquals(x, 1)
-	 *
-	 * const y = None.mapOr(0, (v) => v + 1)
-	 * assertEquals(y, 0)
+	 * let x = Some("foo")
+	 * assertEquals(x.mapOr(42, (v) => v.length), 3)
+	 * 
+	 * let x = None
+	 * assertEquals(x.mapOr(42, (v) => v.length), 42)
 	 * ```
 	 */
 	public mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B {
@@ -456,19 +456,19 @@ export class OptionImpl<T> {
 	}
 
 	/**
-	 * Returns the provided default value (if none), or computes a default value by applying a function to the contained value (if any).
+	 * Returns the provided default result (if none), or applies an async function to the contained value (if any).
 	 *
 	 * @param defaultValue - The default value to return if the option is `None`.
-	 * @param f - The function to apply to the contained value.
-	 * @returns The result of the function application, if the option is `Some`, otherwise the provided default value.
+	 * @param f - The async function to apply to the contained value.
+	 * @returns The result of the async function application, if the option is `Some`, otherwise the provided default value.
 	 *
 	 * @example
 	 * ```
-	 * const x = await Some(0).mapOrAsync("default", async (v) => v + 1)
-	 * assertEquals(x, 1)
-	 *
-	 * const y = await None.mapOrAsync("default", async (v) => v + 1)
-	 * assertEquals(y, "default")
+	 * let x = Some("foo")
+	 * assertEquals(await x.mapOrAsync(42, async (v) => v.length), 3)
+	 * 
+	 * let x = None
+	 * assertEquals(await x.mapOrAsync(42, async (v) => v.length), 42)
 	 * ```
 	 */
 	public async mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B> {
@@ -483,7 +483,7 @@ export class OptionImpl<T> {
 	 *
 	 * @param defaultValue - The default value to return if the option is `None`.
 	 * @param f - The function to apply to the contained value.
-	 * @returns The result of the function application, if the option is `Some`, otherwise the provided default value.
+	 * @returns The result of the async function application, if the option is `Some`, otherwise the provided default value.
 	 *
 	 * @example
 	 * ```
