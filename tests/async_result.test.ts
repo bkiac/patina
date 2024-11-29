@@ -371,10 +371,10 @@ describe("unwrap", () => {
 		await expect(result.unwrap()).resolves.toEqual(42);
 	});
 
-	it("returns undefined for an Err result", async () => {
+	it("returns null for an Err result", async () => {
 		const error = new Error("Test error");
 		const result = TestErrPromise<number, Error>(error);
-		await expect(result.unwrap()).resolves.toEqual(undefined);
+		await expect(result.unwrap()).resolves.toEqual(null);
 	});
 });
 
@@ -385,9 +385,9 @@ describe("unwrapErr", () => {
 		await expect(result.unwrapErr()).resolves.toEqual(error);
 	});
 
-	it("returns undefined for an Ok result", async () => {
+	it("returns null for an Ok result", async () => {
 		const result = TestOkPromise<number, string>(42);
-		await expect(result.unwrapErr()).resolves.toEqual(undefined);
+		await expect(result.unwrapErr()).resolves.toEqual(null);
 	});
 });
 

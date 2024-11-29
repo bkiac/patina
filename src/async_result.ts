@@ -4,14 +4,7 @@
  */
 
 import { AsyncOption } from "./async_option.ts";
-import {
-	Err,
-	Ok,
-	type Result,
-	type ResultImpl,
-	type ResultMatch,
-	type ResultMatchAsync,
-} from "./result.ts";
+import type { Err, Result, ResultImpl, ResultMatch, ResultMatchAsync } from "./result.ts";
 
 /**
  * A promise that resolves to a `Result`.
@@ -892,12 +885,4 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	async error(): Promise<E | undefined> {
 		return (await this).error();
 	}
-}
-
-export function AsyncOk<T>(value: T): AsyncResult<T, never> {
-	return new AsyncResult(Promise.resolve(Ok(value)));
-}
-
-export function AsyncErr<E>(error: E): AsyncResult<never, E> {
-	return new AsyncResult(Promise.resolve(Err(error)));
 }

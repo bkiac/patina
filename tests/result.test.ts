@@ -27,7 +27,7 @@ describe("core", () => {
 		expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
 
 		expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
-		expectTypeOf(r.unwrapErr).toEqualTypeOf<() => undefined>();
+		expectTypeOf(r.unwrapErr).toEqualTypeOf<() => null>();
 
 		expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
 		expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
@@ -43,7 +43,7 @@ describe("core", () => {
 		expect(r.error()).toEqual("error");
 		expectTypeOf(r.error).toEqualTypeOf<() => string>();
 
-		expectTypeOf(r.unwrap).toEqualTypeOf<() => undefined>();
+		expectTypeOf(r.unwrap).toEqualTypeOf<() => null>();
 		expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
 
 		expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
@@ -59,7 +59,7 @@ describe("core", () => {
 			expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
 
 			expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
-			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => null>();
 
 			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
 			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
@@ -67,7 +67,7 @@ describe("core", () => {
 			expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
 			expectTypeOf(r.error).toEqualTypeOf<() => string>();
 
-			expectTypeOf(r.unwrap).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.unwrap).toEqualTypeOf<() => null>();
 			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
 
 			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
@@ -78,7 +78,7 @@ describe("core", () => {
 			expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
 			expectTypeOf(r.error).toEqualTypeOf<() => string>();
 
-			expectTypeOf(r.unwrap).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.unwrap).toEqualTypeOf<() => null>();
 			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
 
 			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
@@ -88,7 +88,7 @@ describe("core", () => {
 			expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
 
 			expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
-			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => undefined>();
+			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => null>();
 
 			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
 			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
@@ -475,9 +475,9 @@ describe("unwrap", () => {
 		expect(result.unwrap()).toEqual(42);
 	});
 
-	it("returns undefined for an Err result", () => {
+	it("returns null for an Err result", () => {
 		const result = TestErr<number, string>("error");
-		expect(result.unwrap()).toEqual(undefined);
+		expect(result.unwrap()).toEqual(null);
 	});
 });
 
@@ -487,9 +487,9 @@ describe("unwrapErr", () => {
 		expect(result.unwrapErr()).toEqual("error");
 	});
 
-	it("returns undefined for an Ok result", () => {
+	it("returns null for an Ok result", () => {
 		const result = TestOk<number, string>(42);
-		expect(result.unwrapErr()).toEqual(undefined);
+		expect(result.unwrapErr()).toEqual(null);
 	});
 });
 

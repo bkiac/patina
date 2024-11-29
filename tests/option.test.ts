@@ -420,9 +420,9 @@ describe("unwrap", () => {
 		expect(option.unwrap()).toEqual(42);
 	});
 
-	it("returns undefined when called on a None option", () => {
+	it("returns null when called on a None option", () => {
 		const option = TestNone<string>();
-		expect(option.unwrap()).toEqual(undefined);
+		expect(option.unwrap()).toEqual(null);
 	});
 });
 
