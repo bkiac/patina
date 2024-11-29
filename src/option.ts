@@ -338,11 +338,12 @@ export class OptionImpl<T> {
 	 *
 	 * @example
 	 * ```
-	 * const x = Some(0).map((v) => v + 1)
-	 * assertEquals(x, Some(1))
-	 *
-	 * const y = None.map((v) => v + 1)
-	 * assertEquals(y, None)
+	 * let maybeSomeString = Some("Hello, World!")
+	 * let maybeSomeLen = maybeSomeString.map((s) => s.length)
+	 * assertEquals(maybeSomeLen, Some(13))
+	 * 
+	 * let x = None
+	 * assertEquals(x.map(s => s.length), None)
 	 * ```
 	 */
 	public map<U>(f: (value: T) => U): Option<U> {
@@ -353,18 +354,19 @@ export class OptionImpl<T> {
 	}
 
 	/**
-	 * Maps an `Option<T>` to `Option<U>` by applying a function to a contained value.
+	 * Maps an `Option<T>` to `AsyncOption<U>` by applying an async function to a contained value.
 	 *
-	 * @param f - The function to apply to the contained value.
-	 * @returns The result of the function application.
+	 * @param f - The async function to apply to the contained value.
+	 * @returns The result of the async function application.
 	 *
 	 * @example
 	 * ```
-	 * const x = await Some(0).mapAsync(async (v) => v + 1)
-	 * assertEquals(x, Some(1))
-	 *
-	 * const y = await None.mapAsync(async (v) => v + 1)
-	 * assertEquals(y, None)
+	 * let maybeSomeString = Some("Hello, World!")
+	 * let maybeSomeLen = await maybeSomeString.mapAsync(async (s) => s.length)
+	 * assertEquals(maybeSomeLen, Some(13))
+	 * 
+	 * let x = None
+	 * assertEquals(await x.mapAsync(async (s) => s.length), None)
 	 * ```
 	 */
 	public mapAsync<U>(f: (value: T) => Promise<U>): AsyncOption<U> {

@@ -394,18 +394,19 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	}
 
 	/**
-	 * Maps the `AsyncOption` to a new `AsyncOption`.
+	 * Maps an `AsyncOption<T>` to `AsyncOption<U>` by applying a function to a contained value.
 	 *
-	 * @param f - The function to map the `AsyncOption` to a new `AsyncOption`.
-	 * @returns The `AsyncOption`.
+	 * @param f - The function to apply to the contained value.
+	 * @returns The result of the function application.
 	 *
 	 * @example
 	 * ```
-	 * const x = await AsyncSome(0).map((x) => x + 1)
-	 * assertEquals(x, Some(1))
-	 *
-	 * const y = await AsyncNone.map((x) => x + 1)
-	 * assertEquals(y, None)
+	 * let maybeSomeString = AsyncSome("Hello, World!")
+	 * let maybeSomeLen = await maybeSomeString.map((s) => s.length)
+	 * assertEquals(maybeSomeLen, Some(13))
+	 * 
+	 * let x = AsyncNone
+	 * assertEquals(await x.map((s) => s.length), None)
 	 * ```
 	 */
 	public map<U>(f: (value: T) => U): AsyncOption<U> {
@@ -413,18 +414,19 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	}
 
 	/**
-	 * Maps the `AsyncOption` to a new `AsyncOption`.
+	 * Maps an `AsyncOption<T>` to `AsyncOption<U>` by applying an async function to a contained value.
 	 *
-	 * @param f - The function to map the `AsyncOption` to a new `AsyncOption`.
-	 * @returns The `AsyncOption`.
+	 * @param f - The async function to apply to the contained value.
+	 * @returns The result of the async function application.
 	 *
 	 * @example
 	 * ```
-	 * const x = await AsyncSome(0).mapAsync(async (x) => x + 1)
-	 * assertEquals(x, Some(1))
-	 *
-	 * const y = await AsyncNone.mapAsync(async (x) => x + 1)
-	 * assertEquals(y, None)
+	 * let maybeSomeString = AsyncSome("Hello, World!")
+	 * let maybeSomeLen = await maybeSomeString.mapAsync(async (s) => s.length)
+	 * assertEquals(maybeSomeLen, Some(13))
+	 * 
+	 * let x = AsyncNone
+	 * assertEquals(await x.mapAsync(async (s) => s.length), None)
 	 * ```
 	 */
 	public mapAsync<U>(f: (value: T) => Promise<U>): AsyncOption<U> {
