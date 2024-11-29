@@ -805,13 +805,26 @@ export class ResultImpl<T, E> {
 	/**
 	 * Returns `other` if the result is `Err`, otherwise returns `this` (as `Ok`).
 	 *
-	 * **Examples**
+	 * @param other - The result to return if this result is `Err`
+	 * @returns This result if it is `Ok`, otherwise the provided result
 	 *
-	 * ```
+	 * @example
+	 * ```typescript
 	 * let x: Result<number, string> = Ok(2)
 	 * let y: Result<number, string> = Err("late error")
-	 * assert.deepStrictEqual(x.or(y), Ok(2))
-	 * assert.deepStrictEqual(y.or(x), Ok(2))
+	 * assertEquals(x.or(y), Ok(2))
+	 *
+	 * let x: Result<number, string> = Err("early error")
+	 * let y: Result<number, string> = Ok(2)
+	 * assertEquals(x.or(y), Ok(2))
+	 *
+	 * let x: Result<number, string> = Err("not a 2")
+	 * let y: Result<number, string> = Err("late error")
+	 * assertEquals(x.or(y), Err("late error"))
+	 *
+	 * let x: Result<number, string> = Ok(2)
+	 * let y: Result<number, string> = Ok(100)
+	 * assertEquals(x.or(y), Ok(2))
 	 * ```
 	 */
 	public or<U, F>(other: Result<U, F>): Result<T | U, F> {
