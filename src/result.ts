@@ -311,11 +311,17 @@ export class ResultImpl<T, E> {
 	/**
 	 * Calls the provided function with the contained value (if `Ok`).
 	 *
-	 * **Examples**
+	 * Returns the original result, making it useful for debugging in the middle of method chains.
 	 *
-	 * ```
-	 * const x = Ok(2)
-	 * x.inspect((v) => console.log(v))
+	 * @param f - The function to call with the contained value
+	 * @returns The original result, unchanged
+	 *
+	 * @example
+	 * ```typescript
+	 * const x = Result.fromThrowable(() => parseInt("4"))
+	 *     .inspect(x => console.log(`original: ${x}`)) // prints: original: 4
+	 *     .map(x => Math.pow(x, 3))
+	 *     .expect("failed to parse number");
 	 * ```
 	 */
 	public inspect(f: (value: T) => void): this {
@@ -328,11 +334,17 @@ export class ResultImpl<T, E> {
 	/**
 	 * Calls the provided async function with the contained value (if `Ok`).
 	 *
-	 * **Examples**
+	 * Returns the original result, making it useful for debugging in the middle of method chains.
 	 *
-	 * ```
-	 * const x = Ok(2)
-	 * x.inspectAsync((v) => Promise.resolve(console.log(v)))
+	 * @param f - The async function to call with the contained value
+	 * @returns An async result, unchanged
+	 *
+	 * @example
+	 * ```typescript
+	 * const x = await Result.fromThrowable(() => parseInt("4"))
+	 *     .inspectAsync(async (x) => console.log(`original: ${x}`)) // prints: original: 4
+	 *     .map(x => Math.pow(x, 3))
+	 *     .expect("failed to parse number");
 	 * ```
 	 */
 	public inspectAsync(f: (value: T) => Promise<void>): AsyncResult<T, E> {
