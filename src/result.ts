@@ -913,16 +913,24 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Returns the contained `Ok` value or computes it from `defaultValue`.
+	 * Returns the contained `Ok` value or computes it from a function.
 	 *
-	 * **Examples**
+	 * @param defaultValue - The function to compute a default value from the error
+	 * @returns The contained value if `Ok`, otherwise the result of calling `defaultValue` with the error
 	 *
-	 * ```
+	 * @example
+	 * ```typescript
+	 * function count(x: string): number { return x.length }
+	 *
+	 * assertEquals(Ok(2).unwrapOrElse(count), 2)
+	 * assertEquals(Err("foo").unwrapOrElse(count), 3)
+	 *
+	 * // Using with arrow functions
 	 * const x: Result<number, string> = Ok(2)
-	 * assert.strictEqual(x.unwrapOrElse(() => 0), 2)
+	 * assertEquals(x.unwrapOrElse(() => 0), 2)
 	 *
 	 * const y: Result<number, string> = Err("error")
-	 * assert.strictEqual(y.unwrapOrElse(() => 0), 0)
+	 * assertEquals(y.unwrapOrElse(() => 0), 0)
 	 * ```
 	 */
 	public unwrapOrElse<U>(defaultValue: (error: E) => U): T | U {
@@ -932,6 +940,27 @@ export class ResultImpl<T, E> {
 		return defaultValue(this._value as E);
 	}
 
+	/**
+	 * Returns the contained `Ok` value or computes it from a function.
+	 *
+	 * @param defaultValue - The function to compute a default value from the error
+	 * @returns The contained value if `Ok`, otherwise the result of calling `defaultValue` with the error
+	 *
+	 * @example
+	 * ```typescript
+	 * async function count(x: string): Promise<number> { return x.length }
+	 *
+	 * assertEquals(await Ok(2).unwrapOrElseAsync(count), 2)
+	 * assertEquals(await Err("foo").unwrapOrElseAsync(count), 3)
+	 *
+	 * // Using with arrow functions
+	 * const x: Result<number, string> = Ok(2)
+	 * assertEquals(await x.unwrapOrElseAsync(() => 0), 2)
+	 *
+	 * const y: Result<number, string> = Err("error")
+	 * assertEquals(await y.unwrapOrElseAsync(() => 0), 0)
+	 * ```
+	 */
 	public unwrapOrElseAsync<U>(defaultValue: (error: E) => Promise<U>): Promise<T | U> {
 		if (this._ok) {
 			return Promise.resolve(this._value as T);
