@@ -837,14 +837,20 @@ export class ResultImpl<T, E> {
 	/**
 	 * Calls `f` if the result is `Err`, otherwise returns `this` (as `Ok`).
 	 *
-	 * **Examples**
+	 * This function can be used for control flow based on result values.
 	 *
-	 * ```
-	 * let x: Result<number, string> = Ok(2)
-	 * assert.deepStrictEqual(x.orElse((e) => Err(e + "bar")), Ok(2))
+	 * @param f - The function to call with the error value if this result is `Err`
+	 * @returns This result if it is `Ok`, otherwise the result of calling `f` with the error
 	 *
-	 * let y: Result<number, string> = Err("foo")
-	 * assert.deepStrictEqual(y.orElse((e) => Err(e + "bar")), Err("foobar"))
+	 * @example
+	 * ```typescript
+	 * function sq(x: number): Result<number, number> { return Ok(x * x) }
+	 * function err(x: number): Result<number, number> { return Err(x) }
+	 *
+	 * assertEquals(Ok(2).orElse(sq).orElse(sq), Ok(2))
+	 * assertEquals(Ok(2).orElse(err).orElse(sq), Ok(2))
+	 * assertEquals(Err(3).orElse(sq).orElse(err), Ok(9))
+	 * assertEquals(Err(3).orElse(err).orElse(err), Err(3))
 	 * ```
 	 */
 	public orElse<U, F>(f: (error: E) => Result<U, F>): Result<T | U, F> {
@@ -857,14 +863,20 @@ export class ResultImpl<T, E> {
 	/**
 	 * Calls `f` if the result is `Err`, otherwise returns `this` (as `Ok`).
 	 *
-	 * **Examples**
+	 * This function can be used for control flow based on result values.
 	 *
-	 * ```
-	 * let x: Result<number, string> = Ok(2)
-	 * assert.deepStrictEqual(x.orElseAsync((e) => Promise.resolve(Err(e + "bar"))), Ok(2))
+	 * @param f - The function to call with the error value if this result is `Err`
+	 * @returns This result if it is `Ok`, otherwise the result of calling `f` with the error
 	 *
-	 * let y: Result<number, string> = Err("foo")
-	 * assert.deepStrictEqual(y.orElseAsync((e) => Promise.resolve(Err(e + "bar"))), Err("foobar"))
+	 * @example
+	 * ```typescript
+	 * async function sq(x: number): Promise<Result<number, number>> { return Ok(x * x) }
+	 * async function err(x: number): Promise<Result<number, number>> { return Err(x) }
+	 *
+	 * assertEquals(await Ok(2).orElseAsync(sq).orElseAsync(sq), Ok(2))
+	 * assertEquals(await Ok(2).orElseAsync(err).orElseAsync(sq), Ok(2))
+	 * assertEquals(await Err(3).orElseAsync(sq).orElseAsync(err), Ok(9))
+	 * assertEquals(await Err(3).orElseAsync(err).orElseAsync(err), Err(3))
 	 * ```
 	 */
 	public orElseAsync<U, F>(
