@@ -655,10 +655,40 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 		return (await this).unwrapOr(defaultValue);
 	}
 
+	/**
+	 * Returns the contained `Some` value, if exists.
+	 *
+	 * Otherwise, computes the provided default value.
+	 *
+	 * @param f - The function to compute the default value.
+	 * @returns The contained value, if exists, otherwise the computed default value.
+	 *
+	 * @example
+	 * ```
+	 * let k = 10
+	 * assertEquals(await AsyncSome(4).unwrapOrElse(() => 2 * k), 4)
+	 * assertEquals(None.unwrapOrElse(() => 2 * k), 20)
+	 * ```
+	 */
 	public async unwrapOrElse<U>(f: () => U): Promise<T | U> {
 		return (await this).unwrapOrElse(f);
 	}
 
+	/**
+	 * Returns the contained `Some` value, if exists.
+	 *
+	 * Otherwise, computes it from an async closure.
+	 *
+	 * @param f - The async function to compute the default value.
+	 * @returns The contained value, if exists, otherwise the computed default value.
+	 *
+	 * @example
+	 * ```
+	 * let k = 10
+	 * assertEquals(await AsyncSome(4).unwrapOrElseAsync(async () => 2 * k), 4)
+	 * assertEquals(await AsyncNone.unwrapOrElseAsync(async () => 2 * k), 20)
+	 * ```
+	 */
 	public async unwrapOrElseAsync<U>(f: () => Promise<U>): Promise<T | U> {
 		return (await this).unwrapOrElseAsync(f);
 	}
