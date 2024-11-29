@@ -159,12 +159,18 @@ export class OptionImpl<T> {
 	 * Maybe not as useful as using `option.isSome() && f(option.unwrap())`, because it doesn't narrow the type, but it's here for completeness.
 	 *
 	 * @param predicate - The predicate to check the contained value against.
-	 * @returns `true` if the option is `Some` and the contained value is equal to `value`, otherwise `false`.
+	 * @returns `true` if the option is `Some` and the contained value matches the predicate, otherwise `false`.
 	 *
 	 * @example
 	 * ```
-	 * const x = Some(0)
-	 * assertEquals(x.isSomeAnd((v) => v === 0), true)
+	 * let x = Some(2)
+	 * assertEquals(x.isSomeAnd(x => x > 1), true)
+	 * 
+	 * x = Some(0)
+	 * assertEquals(x.isSomeAnd(x => x > 1), false)
+	 * 
+	 * x = None
+	 * assertEquals(x.isSomeAnd(x => x > 1), false)
 	 * ```
 	 */
 	public isSomeAnd(predicate: (value: T) => boolean): this is Some<T> {
