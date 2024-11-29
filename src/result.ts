@@ -59,6 +59,8 @@ export class ResultImpl<T, E> {
 
 	/**
 	 * Returns a generator that yields the contained value (if `Ok`) or an error (if `Err`).
+	 *
+	 * See `tryBlock()` and `tryBlockAsync()` for more information.
 	 */
 	public [Symbol.iterator](): Generator<Err<E, never>, T> {
 		const v = this._value;
@@ -118,8 +120,8 @@ export class ResultImpl<T, E> {
 	 *
 	 * const y: Result<number, string> = Err("error")
 	 * assertEquals(await y.matchAsync({
-	 * 	Ok: (v) => v * 2,
-	 * 	Err: (e) => e.length,
+	 * 	Ok: async (v) => v * 2,
+	 * 	Err: async (e) => e.length,
 	 * }), 5)
 	 * ```
 	 */
@@ -570,7 +572,8 @@ export class ResultImpl<T, E> {
 	 *
 	 * @example
 	 * ```typescript
-	 * const result = Result.fromThrowable(() => readFileSync("address.txt", "utf8"))
+	 * const result = Result
+	 *     .fromThrowable(() => readFileSync("address.txt", "utf8"))
 	 *     .inspectErr((e) => console.error(`failed to read file: ${e}`))
 	 *     .map((contents) => processContents(contents));
 	 * ```
@@ -625,8 +628,9 @@ export class ResultImpl<T, E> {
 	 *
 	 * @example
 	 * ```typescript
-	 * const path = Result.fromThrowable(() => readFileSync("/etc/important.conf", "utf8"))
-	 *     .expect("config file should exist");
+	 * const path = Result.fromThrowable(async () => {
+	 *     return readFileSync("/etc/important.conf", "utf8");
+	 * }).expect("config file should exist");
 	 * ```
 	 */
 	public expect(message: string): T {
@@ -835,7 +839,7 @@ export class ResultImpl<T, E> {
 	 * });
 	 * assertEquals(json.isOk(), true)
 	 *
-	 * const shouldFail = Result.fromThrowableAsync(async () => {
+	 * const shouldFail = await Result.fromThrowableAsync(async () => {
 	 *     return readFile("/bad/path", "utf8");
 	 * }).andThenAsync(async (contents) => {
 	 *     return Result.fromThrowable(() => JSON.parse(contents));
@@ -974,13 +978,6 @@ export class ResultImpl<T, E> {
 	 *
 	 * assertEquals(Ok(2).unwrapOrElse(count), 2)
 	 * assertEquals(Err("foo").unwrapOrElse(count), 3)
-	 *
-	 * // Using with arrow functions
-	 * const x: Result<number, string> = Ok(2)
-	 * assertEquals(x.unwrapOrElse(() => 0), 2)
-	 *
-	 * const y: Result<number, string> = Err("error")
-	 * assertEquals(y.unwrapOrElse(() => 0), 0)
 	 * ```
 	 */
 	public unwrapOrElse<U>(defaultValue: (error: E) => U): T | U {
@@ -1002,13 +999,6 @@ export class ResultImpl<T, E> {
 	 *
 	 * assertEquals(await Ok(2).unwrapOrElseAsync(count), 2)
 	 * assertEquals(await Err("foo").unwrapOrElseAsync(count), 3)
-	 *
-	 * // Using with arrow functions
-	 * const x: Result<number, string> = Ok(2)
-	 * assertEquals(await x.unwrapOrElseAsync(() => 0), 2)
-	 *
-	 * const y: Result<number, string> = Err("error")
-	 * assertEquals(await y.unwrapOrElseAsync(() => 0), 0)
 	 * ```
 	 */
 	public unwrapOrElseAsync<U>(defaultValue: (error: E) => Promise<U>): Promise<T | U> {
