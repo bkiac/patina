@@ -25,9 +25,12 @@ export class ResultImpl<T, E> {
 		Object.defineProperty(this.constructor, "name", { value: "Result" });
 
 		Object.defineProperty(this, Symbol.iterator, {
-			enumerable: false, // Make the iterator non-enumerable to prevent it being used in loops and equality checks
-			writable: false, // Make the iterator non-writable to prevent modification
-			configurable: false, // Make the iterator non-configurable to prevent redefinition
+			// Make the iterator non-enumerable to prevent it being used in loops and equality checks
+			enumerable: false,
+			// Make the iterator non-writable to prevent modification
+			writable: false,
+			// Make the iterator non-configurable to prevent redefinition
+			configurable: false,
 		});
 	}
 
