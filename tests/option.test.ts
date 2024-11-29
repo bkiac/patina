@@ -29,7 +29,7 @@ describe("core", () => {
 		expect(option.isSome()).toEqual(false);
 		expect(option.isNone()).toEqual(true);
 		expectTypeOf(option.value).toEqualTypeOf<() => undefined>();
-		expectTypeOf(option.unwrap).toEqualTypeOf<() => undefined>();
+		expectTypeOf(option.unwrap).toEqualTypeOf<() => null>();
 		expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>();
 	});
 
@@ -42,13 +42,13 @@ describe("core", () => {
 			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => number>();
 		} else {
 			expectTypeOf(option.value).toEqualTypeOf<() => undefined>();
-			expectTypeOf(option.unwrap).toEqualTypeOf<() => undefined>();
+			expectTypeOf(option.unwrap).toEqualTypeOf<() => null>();
 			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>();
 		}
 
 		if (option.isNone()) {
 			expectTypeOf(option.value).toEqualTypeOf<() => undefined>();
-			expectTypeOf(option.unwrap).toEqualTypeOf<() => undefined>();
+			expectTypeOf(option.unwrap).toEqualTypeOf<() => null>();
 			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>();
 		} else {
 			expectTypeOf(option.value).toEqualTypeOf<() => number>();

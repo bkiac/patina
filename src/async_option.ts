@@ -611,11 +611,11 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	}
 
 	/**
-	 * Returns the contained `Some` value, if exists, otherwise returns `undefined`.
+	 * Returns the contained `Some` value, if exists, otherwise returns `null`.
 	 *
 	 * Type is narrowed to `T` if the option is already checked to be `Some`.
 	 *
-	 * @returns The contained value, if exists, otherwise `undefined`.
+	 * @returns The contained value, if exists, otherwise `null`.
 	 *
 	 * @example
 	 * ```
@@ -623,17 +623,17 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	 * assertEquals(await x.unwrap(), "air")
 	 *
 	 * const y = None
-	 * assertEquals(await y.unwrap(), undefined)
+	 * assertEquals(await y.unwrap(), null)
 	 *
 	 * const z = await Promise.resolve(Option.fromNullish(...)) // Option<T>
 	 * if (z.isSome()) {
 	 * 	const a = await z.unwrap() // `a` has type `T`
 	 * } else {
-	 * 	const b = z.unwrap() // `b` has type `undefined`
+	 * 	const b = z.unwrap() // `b` has type `null`
 	 * }
 	 * ```
 	 */
-	public async unwrap(): Promise<T | undefined> {
+	public async unwrap(): Promise<T | null> {
 		return (await this).unwrap();
 	}
 

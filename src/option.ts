@@ -43,9 +43,9 @@ export type OptionMatchAsync<T, A, B> = {
  */
 export class OptionImpl<T> {
 	private readonly _some: boolean;
-	private readonly _value: T | undefined;
+	private readonly _value: T | null;
 
-	public constructor(some: boolean, value: T | undefined) {
+	public constructor(some: boolean, value: T | null) {
 		Object.defineProperty(this.constructor, "name", { value: "Option" });
 		this._some = some;
 		this._value = value;
@@ -225,11 +225,11 @@ export class OptionImpl<T> {
 	}
 
 	/**
-	 * Returns the contained `Some` value, if exists, otherwise returns `undefined`.
+	 * Returns the contained `Some` value, if exists, otherwise returns `null`.
 	 *
 	 * Type is narrowed to `T` if the option is already checked to be `Some`.
 	 *
-	 * @returns The contained value, if exists, otherwise `undefined`.
+	 * @returns The contained value, if exists, otherwise `null`.
 	 *
 	 * @example
 	 * ```
@@ -237,21 +237,21 @@ export class OptionImpl<T> {
 	 * assertEquals(x.unwrap(), "air")
 	 *
 	 * const y = None
-	 * assertEquals(y.unwrap(), undefined)
+	 * assertEquals(y.unwrap(), null)
 	 *
 	 * const z = Option.fromNullish(...) // Option<T>
 	 * if (z.isSome()) {
 	 * 	const a = z.unwrap() // `a` has type `T`
 	 * } else {
-	 * 	const b = z.unwrap() // `b` has type `undefined`
+	 * 	const b = z.unwrap() // `b` has type `null`
 	 * }
 	 * ```
 	 */
-	public unwrap(): T | undefined {
+	public unwrap(): T | null {
 		if (this._some) {
 			return this._value as T;
 		}
-		return undefined;
+		return null;
 	}
 
 	/**
@@ -930,7 +930,7 @@ export class OptionImpl<T> {
 	 * @deprecated Use `unwrap()` instead.
 	 */
 	public value(): T | undefined {
-		return this._value;
+		return this._some ? (this._value as T) : undefined;
 	}
 }
 
@@ -960,7 +960,7 @@ export function Some<T>(value: T): Some<T> {
 export interface None<T = never> extends OptionImpl<T> {
 	[symbols.tag]: "None";
 
-	unwrap(): undefined;
+	unwrap(): null;
 	expect(message: string): never;
 
 	// Deprecated
@@ -976,7 +976,7 @@ export interface None<T = never> extends OptionImpl<T> {
 /**
  * No value.
  */
-export const None = new OptionImpl(false, undefined) as None;
+export const None = new OptionImpl(false, null) as None;
 
 /**
  * `Option` represents an optional value: every `Option` is either `Some` and contains a value, or `None`, and does not.

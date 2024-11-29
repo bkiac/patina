@@ -641,16 +641,16 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Returns the contained `Ok` value, if exists, otherwise returns `undefined`.
+	 * Returns the contained `Ok` value, if exists, otherwise returns `null`.
 	 *
-	 * Because this function may return `undefined`, its use is generally discouraged.
+	 * Because this function may return `null`, its use is generally discouraged.
 	 * Instead, prefer to:
 	 * - Use pattern matching with `match()` and handle the `Err` case explicitly
 	 * - Use `unwrapOr()`, `unwrapOrElse()`, or similar methods
 	 *
 	 * Type is narrowed to `T` if the result is already checked to be `Ok`.
 	 *
-	 * @returns The contained value, if exists, otherwise `undefined`.
+	 * @returns The contained value, if exists, otherwise `null`.
 	 *
 	 * @example
 	 * ```typescript
@@ -658,21 +658,21 @@ export class ResultImpl<T, E> {
 	 * assertEquals(x.unwrap(), 2)
 	 *
 	 * const y = Err("emergency failure")
-	 * assertEquals(y.unwrap(), undefined)
+	 * assertEquals(y.unwrap(), null)
 	 *
 	 * const z = Result.fromThrowable(...) // Result<T, E>
 	 * if (z.isOk()) {
 	 *     const a = z.unwrap() // `a` has type `T`
 	 * } else {
-	 *     const b = z.unwrap() // `b` has type `undefined`
+	 *     const b = z.unwrap() // `b` has type `null`
 	 * }
 	 * ```
 	 */
-	public unwrap(): T | undefined {
+	public unwrap(): T | null {
 		if (this._ok) {
 			return this._value as T;
 		}
-		return undefined;
+		return null;
 	}
 
 	/**
@@ -700,21 +700,21 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Returns the contained `Err` value, if exists, otherwise returns `undefined`.
+	 * Returns the contained `Err` value, if exists, otherwise returns `null`.
 	 *
-	 * Because this function may return `undefined`, its use is generally discouraged.
+	 * Because this function may return `null`, its use is generally discouraged.
 	 * Instead, prefer to:
 	 * - Use pattern matching with `match()` and handle the `Ok` case explicitly
 	 * - Use similar methods that handle both cases
 	 *
 	 * Type is narrowed to `E` if the result is already checked to be `Err`.
 	 *
-	 * @returns The contained error value, if exists, otherwise `undefined`.
+	 * @returns The contained error value, if exists, otherwise `null`.
 	 *
 	 * @example
 	 * ```typescript
 	 * const x: Result<number, string> = Ok(2);
-	 * assertEquals(x.unwrapErr(), undefined);
+	 * assertEquals(x.unwrapErr(), null);
 	 *
 	 * const y: Result<number, string> = Err("emergency failure");
 	 * assertEquals(y.unwrapErr(), "emergency failure");
@@ -723,15 +723,15 @@ export class ResultImpl<T, E> {
 	 * if (z.isErr()) {
 	 *     const e = z.unwrapErr() // `e` has type `E`
 	 * } else {
-	 *     const u = z.unwrapErr() // `u` has type `undefined`
+	 *     const u = z.unwrapErr() // `u` has type `null`
 	 * }
 	 * ```
 	 */
-	public unwrapErr(): E | undefined {
+	public unwrapErr(): E | null {
 		if (!this._ok) {
 			return this._value as E;
 		}
-		return undefined;
+		return null;
 	}
 
 	/**
@@ -1066,11 +1066,11 @@ export class ResultImpl<T, E> {
 	}
 }
 
-export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
+export interface Ok<T, E = never> extends ResultImpl<T, E> {
 	[symbols.tag]: "Ok";
 
 	unwrap(): T;
-	unwrapErr(): undefined;
+	unwrapErr(): null;
 	expect(message: string): T;
 	expectErr(message: string): never;
 
@@ -1093,10 +1093,10 @@ export function Ok<T>(value: T): Ok<T> {
 	return new ResultImpl<T, never>(true, value) as Ok<T>;
 }
 
-export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
+export interface Err<E, T = never> extends ResultImpl<T, E> {
 	[symbols.tag]: "Err";
 
-	unwrap(): undefined;
+	unwrap(): null;
 	unwrapErr(): E;
 	expect(message: string): never;
 	expectErr(message: string): E;
