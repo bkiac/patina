@@ -436,24 +436,26 @@ export class ResultImpl<T, E> {
 	/**
 	 * Returns `other` if the result is `Ok`, otherwise returns `this` (as `Err`).
 	 *
-	 * **Examples**
+	 * @param other - The result to return if this result is `Ok`.
+	 * @returns The other result if this result is `Ok`, otherwise this result's error.
 	 *
+	 * @example
 	 * ```
 	 * let x: Result<number, string> = Ok(2)
 	 * let y: Result<string, string> = Err("late error")
-	 * assert.deepStrictEqual(x.and(y), Err("late error"))
+	 * assertEquals(x.and(y), Err("late error"))
 	 *
-	 * x = Err("early error")
-	 * y = Ok("foo")
-	 * assert.deepStrictEqual(x.and(y), Err("early error"))
+	 * let x: Result<number, string> = Err("early error")
+	 * let y: Result<string, string> = Ok("foo")
+	 * assertEquals(x.and(y), Err("early error"))
 	 *
-	 * x = Err("not a 2")
-	 * y = Err("late error")
-	 * assert.deepStrictEqual(x.and(y), Err("not a 2"))
+	 * let x: Result<number, string> = Err("not a 2")
+	 * let y: Result<string, string> = Err("late error")
+	 * assertEquals(x.and(y), Err("not a 2"))
 	 *
-	 * x = Ok(2)
-	 * y = Ok("different result type")
-	 * assert.deepStrictEqual(x.and(y), Ok("different result type"))
+	 * let x: Result<number, string> = Ok(2)
+	 * let y: Result<string, string> = Ok("different result type")
+	 * assertEquals(x.and(y), Ok("different result type"))
 	 * ```
 	 */
 	public and<U, F>(other: Result<U, F>): Result<U, E | F> {
