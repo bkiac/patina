@@ -355,16 +355,16 @@ export class ResultImpl<T, E> {
 
 	/**
 	 * Returns the provided default (if `Err`), or applies a function to the contained value (if `Ok`).
-	 * 
+	 *
 	 * @param defaultValue - The value to return if the result is `Err`
 	 * @param f - The function to apply to the contained value if the result is `Ok`
 	 * @returns The default value if `Err`, otherwise the result of applying `f` to the contained value
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * let x: Result<string, string> = Ok("foo")
 	 * assertEquals(x.mapOr(42, (v) => v.length), 3)
-	 * 
+	 *
 	 * let x: Result<string, string> = Err("bar")
 	 * assertEquals(x.mapOr(42, (v) => v.length), 42)
 	 * ```
@@ -378,16 +378,16 @@ export class ResultImpl<T, E> {
 
 	/**
 	 * Returns the provided default (if `Err`), or applies a function to the contained value (if `Ok`).
-	 * 
+	 *
 	 * @param defaultValue - The value to return if the result is `Err`
 	 * @param f - The function to apply to the contained value if the result is `Ok`
 	 * @returns The default value if `Err`, otherwise the result of applying `f` to the contained value
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * let x: Result<string, string> = Ok("foo")
 	 * assertEquals(await x.mapOrAsync(42, async (v) => v.length), 3)
-	 * 
+	 *
 	 * let x: Result<string, string> = Err("bar")
 	 * assertEquals(await x.mapOrAsync(42, async (v) => v.length), 42)
 	 * ```
@@ -1197,6 +1197,7 @@ export namespace Result {
 			promise.then(
 				(value) => Ok(value),
 				(error) => Err(handleCaughtError(error)),
+			),
 		);
 	}
 
