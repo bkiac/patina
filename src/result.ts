@@ -386,14 +386,24 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Maps a `Result<T, E>` to `Result<T, F>` by applying a function to a contained `Err` value, leaving an `Ok` value untouched.
+	 * Maps a `Result<T, E>` to `Result<T, F>` by applying a function to a contained `Err` value,
+	 * leaving an `Ok` value untouched.
 	 *
-	 * **Examples**
+	 * This function can be used to pass through a successful result while handling an error.
 	 *
-	 * ```
-	 * const x = Err("error")
-	 * const mapped = x.mapErr((s) => s.length)
-	 * assert.strictEqual(mapped.unwrapErr(), 5)
+	 * @param f - The function to apply to the contained error
+	 * @returns A new Result with the function applied to the contained error if `Err`,
+	 *          or the original value if `Ok`
+	 *
+	 * @example
+	 * ```typescript
+	 * const stringify = (x: number): string => `error code: ${x}`;
+	 *
+	 * const x: Result<number, number> = Ok(2);
+	 * assertEquals(x.mapErr(stringify), Ok(2));
+	 *
+	 * const x: Result<number, number> = Err(13);
+	 * assertEquals(x.mapErr(stringify), Err("error code: 13"));
 	 * ```
 	 */
 	public mapErr<F>(f: (error: E) => F): Result<T, F> {
@@ -404,14 +414,24 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Maps a `Result<T, E>` to `AsyncResult<T, F>` by applying an async function to a contained `Err` value, leaving an `Ok` value untouched.
+	 * Maps a `Result<T, E>` to `AsyncResult<T, F>` by applying an async function to a contained `Err` value,
+	 * leaving an `Ok` value untouched.
 	 *
-	 * **Examples**
+	 * This function can be used to pass through a successful result while handling an error.
 	 *
-	 * ```
-	 * const x = Err("error")
-	 * const mapped = x.mapErrAsync((s) => Promise.resolve(s.length))
-	 * assert.strictEqual(await mapped.unwrapErr(), 5)
+	 * @param f - The async function to apply to the contained error
+	 * @returns A new AsyncResult with the async function applied to the contained error if `Err`,
+	 *          or the original value if `Ok`
+	 *
+	 * @example
+	 * ```typescript
+	 * const stringify = async (x: number): Promise<string> => `error code: ${x}`;
+	 *
+	 * const x: Result<number, number> = Ok(2);
+	 * assertEquals(x.mapErrAsync(stringify), Ok(2));
+	 *
+	 * const x: Result<number, number> = Err(13);
+	 * assertEquals(x.mapErrAsync(stringify), Err("error code: 13"));
 	 * ```
 	 */
 	public mapErrAsync<F>(f: (error: E) => Promise<F>): AsyncResult<T, F> {
