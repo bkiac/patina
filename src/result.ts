@@ -251,14 +251,34 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Maps a `Result<T, E>` to `Result<U, E>` by applying a function to a contained `Ok` value, leaving an `Err` value untouched.
+	 * Maps a `Result<T, E>` to `Result<U, E>` by applying a function to a contained `Ok` value,
+	 * leaving an `Err` value untouched.
 	 *
-	 * **Examples**
+	 * This function can be used to compose the results of two functions.
 	 *
-	 * ```
-	 * const x = Ok(10)
-	 * const mapped = x.map((n) => `number ${n}`)
-	 * assert.strictEqual(mapped.unwrap(), "number 10")
+	 * @param f - The function to apply to the contained value
+	 * @returns A new Result with the function applied to the contained value if `Ok`,
+	 *          or the original error if `Err`
+	 *
+	 * @example
+	 * ```typescript
+	 * const x = Ok(2).map((x) => x.toString());
+	 * assertEquals(x, Ok("2"));
+	 *
+	 * const x = Err("error").map((x) => x.toString());
+	 * assertEquals(x, Err("error"));
+	 *
+	 * // Processing lines of numbers:
+	 * const lines = "1\n2\n3\n4";
+	 *
+	 * for (const line of lines.split("\n")) {
+	 *     Result.fromThrowable(() => parseInt(line))
+	 *         .map((n) => n * 2)
+	 *         .match({
+	 *             Ok: (n) => console.log(n),
+	 *             Err: () => {} // Skip invalid numbers
+	 *         });
+	 * }
 	 * ```
 	 */
 	public map<U>(f: (value: T) => U): Result<U, E> {
@@ -269,14 +289,34 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Maps a `Result<T, E>` to `AsyncResult<U, E>` by applying an async function to a contained `Ok` value, leaving an `Err` value untouched.
+	 * Maps a `Result<T, E>` to `AsyncResult<U, E>` by applying an async function to a contained `Ok` value,
+	 * leaving an `Err` value untouched.
 	 *
-	 * **Examples**
+	 * This function can be used to compose the results of two functions.
 	 *
-	 * ```
-	 * const x = Ok(10)
-	 * const mapped = x.mapAsync((n) => Promise.resolve(`number ${n}`))
-	 * assert.strictEqual(await mapped.unwrap(), "number 10")
+	 * @param f - The async function to apply to the contained value
+	 * @returns A new AsyncResult with the async function applied to the contained value if `Ok`,
+	 *          or the original error if `Err`
+	 *
+	 * @example
+	 * ```typescript
+	 * const x = Ok(2).mapAsync(async (x) => x.toString());
+	 * assertEquals(x, Ok("2"));
+	 *
+	 * const x = Err("error").mapAsync(async (x) => x.toString());
+	 * assertEquals(x, Err("error"));
+	 *
+	 * // Processing lines of numbers:
+	 * const lines = "1\n2\n3\n4";
+	 *
+	 * for (const line of lines.split("\n")) {
+	 *     await Result.fromThrowable(() => parseInt(line))
+	 *         .mapAsync(async (n) => n * 2)
+	 *         .match({
+	 *             Ok: (n) => console.log(n),
+	 *             Err: () => {} // Skip invalid numbers
+	 *         });
+	 * }
 	 * ```
 	 */
 	public mapAsync<U>(f: (value: T) => Promise<U>): AsyncResult<U, E> {
