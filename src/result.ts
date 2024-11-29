@@ -733,19 +733,26 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Converts from `Result<Result<U, F>, E>` to `Result<U, E | F>`.
+	 * Converts from `Result<Result<T, F>, E>` to `Result<T, E | F>`.
 	 *
-	 * **Examples**
+	 * @returns A flattened `Result<T, E | F>`.
 	 *
-	 * ```
-	 * const x: Result<Result<number, string>, string> = Ok(Ok(2))
-	 * assert.deepStrictEqual(x.flatten(), Ok(2))
+	 * @example
+	 * ```typescript
+	 * // Basic usage:
+	 * let x: Result<Result<string, number>, number> = Ok(Ok("hello"));
+	 * assertEquals(x.flatten(), Ok("hello"));
 	 *
-	 * const y: Result<Result<number, string>, string> = Ok(Err("late error"))
-	 * assert.deepStrictEqual(y.flatten(), Err("late error"))
+	 * let x: Result<Result<string, number>, number> = Ok(Err(6));
+	 * assertEquals(x.flatten(), Err(6));
 	 *
-	 * const z: Result<Result<number, string>, string> = Err("early error")
-	 * assert.deepStrictEqual(z.flatten(), Err("early error"))
+	 * let x: Result<Result<string, number>, number> = Err(6);
+	 * assertEquals(x.flatten(), Err(6));
+	 *
+	 * // Flattening only removes one level of nesting at a time:
+	 * let x: Result<Result<Result<string, number>, number>, number> = Ok(Ok(Ok("hello")));
+	 * assertEquals(x.flatten(), Ok(Ok("hello")));
+	 * assertEquals(x.flatten().flatten(), Ok("hello"));
 	 * ```
 	 */
 	public flatten<U, F>(this: Result<ResultImpl<U, F>, E>): Result<U, E | F> {
