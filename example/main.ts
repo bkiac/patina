@@ -100,3 +100,9 @@ function parseConfig(): Result<number, Error> {
 			})
 		);
 }
+
+const json = Result.fromThrowable(() => {
+	return readFileSync("config.json", "utf8");
+}).andThen((contents) => {
+	return Result.fromThrowable(() => JSON.parse(contents));
+});

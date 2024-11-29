@@ -468,14 +468,38 @@ export class ResultImpl<T, E> {
 	/**
 	 * Calls `f` if the result is `Ok`, otherwise returns `this` (as `Err`).
 	 *
-	 * **Examples**
+	 * This function can be used for control flow based on Result values.
 	 *
+	 * @param f - The function to apply to the contained value.
+	 * @returns The result of the function application if `Ok`, otherwise returns the original error.
+	 *
+	 * @example
 	 * ```
-	 * let x: Result<number, string> = Ok(2)
-	 * assert.deepStrictEqual(x.andThen((n) => Ok(n * 2)), Ok(4))
+	 * function divideThenToString(a: number, b: number): Result<string, string> {
+	 *     if (b === 0) {
+	 *         return Err("division by zero")
+	 *     }
+	 *     return Ok((a / b).toString())
+	 * }
 	 *
-	 * let y: Result<string, string> = Err("late error")
-	 * assert.deepStrictEqual(y.andThen((n) => Ok(n * 2)), Err("late error"))
+	 * assertEquals(Ok(100, 2).andThen(divideThenToString), Ok("50"))
+	 * assertEquals(Ok(100, 0).andThen(divideThenToString), Err("division by zero"))
+	 * assertEquals(Err("not a number").andThen(divideThenToString), Err("not a number"))
+	 *
+	 * // Often used to chain fallible operations that may return Err
+	 * const json = Result.fromThrowable(() => {
+	 *     return readFileSync("config.json", "utf8");
+	 * }).andThen((contents) => {
+	 *     return Result.fromThrowable(() => JSON.parse(contents));
+	 * });
+	 * assertEquals(json.isOk(), true)
+	 *
+	 * const shouldFail = Result.fromThrowable(() => {
+	 *     return readFileSync("/bad/path", "utf8");
+	 * }).andThen((contents) => {
+	 *     return Result.fromThrowable(() => JSON.parse(contents));
+	 * });
+	 * assertEquals(shouldFail.isErr(), true)
 	 * ```
 	 */
 	public andThen<U, F>(f: (value: T) => Result<U, F>): Result<U, E | F> {
@@ -488,14 +512,38 @@ export class ResultImpl<T, E> {
 	/**
 	 * Calls `f` if the result is `Ok`, otherwise returns `this` (as `Err`).
 	 *
-	 * **Examples**
+	 * This async function can be used for control flow based on Result values.
 	 *
+	 * @param f - The async function to apply to the contained value.
+	 * @returns The result of the async function application if `Ok`, otherwise returns the original error.
+	 *
+	 * @example
 	 * ```
-	 * let x: Result<number, string> = Ok(2)
-	 * assert.deepStrictEqual(x.andThenAsync((n) => Promise.resolve(Ok(n * 2))), Ok(4))
+	 * async function divideThenToString(a: number, b: number): Promise<Result<string, string>> {
+	 *     if (b === 0) {
+	 *         return Err("division by zero")
+	 *     }
+	 *     return Ok((a / b).toString())
+	 * }
 	 *
-	 * let y: Result<string, string> = Err("late error")
-	 * assert.deepStrictEqual(y.andThenAsync((n) => Promise.resolve(Ok(n * 2))), Err("late error"))
+	 * assertEquals(await Ok(100, 2).andThenAsync(divideThenToString), Ok("50"))
+	 * assertEquals(await Ok(100, 0).andThenAsync(divideThenToString), Err("division by zero"))
+	 * assertEquals(await Err("not a number").andThenAsync(divideThenToString), Err("not a number"))
+	 *
+	 * // Often used to chain fallible operations that may return Err
+	 * const json = Result.fromThrowableAsync(async () => {
+	 *     return readFile("config.json", "utf8");
+	 * }).andThenAsync(async (contents) => {
+	 *     return Result.fromThrowable(() => JSON.parse(contents));
+	 * });
+	 * assertEquals(json.isOk(), true)
+	 *
+	 * const shouldFail = Result.fromThrowableAsync(async () => {
+	 *     return readFile("/bad/path", "utf8");
+	 * }).andThenAsync(async (contents) => {
+	 *     return Result.fromThrowable(() => JSON.parse(contents));
+	 * });
+	 * assertEquals(shouldFail.isErr(), true)
 	 * ```
 	 */
 	public andThenAsync<U, F>(

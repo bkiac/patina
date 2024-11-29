@@ -282,43 +282,47 @@ export class OptionImpl<T> {
 	 *
 	 * Otherwise, computes the provided default value.
 	 *
-	 * @param f - The function to compute the default value.
-	 * @returns The contained value, if exists, otherwise the computed default value.
+	 * @param defaultValue - The default value to return if the option is `None`.
+	 * @returns The contained value, if exists, otherwise the provided default value.
 	 *
 	 * @example
 	 * ```
-	 * let k = 10
-	 * assertEquals(Some(4).unwrapOrElse(() => 2 * k), 4)
-	 * assertEquals(None.unwrapOrElse(() => 2 * k), 20)
+	 * const x = Some(0).unwrapOrElse(() => 0)
+	 * assertEquals(x, 0)
+	 *
+	 * const y = None.unwrapOrElse(() => 0)
+	 * assertEquals(y, 0)
 	 * ```
 	 */
-	public unwrapOrElse<U>(f: () => U): T | U {
+	public unwrapOrElse<U>(defaultValue: () => U): T | U {
 		if (this._some) {
 			return this._value as T;
 		}
-		return f();
+		return defaultValue();
 	}
 
 	/**
 	 * Returns the contained `Some` value, if exists.
 	 *
-	 * Otherwise, computes it from an async closure.
+	 * Otherwise, computes the provided default value.
 	 *
-	 * @param f - The async function to compute the default value.
-	 * @returns The contained value, if exists, otherwise the computed default value.
+	 * @param defaultValue - The default value to return if the option is `None`.
+	 * @returns The contained value, if exists, otherwise the provided default value.
 	 *
 	 * @example
 	 * ```
-	 * let k = 10
-	 * assertEquals(await Some(4).unwrapOrElseAsync(async () => 2 * k), 4)
-	 * assertEquals(await None.unwrapOrElseAsync(async () => 2 * k), 20)
+	 * const x = await Some(0).unwrapOrElseAsync(async () => 0)
+	 * assertEquals(x, 0)
+	 *
+	 * const y = await None.unwrapOrElseAsync(async () => 0)
+	 * assertEquals(y, 0)
 	 * ```
 	 */
-	public unwrapOrElseAsync<U>(f: () => Promise<U>): Promise<T | U> {
+	public unwrapOrElseAsync<U>(defaultValue: () => Promise<U>): Promise<T | U> {
 		if (this._some) {
 			return Promise.resolve(this._value as T);
 		}
-		return f();
+		return defaultValue();
 	}
 
 	/**
