@@ -1,3 +1,9 @@
+/**
+ * Functions for catching Panics and other errors, emulating Rust's `catch_unwind`.
+ *
+ * @module
+ */
+
 import { Err, Ok, Result } from "./result.ts";
 import { AsyncResult } from "./async_result.ts";
 import { Panic, parseError } from "./error.ts";
@@ -19,6 +25,21 @@ function unknownToError(e: unknown): Error {
 
 /**
  * Wraps a function in a `Result` and catches any thrown error, even `Panics`, emulating Rust's `catch_unwind`.
+ *
+ * Panics are converted to Errors and preserved in the `cause` property
+ *
+ * This is useful for catching anything that can be thrown, including `Panics`, because `Result` helper methods deliberately let panics pass through.
+ *
+ * @param fn - The function to wrap.
+ * @returns A `Result` containing the return value of the function, or an `Error` if the function throws.
+ *
+ * @example
+ * ```ts
+ * const result = catchUnwind(() => {
+ * 	throw new Panic("oh no")
+ * })
+ * assertEquals(result.expectErr("should be an error").cause.message, "oh no")
+ * ```
  */
 export function catchUnwind<T>(fn: () => T): Result<T, Error> {
 	try {
@@ -30,6 +51,20 @@ export function catchUnwind<T>(fn: () => T): Result<T, Error> {
 
 /**
  * Wraps a function in an `AsyncResult` and catches any thrown error, even `Panics`, emulating Rust's `catch_unwind`.
+ *
+ * Panics are converted to Errors and preserved in the `cause` property
+ *
+ * This is useful for catching anything that can be thrown, including `Panics`, because `Result` helper methods deliberately let panics pass through.
+ *
+ * @param fn - The function to wrap.
+ * @returns An `AsyncResult` containing the return value of the function, or an `Error` if the function throws.
+ *
+ * @example
+ * ```ts
+ * const result = catchUnwindAsync(async () => {
+ * 	throw new Panic("oh no")
+ * })
+ * ```
  */
 export function catchUnwindAsync<T>(fn: () => Promise<T>): AsyncResult<T, Error> {
 	async function unwind(): Promise<Result<T, Error>> {
