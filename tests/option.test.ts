@@ -61,24 +61,24 @@ describe("core", () => {
 describe("okOr", () => {
 	it("returns the value when called on a Some option", () => {
 		const option = TestSome(42);
-		expect(option.okOr("error").unwrap()).toEqual(42);
+		expect(option.okOr("error").unwrapUnchecked()).toEqual(42);
 	});
 
 	it("returns the error value when called on a None option", () => {
 		const option = TestNone<string>();
-		expect(option.okOr("error").unwrapErr()).toEqual("error");
+		expect(option.okOr("error").unwrapErrUnchecked()).toEqual("error");
 	});
 });
 
 describe("okOrElse", () => {
 	it("returns the value when called on a Some option", () => {
 		const option = TestSome(42);
-		expect(option.okOrElse(() => "error").unwrap()).toEqual(42);
+		expect(option.okOrElse(() => "error").unwrapUnchecked()).toEqual(42);
 	});
 
 	it("returns the error value when called on a None option", () => {
 		const option = TestNone<string>();
-		expect(option.okOrElse(() => "error").unwrapErr()).toEqual("error");
+		expect(option.okOrElse(() => "error").unwrapErrUnchecked()).toEqual("error");
 	});
 });
 

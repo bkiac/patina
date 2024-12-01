@@ -14,7 +14,7 @@ const af = asyncFn(async () => {
 	if (one.isErr()) {
 		return one;
 	}
-	return Ok(one.unwrap() + 1);
+	return Ok(one.unwrapUnchecked() + 1);
 });
 
 function tba() {

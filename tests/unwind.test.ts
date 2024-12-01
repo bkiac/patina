@@ -13,7 +13,7 @@ describe("catchUnwind", () => {
 	it("returns Ok result when function succeeds", () => {
 		const result = catchUnwind(() => 42);
 		expectTypeOf(result).toEqualTypeOf<Result<number, Error>>();
-		expect(result.unwrap()).toEqual(42);
+		expect(result.unwrapUnchecked()).toEqual(42);
 	});
 
 	it("catches regular Error and returns it as-is in Err result", () => {
@@ -21,7 +21,7 @@ describe("catchUnwind", () => {
 		const result = catchUnwind(() => {
 			throw error;
 		});
-		expect(result.unwrapErr()).toBe(error);
+		expect(result.unwrapErrUnchecked()).toBe(error);
 	});
 
 	it("converts Panic to Error while preserving message and cause", () => {
@@ -29,7 +29,7 @@ describe("catchUnwind", () => {
 		const result = catchUnwind(() => {
 			throw panic;
 		});
-		const err = result.unwrapErr();
+		const err = result.unwrapErrUnchecked();
 		expect(err).toBeInstanceOf(Error);
 		expect(err?.message).toEqual("test panic");
 		expect((err as Error & { cause?: unknown }).cause).toBe(panic);
@@ -39,7 +39,7 @@ describe("catchUnwind", () => {
 		const result = catchUnwind(() => {
 			throw "string error";
 		});
-		const err = result.unwrapErr();
+		const err = result.unwrapErrUnchecked();
 		expect(err).toBeInstanceOf(Error);
 		expect(err?.message).toContain(UNEXPECTED_ERROR_MESSAGE);
 		expect((err as Error & { cause?: unknown }).cause).toEqual("string error");
@@ -67,7 +67,7 @@ describe("catchUnwindAsync", () => {
 		const result = await catchUnwindAsync(async () => {
 			throw panic;
 		});
-		const err = result.unwrapErr();
+		const err = result.unwrapErrUnchecked();
 		expect(err).toBeInstanceOf(Error);
 		expect(err?.message).toEqual("test panic");
 		expect((err as Error & { cause?: unknown }).cause).toBe(panic);

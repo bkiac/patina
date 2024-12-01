@@ -122,14 +122,14 @@ describe("flatten", () => {
 		const inner = TestOk<number, string>(42);
 		const flattened = TestOkPromise<Result<number, string>, boolean>(inner).flatten();
 		expectTypeOf(flattened).toEqualTypeOf<AsyncResult<number, string | boolean>>();
-		await expect(flattened.unwrap()).resolves.toEqual(inner.unwrap());
+		await expect(flattened.unwrap()).resolves.toEqual(inner.unwrapUnchecked());
 	});
 
 	it("works with an Ok<Err> result", async () => {
 		const inner = TestErr<number, string>("error");
 		const flattened = TestOkPromise<Result<number, string>, boolean>(inner).flatten();
 		expectTypeOf(flattened).toEqualTypeOf<AsyncResult<number, string | boolean>>();
-		await expect(flattened.unwrapErr()).resolves.toEqual(inner.unwrapErr());
+		await expect(flattened.unwrapErr()).resolves.toEqual(inner.unwrapErrUnchecked());
 	});
 
 	it("works with an Err result", async () => {
@@ -231,7 +231,7 @@ describe("map", () => {
 		const result = TestErrPromise<number, Error>(error);
 		const result2 = result.map((value) => value * 2);
 		const awaitedResult = await result;
-		await expect(result2.unwrapErr()).resolves.toEqual(awaitedResult.unwrapErr());
+		await expect(result2.unwrapErr()).resolves.toEqual(awaitedResult.unwrapErrUnchecked());
 	});
 });
 
@@ -246,7 +246,7 @@ describe("mapAsync", () => {
 		const a = TestErrPromise<number, string>("error");
 		const b = a.map((value) => value * 2);
 		const awaitedResult = await a;
-		await expect(b.unwrapErr()).resolves.toEqual(awaitedResult.unwrapErr());
+		await expect(b.unwrapErr()).resolves.toEqual(awaitedResult.unwrapErrUnchecked());
 	});
 });
 

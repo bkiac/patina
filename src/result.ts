@@ -14,8 +14,8 @@ export type ResultMatchAsync<T, E, A, B> = {
 };
 
 export class ResultImpl<T, E> {
-	private readonly _ok: boolean;
-	private readonly _value: T | E;
+	protected readonly _ok: boolean;
+	protected readonly _value: T | E;
 
 	public constructor(ok: boolean, value: T | E) {
 		this._ok = ok;
@@ -660,7 +660,7 @@ export class ResultImpl<T, E> {
 	 * }
 	 * ```
 	 */
-	public unwrap(): T | null {
+	public unwrapUnchecked(): T | null {
 		if (this._ok) {
 			return this._value as T;
 		}
@@ -706,20 +706,20 @@ export class ResultImpl<T, E> {
 	 * @example
 	 * ```typescript
 	 * const x: Result<number, string> = Ok(2);
-	 * assertEquals(x.unwrapErr(), null);
+	 * assertEquals(x.unwrapErrUnchecked(), null);
 	 *
 	 * const y: Result<number, string> = Err("emergency failure");
-	 * assertEquals(y.unwrapErr(), "emergency failure");
+	 * assertEquals(y.unwrapErrUnchecked(), "emergency failure");
 	 *
 	 * const z = Result.fromThrowable(...); // Result<T, E>
 	 * if (z.isErr()) {
-	 *     const e = z.unwrapErr() // `e` has type `E`
+	 *     const e = z.unwrapErrUnchecked() // `e` has type `E`
 	 * } else {
 	 *     const u = z.unwrapErr() // `u` has type `null`
 	 * }
 	 * ```
 	 */
-	public unwrapErr(): E | null {
+	public unwrapErrUnchecked(): E | null {
 		if (!this._ok) {
 			return this._value as E;
 		}
@@ -1062,7 +1062,7 @@ export interface Ok<T, E = never> extends ResultImpl<T, E> {
 	[symbols.tag]: "Ok";
 
 	unwrap(): T;
-	unwrapErr(): null;
+	unwrapUnchecked(): T;
 	expect(message: string): T;
 	expectErr(message: string): never;
 
@@ -1078,18 +1078,30 @@ export interface Ok<T, E = never> extends ResultImpl<T, E> {
 	error(): undefined;
 }
 
+class OkImpl<T> extends ResultImpl<T, never> {
+	public unwrap(): T {
+		return this._value as T;
+	}
+}
+
 /**
  * Contains the success value.
  */
 export function Ok<T>(value: T): Ok<T> {
-	return new ResultImpl<T, never>(true, value) as Ok<T>;
+	return new OkImpl<T>(true, value) as Ok<T>;
+}
+
+class ErrImpl<E> extends ResultImpl<never, E> {
+	public unwrapErr(): E {
+		return this._value as E;
+	}
 }
 
 export interface Err<E, T = never> extends ResultImpl<T, E> {
 	[symbols.tag]: "Err";
 
-	unwrap(): null;
-	unwrapErr(): E;
+	unwrapUnchecked(): null;
+	unwrapErrUnchecked(): E;
 	expect(message: string): never;
 	expectErr(message: string): E;
 
@@ -1113,7 +1125,9 @@ export interface Err<E, T = never> extends ResultImpl<T, E> {
  * Contains the error value.
  */
 export function Err<E>(error: E): Err<E> {
-	return new ResultImpl<never, E>(false, error) as Err<E>;
+	const err = new ResultImpl<never, E>(false, error) as Err<E>;
+	err.unwrapErrUnchecked = () => error;
+	return err;
 }
 
 /**
@@ -1242,3 +1256,6 @@ export namespace Result {
 	 */
 	export const from = fromThrowable;
 }
+
+// How to have Ok() and new Ok()
+// https://www.typescriptlang.org/play/?#code/MYGwhgzhAECyCeA5ArgWwEYFMBO0DeAUNNAG5gjKYBc0AdmltgNwFHTAD2tEALtssB4dsACjIVqdBjgCU+NsR4ALAJYQAdOMrQAvKXKUWxAL6tiYACYWR9VDVuMZ96bkLFi2TD2TZa0ZWqaBpjQANRSqEbQpqYEAPRx0AAimABmKrQhYH4ZPDipYMAhymA87BwYGZgwyiGgkDCc3HwCQrjZFuzk4OggIanItIIqXAS5+YUhCCgYOADCXLz8gsLyxJkA7tBiwc6z2E5wSC5ROxJ7jjTTJ2wADtgcQjzwt5LX+yyxCdBznqXFSjq3TAvX6g2GoyavCOM0YADFwTwRn49AMhkiuNstJIHLIrsd9mtoJ5vL46Jgtu9GGdKDJPtBIDCXAtmss2ix4okAMpefyA6D3R6PF7FDjQTDcHwhDK8bJFGAQJRgTx8kIQMCoEKa5QcCwQAhUnAI9HI9SCp4i3RM-Zmh4W14c74AVXVAHNMAQoWUZTw5ZgAIxWzbW+GI5Eif0ABjp0GdEAyrugAHJNknPYsOH11CAOK6RD6-f71JZrABWGQx74AeWQPFutYgNH9pdYXugBaGmAATFbDdhjRDaCIu9GmLHEgB1FQ62vJ1Pp7iZzDZ3P55p+rvFqwR6OVxI1usNmgAZkjBCAA

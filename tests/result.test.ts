@@ -27,7 +27,8 @@ describe("core", () => {
 		expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
 
 		expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
-		expectTypeOf(r.unwrapErr).toEqualTypeOf<() => null>();
+		expectTypeOf(r.unwrapUnchecked).toEqualTypeOf<() => number>();
+		expectTypeOf(r.unwrapErrUnchecked).toEqualTypeOf<() => null>();
 
 		expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
 		expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
@@ -44,7 +45,8 @@ describe("core", () => {
 		expectTypeOf(r.error).toEqualTypeOf<() => string>();
 
 		expectTypeOf(r.unwrap).toEqualTypeOf<() => null>();
-		expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
+		expectTypeOf(r.unwrapUnchecked).toEqualTypeOf<() => null>();
+		expectTypeOf(r.unwrapErrUnchecked).toEqualTypeOf<() => string>();
 
 		expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
 		expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
@@ -52,14 +54,18 @@ describe("core", () => {
 
 	it("works as discriminated union", () => {
 		const r = TestOk<number, string>(42);
+
+		expectTypeOf(r.unwrap()).toEqualTypeOf<"rekt">();
 		expectTypeOf(r.value()).toEqualTypeOf<number | undefined>();
 		expectTypeOf(r.error()).toEqualTypeOf<string | undefined>();
+
 		if (r.isOk()) {
 			expectTypeOf(r.value).toEqualTypeOf<() => number>();
 			expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
 
 			expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
-			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => null>();
+			expectTypeOf(r.unwrapUnchecked).toEqualTypeOf<() => number>();
+			expectTypeOf(r.unwrapErrUnchecked).toEqualTypeOf<() => null>();
 
 			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
 			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
@@ -68,7 +74,8 @@ describe("core", () => {
 			expectTypeOf(r.error).toEqualTypeOf<() => string>();
 
 			expectTypeOf(r.unwrap).toEqualTypeOf<() => null>();
-			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
+			expectTypeOf(r.unwrapUnchecked).toEqualTypeOf<() => null>();
+			expectTypeOf(r.unwrapErrUnchecked).toEqualTypeOf<() => string>();
 
 			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
 			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
@@ -78,8 +85,8 @@ describe("core", () => {
 			expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
 			expectTypeOf(r.error).toEqualTypeOf<() => string>();
 
-			expectTypeOf(r.unwrap).toEqualTypeOf<() => null>();
-			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
+			expectTypeOf(r.unwrapUnchecked).toEqualTypeOf<() => null>();
+			expectTypeOf(r.unwrapErrUnchecked).toEqualTypeOf<() => string>();
 
 			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
 			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
@@ -87,8 +94,8 @@ describe("core", () => {
 			expectTypeOf(r.value).toEqualTypeOf<() => number>();
 			expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
 
-			expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
-			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => null>();
+			expectTypeOf(r.unwrapUnchecked).toEqualTypeOf<() => number>();
+			expectTypeOf(r.unwrapErrUnchecked).toEqualTypeOf<() => null>();
 
 			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
 			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
@@ -124,37 +131,39 @@ describe("and", () => {
 	it("returns the error when Ok and Err", () => {
 		const a = TestOk<string, string>("a");
 		const b = TestErr<string, string>("b");
-		expect(a.and(b).unwrapErr()).toEqual("b");
+		expect(a.and(b).unwrapErrUnchecked()).toEqual("b");
 	});
 
 	it("returns the late value when Ok and Ok", () => {
 		const a = TestOk<string, string>("a");
 		const b = TestOk<string, string>("b");
-		expect(a.and(b).unwrap()).toEqual("b");
+		expect(a.and(b).unwrapUnchecked()).toEqual("b");
 	});
 
 	it("returns the error when Err and Ok", () => {
 		const a = TestErr<string, string>("a");
 		const b = TestOk<string, string>("b");
-		expect(a.and(b).unwrapErr()).toEqual("a");
+		expect(a.and(b).unwrapErrUnchecked()).toEqual("a");
 	});
 
 	it("returns the early error when Err and Err", () => {
 		const a = TestErr<number, string>("a");
 		const b = TestErr<number, string>("b");
-		expect(a.and(b).unwrapErr()).toEqual("a");
+		expect(a.and(b).unwrapErrUnchecked()).toEqual("a");
 	});
 });
 
 describe("andThen", () => {
 	it("returns the mapped value for an Ok result", () => {
 		const a = TestOk<number, string>(0);
-		expect(a.andThen((value) => Ok(value + 1)).unwrap()).toEqual(1);
+		expect(a.andThen((value) => Ok(value + 1)).unwrapUnchecked()).toEqual(1);
 	});
 
 	it("returns the result for an Err result", () => {
 		const a = TestErr<number, string>("early error");
-		expect(a.andThen((value) => Ok(value + 1)).unwrapErr()).toEqual(a.unwrapErr());
+		expect(a.andThen((value) => Ok(value + 1)).unwrapErrUnchecked()).toEqual(
+			a.unwrapErrUnchecked(),
+		);
 	});
 });
 
@@ -167,7 +176,7 @@ describe("andThenAsync", () => {
 	it("returns the result for an Err result", async () => {
 		const a = TestErr<number, string>("early error");
 		await expect(a.andThenAsync(async (value) => Ok(value + 1)).unwrapErr()).resolves.toEqual(
-			a.unwrapErr(),
+			a.unwrapErrUnchecked(),
 		);
 	});
 });
@@ -206,20 +215,20 @@ describe("flatten", () => {
 		const inner = TestOk<number, string>(42);
 		const flattened = TestOk<Result<number, string>, boolean>(inner).flatten();
 		expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>();
-		expect(flattened.unwrap()).toEqual(inner.unwrap());
+		expect(flattened.unwrapUnchecked()).toEqual(inner.unwrapUnchecked());
 	});
 
 	it("works with an Ok<Err> result", () => {
 		const inner = TestErr<number, string>("error");
 		const flattened = TestOk<Result<number, string>, boolean>(inner).flatten();
 		expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>();
-		expect(flattened.unwrapErr()).toEqual(inner.unwrapErr());
+		expect(flattened.unwrapErrUnchecked()).toEqual(inner.unwrapErrUnchecked());
 	});
 
 	it("works with an Err result", () => {
 		const flattened = TestErr<Result<number, string>, boolean>(true).flatten();
 		expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>();
-		expect(flattened.unwrapErr()).toEqual(true);
+		expect(flattened.unwrapErrUnchecked()).toEqual(true);
 	});
 
 	it("works with non-primitive value or error", () => {
@@ -308,13 +317,13 @@ describe("map", () => {
 	it("returns the mapped value for an Ok result", () => {
 		const result = TestOk<number, string>(42);
 		const result2 = result.map((value) => value * 2);
-		expect(result2.unwrap()).toEqual(84);
+		expect(result2.unwrapUnchecked()).toEqual(84);
 	});
 
 	it("returns the original Err for an Err result", () => {
 		const result = TestErr<number, string>("error");
 		const result2 = result.map((value) => value * 2);
-		expect(result2.unwrapErr()).toEqual(result.unwrapErr());
+		expect(result2.unwrapErrUnchecked()).toEqual(result.unwrapErrUnchecked());
 	});
 });
 
@@ -328,7 +337,7 @@ describe("mapAsync", () => {
 	it("returns the original Err for an Err result", async () => {
 		const a = TestErr<number, string>("error");
 		const b = a.mapAsync(async (value) => value * 2);
-		await expect(b.unwrapErr()).resolves.toEqual(a.unwrapErr());
+		await expect(b.unwrapErr()).resolves.toEqual(a.unwrapErrUnchecked());
 	});
 });
 
@@ -336,13 +345,13 @@ describe("mapErr", () => {
 	it("returns the mapped error for an Err result", () => {
 		const a = TestErr<number, string>("error");
 		const b = a.mapErr(() => "new error");
-		expect(b.unwrapErr()).toEqual("new error");
+		expect(b.unwrapErrUnchecked()).toEqual("new error");
 	});
 
 	it("returns the original Ok for an Err result", () => {
 		const a = TestOk<number, string>(0);
 		const b = a.mapErr(() => "new error");
-		expect(b.unwrap()).toEqual(0);
+		expect(b.unwrapUnchecked()).toEqual(0);
 	});
 });
 
@@ -356,7 +365,7 @@ describe("mapErrAsync", () => {
 	it("returns the original Ok for an Err result", async () => {
 		const a = TestOk<number, string>(0);
 		const b = a.mapErrAsync(async () => "new error");
-		await expect(b.unwrap()).resolves.toEqual(a.unwrap());
+		await expect(b.unwrap()).resolves.toEqual(a.unwrapUnchecked());
 	});
 });
 
@@ -398,38 +407,38 @@ describe("or", () => {
 	it("returns the value when Ok or Err", () => {
 		const a = TestOk<string, string>("a");
 		const b = TestErr<string, string>("b");
-		expect(a.or(b).unwrap()).toEqual("a");
+		expect(a.or(b).unwrapUnchecked()).toEqual("a");
 	});
 
 	it("returns the early value when Ok or Ok", () => {
 		const a = TestOk<string, string>("a");
 		const b = TestOk<string, string>("b");
-		expect(a.or(b).unwrap()).toEqual("a");
+		expect(a.or(b).unwrapUnchecked()).toEqual("a");
 	});
 
 	it("returns the late value when Err or Ok", () => {
 		const a = TestErr<string, string>("a");
 		const b = TestOk<string, string>("b");
-		expect(a.or(b).unwrap()).toEqual("b");
+		expect(a.or(b).unwrapUnchecked()).toEqual("b");
 	});
 
 	it("returns the late error when Err and Err", () => {
 		const a = TestErr<string, string>("a");
 		const b = TestErr<string, string>("b");
-		expect(a.or(b).unwrapErr()).toEqual("b");
+		expect(a.or(b).unwrapErrUnchecked()).toEqual("b");
 	});
 });
 
 describe("orElse", () => {
 	it("returns the result for an Ok result", () => {
 		const a = TestOk<number, string>(0);
-		expect(a.orElse(() => Ok(1)).unwrap()).toEqual(a.unwrap());
+		expect(a.orElse(() => Ok(1)).unwrapUnchecked()).toEqual(a.unwrapUnchecked());
 	});
 
 	it("returns the mapped value for an Err result", () => {
 		const a = TestErr<number, string>("early error");
-		expect(a.orElse(() => Ok(1)).unwrap()).toEqual(1);
-		expect(a.orElse(() => Err(1)).unwrapErr()).toEqual(1);
+		expect(a.orElse(() => Ok(1)).unwrapUnchecked()).toEqual(1);
+		expect(a.orElse(() => Err(1)).unwrapErrUnchecked()).toEqual(1);
 	});
 });
 
@@ -449,24 +458,24 @@ describe("orElseAsync", () => {
 describe("unwrap", () => {
 	it("returns the value for an Ok result", () => {
 		const result = TestOk<number, string>(42);
-		expect(result.unwrap()).toEqual(42);
+		expect(result.unwrapUnchecked()).toEqual(42);
 	});
 
 	it("returns null for an Err result", () => {
 		const result = TestErr<number, string>("error");
-		expect(result.unwrap()).toEqual(null);
+		expect(result.unwrapUnchecked()).toEqual(null);
 	});
 });
 
 describe("unwrapErr", () => {
 	it("returns the error for an Err result", () => {
 		const result = TestErr<number, string>("error");
-		expect(result.unwrapErr()).toEqual("error");
+		expect(result.unwrapErrUnchecked()).toEqual("error");
 	});
 
 	it("returns null for an Ok result", () => {
 		const result = TestOk<number, string>(42);
-		expect(result.unwrapErr()).toEqual(null);
+		expect(result.unwrapErrUnchecked()).toEqual(null);
 	});
 });
 
@@ -524,8 +533,8 @@ describe("iterator", () => {
 		}
 
 		const result = gen();
-		expect(result.next().value.unwrap()).toEqual(1);
-		expect(result.next().value.unwrapErr()).toEqual("error");
-		expect(result.next().value.unwrap()).toEqual(2);
+		expect(result.next().value.unwrapUnchecked()).toEqual(1);
+		expect(result.next().value.unwrapErrUnchecked()).toEqual("error");
+		expect(result.next().value.unwrapUnchecked()).toEqual(2);
 	});
 });

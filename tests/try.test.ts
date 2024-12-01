@@ -23,7 +23,7 @@ describe("deprecated try()", () => {
 			return Ok(x + y);
 		});
 		expectTypeOf(block).toEqualTypeOf<Result<number, never>>();
-		expect(block.unwrap()).toEqual(2);
+		expect(block.unwrapUnchecked()).toEqual(2);
 
 		const block4 = tryBlock(function* () {
 			yield* Err("error").try();
@@ -42,7 +42,7 @@ describe("deprecated try()", () => {
 			return Ok(x + y);
 		});
 		expectTypeOf(block2).toEqualTypeOf<Result<number, string>>();
-		expect(block2.unwrapErr()).toEqual("error");
+		expect(block2.unwrapErrUnchecked()).toEqual("error");
 
 		const block3 = tryBlock(function* () {
 			const x = yield* Ok(1).try();
@@ -155,7 +155,7 @@ test("tryBlock", () => {
 		return Ok(x + y);
 	});
 	expectTypeOf(block).toEqualTypeOf<Result<number, never>>();
-	expect(block.unwrap()).toEqual(2);
+	expect(block.unwrapUnchecked()).toEqual(2);
 
 	const block4 = tryBlock(function* () {
 		yield* Err("error");
@@ -174,7 +174,7 @@ test("tryBlock", () => {
 		return Ok(x + y);
 	});
 	expectTypeOf(block2).toEqualTypeOf<Result<number, string>>();
-	expect(block2.unwrapErr()).toEqual("error");
+	expect(block2.unwrapErrUnchecked()).toEqual("error");
 
 	const block3 = tryBlock(function* () {
 		const x = yield* Ok(1);

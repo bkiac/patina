@@ -753,7 +753,7 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 * ```
 	 */
 	public async unwrap(): Promise<T | null> {
-		return (await this).unwrap();
+		return (await this).unwrapUnchecked();
 	}
 
 	/**
@@ -785,7 +785,7 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 * ```
 	 */
 	public async unwrapErr(): Promise<E | null> {
-		return (await this).unwrapErr();
+		return (await this).unwrapErrUnchecked();
 	}
 
 	/**
