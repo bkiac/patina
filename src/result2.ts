@@ -1186,8 +1186,8 @@ class ErrImpl<E, T> implements ResultMethods<T, E> {
 		return this._value;
 	}
 
-	public expectErr(message: string): never {
-		throw new Panic(`${message}: ${this._value}`, { cause: this._value });
+	public expectErr(_message: string): E {
+		return this._value;
 	}
 
 	public and<U, F>(_other: Result<U, F>): Result<U, E | F> {

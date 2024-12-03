@@ -22,16 +22,29 @@ describe("core", () => {
 		expect(r.isOk()).toEqual(true);
 		expect(r.isErr()).toEqual(false);
 
-		expect(r.value()).toEqual(42);
 		expectTypeOf(r.value).toEqualTypeOf<() => number>();
+		expect(r.value()).toEqual(42);
+
 		expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
+		expect(r.error()).toEqual(undefined);
 
 		expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
+		expect(r.unwrap()).toEqual(42);
+
+		// @ts-expect-error - unwrapErr should not exist on Ok
+		expectTypeOf(r.unwrapErr).toEqualTypeOf<any>();
+
 		expectTypeOf(r.unwrapUnchecked).toEqualTypeOf<() => number>();
+		expect(r.unwrapUnchecked()).toEqual(42);
+
 		expectTypeOf(r.unwrapErrUnchecked).toEqualTypeOf<() => null>();
+		expect(r.unwrapErrUnchecked()).toEqual(null);
 
 		expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
+		expect(r.expect("")).toEqual(42);
+
 		expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
+		expect(() => r.expectErr("")).toThrow(Panic);
 	});
 
 	it("returns an Err result", () => {
@@ -41,30 +54,50 @@ describe("core", () => {
 		expect(r.isErr()).toEqual(true);
 
 		expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
-		expect(r.error()).toEqual("error");
-		expectTypeOf(r.error).toEqualTypeOf<() => string>();
+		expect(r.value()).toEqual(undefined);
 
-		expectTypeOf(r.unwrap).toEqualTypeOf<() => null>();
+		expectTypeOf(r.error).toEqualTypeOf<() => string>();
+		expect(r.error()).toEqual("error");
+
+		// @ts-expect-error - unwrap should not exist on Err
+		expectTypeOf(r.unwrap).toEqualTypeOf<any>();
+
+		expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
+		expect(r.unwrapErr()).toEqual("error");
+
 		expectTypeOf(r.unwrapUnchecked).toEqualTypeOf<() => null>();
+		expect(r.unwrapUnchecked()).toEqual(null);
+
 		expectTypeOf(r.unwrapErrUnchecked).toEqualTypeOf<() => string>();
+		expect(r.unwrapErrUnchecked()).toEqual("error");
 
 		expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
+		expect(() => r.expect("")).toThrow(Panic);
+
 		expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
+		expect(r.expectErr("")).toEqual("error");
 	});
 
 	it("works as discriminated union", () => {
 		const r = TestOk<number, string>(42);
 
-		expectTypeOf(r.unwrap()).toEqualTypeOf<"rekt">();
-		expectTypeOf(r.value()).toEqualTypeOf<number | undefined>();
-		expectTypeOf(r.error()).toEqualTypeOf<string | undefined>();
+		// @ts-expect-error - unwrap should not exist on Result
+		expectTypeOf(r.unwrap).toEqualTypeOf<any>();
+
+		// @ts-expect-error - unwrapErr should not exist on Result
+		expectTypeOf(r.unwrapErr).toEqualTypeOf<any>();
+
+		expectTypeOf(r.value).toEqualTypeOf<() => number | undefined>();
+		expectTypeOf(r.error).toEqualTypeOf<() => number | undefined>();
 
 		if (r.isOk()) {
 			expectTypeOf(r.value).toEqualTypeOf<() => number>();
 			expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
 
+			// @ts-expect-error - unwrapErr should not exist on Err
+			expectTypeOf(r.unwrapErr).toEqualTypeOf<any>();
+
 			expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
-			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => number>();
 			expectTypeOf(r.unwrapUnchecked).toEqualTypeOf<() => number>();
 			expectTypeOf(r.unwrapErrUnchecked).toEqualTypeOf<() => null>();
 
@@ -74,33 +107,15 @@ describe("core", () => {
 			expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
 			expectTypeOf(r.error).toEqualTypeOf<() => string>();
 
-			expectTypeOf(r.unwrap).toEqualTypeOf<() => null>();
+			// @ts-expect-error - unwrap should not exist on Err
+			expectTypeOf(r.unwrap).toEqualTypeOf<any>();
+
 			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
 			expectTypeOf(r.unwrapUnchecked).toEqualTypeOf<() => null>();
 			expectTypeOf(r.unwrapErrUnchecked).toEqualTypeOf<() => string>();
 
 			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
 			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
-		}
-
-		if (r.isErr()) {
-			expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
-			expectTypeOf(r.error).toEqualTypeOf<() => string>();
-
-			expectTypeOf(r.unwrapUnchecked).toEqualTypeOf<() => null>();
-			expectTypeOf(r.unwrapErrUnchecked).toEqualTypeOf<() => string>();
-
-			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
-			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
-		} else {
-			expectTypeOf(r.value).toEqualTypeOf<() => number>();
-			expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
-
-			expectTypeOf(r.unwrapUnchecked).toEqualTypeOf<() => number>();
-			expectTypeOf(r.unwrapErrUnchecked).toEqualTypeOf<() => null>();
-
-			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
-			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
 		}
 	});
 });
