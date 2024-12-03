@@ -86,6 +86,8 @@ describe("core", () => {
 		// @ts-expect-error - unwrapErr should not exist on Result
 		expectTypeOf(r.unwrapErr).toEqualTypeOf<any>();
 
+		// These do not work for some reason, value and error are reported to be `never`
+		// but type hints are correct if I hover over them.
 		// expectTypeOf(r.value).toEqualTypeOf<() => number | undefined>();
 		// expectTypeOf(r.error).toEqualTypeOf<() => number | undefined>();
 
