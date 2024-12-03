@@ -949,7 +949,7 @@ class OkImpl<T, E> implements ResultMethods<T, E> {
 	}
 
 	public mapErrAsync<F>(_f: (error: E) => Promise<F>): AsyncResult<T, F> {
-		return this.mapErr(_f) as unknown as AsyncResult<T, F>;
+		return new AsyncResult(Promise.resolve(this as unknown as Result<T, F>));
 	}
 
 	public inspect(f: (value: T) => void): this {
@@ -1239,7 +1239,7 @@ class ErrImpl<E, T> implements ResultMethods<T, E> {
 	public flatten<R extends Result<any, any>>(
 		this: Result<R, E>,
 	): Result<InferOk<R>, InferErr<R> | E> {
-		return this.expect("should flatten the result");
+		return this as Result<InferOk<R>, InferErr<R> | E>;
 	}
 
 	// Deprecated
