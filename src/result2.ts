@@ -1,7 +1,7 @@
 import { Panic, parseError } from "./error.ts";
 import { None, type Option, Some } from "./option.ts";
 import { AsyncResult } from "./async_result.ts";
-import type * as symbols from "./symbols.ts";
+// import type * as symbols from "./symbols.ts";
 
 export type ResultMatch<T, E, A, B> = {
 	Ok: (value: T) => A;
@@ -13,60 +13,23 @@ export type ResultMatchAsync<T, E, A, B> = {
 	Err: (error: E) => Promise<B>;
 };
 
-export class ResultImpl<T, E> {
-	protected readonly _ok: boolean;
-	protected readonly _value: T | E;
+const nodejsUtilInspectCustom = Symbol.for("nodejs.util.inspect.custom");
 
-	public constructor(ok: boolean, value: T | E) {
-		this._ok = ok;
-		this._value = value;
+export interface ResultMethods<T, E> {
+	get [Symbol.toStringTag](): "Ok" | "Err";
 
-		// Make the constructor name equal to "Result"
-		Object.defineProperty(this.constructor, "name", { value: "Result" });
-	}
+	toJSON(): { Ok: T } | { Err: E };
 
-	public get [Symbol.toStringTag](): "Ok" | "Err" {
-		return this._ok ? "Ok" : "Err";
-	}
+	toString(): `Ok(${string})` | `Err(${string})`;
 
-	public toJSON(): { Ok: T } | { Err: E } {
-		if (this._ok) {
-			return { Ok: this._value as T };
-		}
-		return { Err: this._value as E };
-	}
-
-	public toString(): `Ok(${string})` | `Err(${string})` {
-		const str = String(this._value);
-		if (this._ok) {
-			return `Ok(${str})`;
-		}
-		return `Err(${str})`;
-	}
-
-	public [Symbol.for("nodejs.util.inspect.custom")](): string {
-		return this.toString();
-	}
+	[nodejsUtilInspectCustom](): string;
 
 	/**
 	 * Returns a generator that yields the contained value (if `Ok`) or an error (if `Err`).
 	 *
 	 * See `tryBlock()` and `tryBlockAsync()` for more information.
 	 */
-	public *[Symbol.iterator](): Generator<Err<E, never>, T> {
-		const v = this._value;
-
-		if (this._ok) {
-			return v as T;
-		}
-
-		// deno-lint-ignore no-this-alias
-		const self = this;
-		// @ts-expect-error -- This is structurally equivalent and safe
-		yield self;
-		// @ts-expect-error -- This is structurally equivalent and safe
-		return self as T;
-	}
+	[Symbol.iterator](): Generator<Err<E, never>, T>;
 
 	/**
 	 * Matches the result with two functions.
@@ -89,12 +52,7 @@ export class ResultImpl<T, E> {
 	 * }), 5)
 	 * ```
 	 */
-	public match<A, B>(pattern: ResultMatch<T, E, A, B>): A | B {
-		if (this._ok) {
-			return pattern.Ok(this._value as T);
-		}
-		return pattern.Err(this._value as E);
-	}
+	match<A, B>(pattern: ResultMatch<T, E, A, B>): A | B;
 
 	/**
 	 * Matches the result with two async functions.
@@ -117,12 +75,7 @@ export class ResultImpl<T, E> {
 	 * }), 5)
 	 * ```
 	 */
-	public matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A | B> {
-		if (this._ok) {
-			return pattern.Ok(this._value as T);
-		}
-		return pattern.Err(this._value as E);
-	}
+	matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A | B>;
 
 	/**
 	 * Returns `true` if the result is `Ok`.
@@ -150,9 +103,7 @@ export class ResultImpl<T, E> {
 	 * }
 	 * ```
 	 */
-	public isOk(): this is Ok<T, E> {
-		return this._ok;
-	}
+	isOk(): this is Ok<T, E>;
 
 	/**
 	 * Returns `true` if the result is `Ok` and the value satisfies the predicate.
@@ -174,9 +125,7 @@ export class ResultImpl<T, E> {
 	 * assertEquals(x.isOkAnd((x) => x > 1), false);
 	 * ```
 	 */
-	public isOkAnd(f: (value: T) => boolean): this is Ok<T, E> {
-		return this._ok && f(this._value as T);
-	}
+	isOkAnd(f: (value: T) => boolean): this is Ok<T, E>;
 
 	/**
 	 * Returns `true` if the result is `Err`.
@@ -201,9 +150,7 @@ export class ResultImpl<T, E> {
 	 * }
 	 * ```
 	 */
-	public isErr(): this is Err<E, T> {
-		return !this._ok;
-	}
+	isErr(): this is Err<E, T>;
 
 	/**
 	 * Returns `true` if the result is `Err` and the error satisfies the predicate.
@@ -225,9 +172,7 @@ export class ResultImpl<T, E> {
 	 * assertEquals(x.isErrAnd((e) => e.length > 3), false);
 	 * ```
 	 */
-	public isErrAnd(f: (error: E) => boolean): this is Err<E, T> {
-		return !this._ok && f(this._value as E);
-	}
+	isErrAnd(f: (error: E) => boolean): this is Err<E, T>;
 
 	/**
 	 * Converts from `Result<T, E>` to `Option<T>`, discarding the error if any.
@@ -243,12 +188,7 @@ export class ResultImpl<T, E> {
 	 * assertEquals(x.ok(), None);
 	 * ```
 	 */
-	public ok(): Option<T> {
-		if (this._ok) {
-			return Some(this._value as T);
-		}
-		return None;
-	}
+	ok(): Option<T>;
 
 	/**
 	 * Converts from `Result<T, E>` to `Option<E>`, discarding the success value if any.
@@ -264,12 +204,7 @@ export class ResultImpl<T, E> {
 	 * assertEquals(x.err(), Some("Nothing here"));
 	 * ```
 	 */
-	public err(): Option<E> {
-		if (!this._ok) {
-			return Some(this._value as E);
-		}
-		return None;
-	}
+	err(): Option<E>;
 
 	/**
 	 * Maps a `Result<T, E>` to `Result<U, E>` by applying a function to a contained `Ok` value,
@@ -302,12 +237,7 @@ export class ResultImpl<T, E> {
 	 * }
 	 * ```
 	 */
-	public map<U>(f: (value: T) => U): Result<U, E> {
-		if (this._ok) {
-			return Ok(f(this._value as T));
-		}
-		return Err(this._value as E);
-	}
+	map<U>(f: (value: T) => U): Result<U, E>;
 
 	/**
 	 * Maps a `Result<T, E>` to `AsyncResult<U, E>` by applying an async function to a contained `Ok` value,
@@ -340,12 +270,7 @@ export class ResultImpl<T, E> {
 	 * }
 	 * ```
 	 */
-	public mapAsync<U>(f: (value: T) => Promise<U>): AsyncResult<U, E> {
-		if (this._ok) {
-			return new AsyncResult(f(this._value as T).then((v) => Ok(v)));
-		}
-		return new AsyncResult(Promise.resolve(Err(this._value as E)));
-	}
+	mapAsync<U>(f: (value: T) => Promise<U>): AsyncResult<U, E>;
 
 	/**
 	 * Returns the provided default (if `Err`), or applies a function to the contained value (if `Ok`).
@@ -363,12 +288,7 @@ export class ResultImpl<T, E> {
 	 * assertEquals(x.mapOr(42, (v) => v.length), 42)
 	 * ```
 	 */
-	public mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B {
-		if (this._ok) {
-			return f(this._value as T);
-		}
-		return defaultValue;
-	}
+	mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B;
 
 	/**
 	 * Returns the provided default (if `Err`), or applies a function to the contained value (if `Ok`).
@@ -386,12 +306,7 @@ export class ResultImpl<T, E> {
 	 * assertEquals(await x.mapOrAsync(42, async (v) => v.length), 42)
 	 * ```
 	 */
-	public mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B> {
-		if (this._ok) {
-			return f(this._value as T);
-		}
-		return Promise.resolve(defaultValue);
-	}
+	mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B>;
 
 	/**
 	 * Maps a `Result<T, E>` to `A | B` by applying fallback function `defaultValue` to a contained `Err` value,
@@ -414,12 +329,7 @@ export class ResultImpl<T, E> {
 	 * assertEquals(x.mapOrElse((e) => k * 2, (v) => v.length), 42);
 	 * ```
 	 */
-	public mapOrElse<A, B>(defaultValue: (error: E) => A, f: (value: T) => B): A | B {
-		if (this._ok) {
-			return f(this._value as T);
-		}
-		return defaultValue(this._value as E);
-	}
+	mapOrElse<A, B>(defaultValue: (error: E) => A, f: (value: T) => B): A | B;
 
 	/**
 	 * Maps a `Result<T, E>` to `Promise<A | B>` by applying fallback function `defaultValue` to a contained `Err` value,
@@ -442,15 +352,10 @@ export class ResultImpl<T, E> {
 	 * assertEquals(await x.mapOrElseAsync(async (e) => k * 2, async (v) => v.length), 42);
 	 * ```
 	 */
-	public mapOrElseAsync<A, B>(
+	mapOrElseAsync<A, B>(
 		defaultValue: (error: E) => Promise<A>,
 		f: (value: T) => Promise<B>,
-	): Promise<A | B> {
-		if (this._ok) {
-			return f(this._value as T);
-		}
-		return defaultValue(this._value as E);
-	}
+	): Promise<A | B>;
 
 	/**
 	 * Maps a `Result<T, E>` to `Result<T, F>` by applying a function to a contained `Err` value,
@@ -473,12 +378,7 @@ export class ResultImpl<T, E> {
 	 * assertEquals(x.mapErr(stringify), Err("error code: 13"));
 	 * ```
 	 */
-	public mapErr<F>(f: (error: E) => F): Result<T, F> {
-		if (!this._ok) {
-			return Err(f(this._value as E));
-		}
-		return Ok(this._value as T);
-	}
+	mapErr<F>(f: (error: E) => F): Result<T, F>;
 
 	/**
 	 * Maps a `Result<T, E>` to `AsyncResult<T, F>` by applying an async function to a contained `Err` value,
@@ -501,12 +401,7 @@ export class ResultImpl<T, E> {
 	 * assertEquals(x.mapErrAsync(stringify), Err("error code: 13"));
 	 * ```
 	 */
-	public mapErrAsync<F>(f: (error: E) => Promise<F>): AsyncResult<T, F> {
-		if (!this._ok) {
-			return new AsyncResult(f(this._value as E).then((v) => Err(v)));
-		}
-		return new AsyncResult(Promise.resolve(Ok(this._value as T)));
-	}
+	mapErrAsync<F>(f: (error: E) => Promise<F>): AsyncResult<T, F>;
 
 	/**
 	 * Calls the provided function with the contained value (if `Ok`).
@@ -524,12 +419,7 @@ export class ResultImpl<T, E> {
 	 *     .expect("failed to parse number");
 	 * ```
 	 */
-	public inspect(f: (value: T) => void): this {
-		if (this._ok) {
-			f(this._value as T);
-		}
-		return this;
-	}
+	inspect(f: (value: T) => void): this;
 
 	/**
 	 * Calls the provided async function with the contained value (if `Ok`).
@@ -547,12 +437,7 @@ export class ResultImpl<T, E> {
 	 *     .expect("failed to parse number");
 	 * ```
 	 */
-	public inspectAsync(f: (value: T) => Promise<void>): AsyncResult<T, E> {
-		if (this._ok) {
-			return new AsyncResult(f(this._value as T).then(() => this) as Promise<Result<T, E>>);
-		}
-		return new AsyncResult(Promise.resolve(this) as Promise<Result<T, E>>);
-	}
+	inspectAsync(f: (value: T) => Promise<void>): AsyncResult<T, E>;
 
 	/**
 	 * Calls the provided function with the contained error (if `Err`).
@@ -570,12 +455,7 @@ export class ResultImpl<T, E> {
 	 *     .map((contents) => processContents(contents));
 	 * ```
 	 */
-	public inspectErr(f: (error: E) => void): this {
-		if (!this._ok) {
-			f(this._value as E);
-		}
-		return this;
-	}
+	inspectErr(f: (error: E) => void): this;
 
 	/**
 	 * Calls the provided function with the contained error (if `Err`).
@@ -592,12 +472,7 @@ export class ResultImpl<T, E> {
 	 *     .map((contents) => processContents(contents));
 	 * ```
 	 */
-	public inspectErrAsync(f: (error: E) => Promise<void>): AsyncResult<T, E> {
-		if (!this._ok) {
-			return new AsyncResult(f(this._value as E).then(() => this) as Promise<Result<T, E>>);
-		}
-		return new AsyncResult(Promise.resolve(this) as Promise<Result<T, E>>);
-	}
+	inspectErrAsync(f: (error: E) => Promise<void>): AsyncResult<T, E>;
 
 	/**
 	 * Returns the contained `Ok` value.
@@ -625,12 +500,7 @@ export class ResultImpl<T, E> {
 	 * }).expect("config file should exist");
 	 * ```
 	 */
-	public expect(message: string): T {
-		if (this._ok) {
-			return this._value as T;
-		}
-		throw new Panic(`${message}: ${this._value}`, { cause: this._value });
-	}
+	expect(message: string): T;
 
 	/**
 	 * Returns the contained `Ok` value, if exists, otherwise returns `null`.
@@ -660,12 +530,7 @@ export class ResultImpl<T, E> {
 	 * }
 	 * ```
 	 */
-	public unwrapUnchecked(): T | null {
-		if (this._ok) {
-			return this._value as T;
-		}
-		return null;
-	}
+	unwrapUnchecked(): T | null;
 
 	/**
 	 * Returns the contained `Err` value.
@@ -684,12 +549,7 @@ export class ResultImpl<T, E> {
 	 * x.expectErr("Testing expectErr"); // throws Panic: Testing expectErr: 10
 	 * ```
 	 */
-	public expectErr(message: string): E {
-		if (!this._ok) {
-			return this._value as E;
-		}
-		throw new Panic(`${message}: ${this._value}`, { cause: this._value });
-	}
+	expectErr(message: string): E;
 
 	/**
 	 * Returns the contained `Err` value, if exists, otherwise returns `null`.
@@ -719,12 +579,7 @@ export class ResultImpl<T, E> {
 	 * }
 	 * ```
 	 */
-	public unwrapErrUnchecked(): E | null {
-		if (!this._ok) {
-			return this._value as E;
-		}
-		return null;
-	}
+	unwrapErrUnchecked(): E | null;
 
 	/**
 	 * Returns `other` if the result is `Ok`, otherwise returns `this` (as `Err`).
@@ -751,12 +606,7 @@ export class ResultImpl<T, E> {
 	 * assertEquals(x.and(y), Ok("different result type"))
 	 * ```
 	 */
-	public and<U, F>(other: Result<U, F>): Result<U, E | F> {
-		if (this._ok) {
-			return other;
-		}
-		return this as unknown as Result<U, E | F>;
-	}
+	and<U, F>(other: Result<U, F>): Result<U, E | F>;
 
 	/**
 	 * Calls `f` if the result is `Ok`, otherwise returns `this` (as `Err`).
@@ -795,12 +645,7 @@ export class ResultImpl<T, E> {
 	 * assertEquals(shouldFail.isErr(), true)
 	 * ```
 	 */
-	public andThen<U, F>(f: (value: T) => Result<U, F>): Result<U, E | F> {
-		if (this._ok) {
-			return f(this._value as T);
-		}
-		return this as unknown as Result<U, E | F>;
-	}
+	andThen<U, F>(f: (value: T) => Result<U, F>): Result<U, E | F>;
 
 	/**
 	 * Calls `f` if the result is `Ok`, otherwise returns `this` (as `Err`).
@@ -839,14 +684,9 @@ export class ResultImpl<T, E> {
 	 * assertEquals(shouldFail.isErr(), true)
 	 * ```
 	 */
-	public andThenAsync<U, F>(
+	andThenAsync<U, F>(
 		f: (value: T) => AsyncResult<U, F> | Promise<Result<U, F>>,
-	): AsyncResult<U, E | F> {
-		if (this._ok) {
-			return new AsyncResult(f(this._value as T));
-		}
-		return new AsyncResult(Promise.resolve(this) as Promise<Result<U, E | F>>);
-	}
+	): AsyncResult<U, E | F>;
 
 	/**
 	 * Returns `other` if the result is `Err`, otherwise returns `this` (as `Ok`).
@@ -873,12 +713,7 @@ export class ResultImpl<T, E> {
 	 * assertEquals(x.or(y), Ok(2))
 	 * ```
 	 */
-	public or<U, F>(other: Result<U, F>): Result<T | U, F> {
-		if (this._ok) {
-			return this as unknown as Result<T | U, F>;
-		}
-		return other;
-	}
+	or<U, F>(other: Result<U, F>): Result<T | U, F>;
 
 	/**
 	 * Calls `f` if the result is `Err`, otherwise returns `this` (as `Ok`).
@@ -899,12 +734,7 @@ export class ResultImpl<T, E> {
 	 * assertEquals(Err(3).orElse(err).orElse(err), Err(3))
 	 * ```
 	 */
-	public orElse<U, F>(f: (error: E) => Result<U, F>): Result<T | U, F> {
-		if (this._ok) {
-			return this as unknown as Result<T | U, F>;
-		}
-		return f(this._value as E);
-	}
+	orElse<U, F>(f: (error: E) => Result<U, F>): Result<T | U, F>;
 
 	/**
 	 * Calls `f` if the result is `Err`, otherwise returns `this` (as `Ok`).
@@ -925,14 +755,9 @@ export class ResultImpl<T, E> {
 	 * assertEquals(await Err(3).orElseAsync(err).orElseAsync(err), Err(3))
 	 * ```
 	 */
-	public orElseAsync<U, F>(
+	orElseAsync<U, F>(
 		f: (error: E) => AsyncResult<U, F> | Promise<Result<U, F>>,
-	): AsyncResult<T | U, F> {
-		if (this._ok) {
-			return new AsyncResult(Promise.resolve(this) as Promise<Result<T | U, F>>);
-		}
-		return new AsyncResult(f(this._value as E));
-	}
+	): AsyncResult<T | U, F>;
 
 	/**
 	 * Returns the contained `Ok` value or a provided default.
@@ -951,12 +776,7 @@ export class ResultImpl<T, E> {
 	 * assertEquals(x.unwrapOr(defaultValue), defaultValue)
 	 * ```
 	 */
-	public unwrapOr<U>(defaultValue: U): T | U {
-		if (this._ok) {
-			return this._value as T;
-		}
-		return defaultValue;
-	}
+	unwrapOr<U>(defaultValue: U): T | U;
 
 	/**
 	 * Returns the contained `Ok` value or computes it from a function.
@@ -972,12 +792,7 @@ export class ResultImpl<T, E> {
 	 * assertEquals(Err("foo").unwrapOrElse(count), 3)
 	 * ```
 	 */
-	public unwrapOrElse<U>(defaultValue: (error: E) => U): T | U {
-		if (this._ok) {
-			return this._value as T;
-		}
-		return defaultValue(this._value as E);
-	}
+	unwrapOrElse<U>(defaultValue: (error: E) => U): T | U;
 
 	/**
 	 * Returns the contained `Ok` value or computes it from a function.
@@ -993,12 +808,7 @@ export class ResultImpl<T, E> {
 	 * assertEquals(await Err("foo").unwrapOrElseAsync(count), 3)
 	 * ```
 	 */
-	public unwrapOrElseAsync<U>(defaultValue: (error: E) => Promise<U>): Promise<T | U> {
-		if (this._ok) {
-			return Promise.resolve(this._value as T);
-		}
-		return defaultValue(this._value as E);
-	}
+	unwrapOrElseAsync<U>(defaultValue: (error: E) => Promise<U>): Promise<T | U>;
 
 	/**
 	 * Converts from `Result<Result<T, F>, E>` to `Result<T, E | F>`.
@@ -1023,112 +833,435 @@ export class ResultImpl<T, E> {
 	 * assertEquals(x.flatten().flatten(), Ok("hello"));
 	 * ```
 	 */
-	public flatten<U, F>(this: Result<ResultImpl<U, F>, E>): Result<U, E | F> {
-		if (this._ok) {
-			return this._value as Result<U, F>;
-		}
-		return Err(this._value as E);
-	}
+	// flatten<U, F>(this: Result<Result<U, F>, E>): Result<U, E | F>;
 
 	// Deprecated
 
 	/**
 	 * @deprecated You can yield the `Result` directly: `yield* Ok(1)` instead of `yield* Ok(1).try()`.
 	 */
-	public try(): Generator<Err<E, never>, T> {
-		return this[Symbol.iterator]();
-	}
+	try(): Generator<Err<E, never>, T>;
 
 	/**
 	 * Returns the contained value, if it exists.
 	 *
 	 * @deprecated Use `unwrap()` instead.
 	 */
-	public value(): T | undefined {
-		return this._ok ? (this._value as T) : undefined;
-	}
+	value(): T | undefined;
 
 	/**
 	 * Returns the contained error, if it exists.
 	 *
 	 * @deprecated Use `unwrapErr()` instead.
 	 */
-	public error(): E | undefined {
-		return this._ok ? undefined : (this._value as E);
+	error(): E | undefined;
+}
+
+class OkImpl<T, E> implements ResultMethods<T, E> {
+	private readonly _value: T;
+
+	public constructor(value: T) {
+		this._value = value;
 	}
-}
 
-export interface Ok<T, E = never> extends ResultImpl<T, E> {
-	[symbols.tag]: "Ok";
+	public get [Symbol.toStringTag](): "Ok" {
+		return "Ok";
+	}
 
-	unwrap(): T;
-	unwrapUnchecked(): T;
-	expect(message: string): T;
-	expectErr(message: string): never;
+	public toJSON(): { Ok: T } {
+		return { Ok: this._value };
+	}
 
-	// Deprecated
+	public toString(): `Ok(${string})` {
+		return `Ok(${String(this._value)})`;
+	}
 
-	/**
-	 * @deprecated Use `unwrap()` instead.
-	 */
-	value(): T;
-	/**
-	 * @deprecated Use `unwrapErr()` instead.
-	 */
-	error(): undefined;
-}
+	public [nodejsUtilInspectCustom](): string {
+		return this.toString();
+	}
 
-class OkImpl<T> extends ResultImpl<T, never> {
+	// deno-lint-ignore require-yield
+	public *[Symbol.iterator](): Generator<Err<E, never>, T> {
+		return this._value;
+	}
+
+	public match<A, B>(pattern: ResultMatch<T, E, A, B>): A {
+		return pattern.Ok(this._value);
+	}
+
+	public matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A> {
+		return pattern.Ok(this._value);
+	}
+
+	public isOk(): this is Ok<T, E> {
+		return true;
+	}
+
+	public isOkAnd(f: (value: T) => boolean): this is Ok<T, E> {
+		return f(this._value);
+	}
+
+	public isErr(): this is Err<E, T> {
+		return false;
+	}
+
+	public isErrAnd(_f: (error: E) => boolean): this is Err<E, T> {
+		return false;
+	}
+
+	public ok(): Option<T> {
+		return Some(this._value);
+	}
+
+	public err(): Option<E> {
+		return None as unknown as Option<E>;
+	}
+
+	public map<U>(f: (value: T) => U): Result<U, E> {
+		return Ok(f(this._value));
+	}
+
+	public mapAsync<U>(f: (value: T) => Promise<U>): AsyncResult<U, E> {
+		return new AsyncResult(f(this._value).then((v) => Ok(v)));
+	}
+
+	public mapOr<A, B>(_defaultValue: A, f: (value: T) => B): A | B {
+		return f(this._value);
+	}
+
+	public mapOrAsync<A, B>(_defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B> {
+		return f(this._value);
+	}
+
+	public mapOrElse<A, B>(_defaultValue: (error: E) => A, f: (value: T) => B): A | B {
+		return f(this._value);
+	}
+
+	public mapOrElseAsync<A, B>(
+		_defaultValue: (error: E) => Promise<A>,
+		f: (value: T) => Promise<B>,
+	): Promise<A | B> {
+		return f(this._value);
+	}
+
+	public mapErr<F>(_f: (error: E) => F): Result<T, F> {
+		return this as unknown as Result<T, F>;
+	}
+
+	public mapErrAsync<F>(_f: (error: E) => Promise<F>): AsyncResult<T, F> {
+		return this.mapErr(_f) as unknown as AsyncResult<T, F>;
+	}
+
+	public inspect(f: (value: T) => void): this {
+		f(this._value);
+		return this;
+	}
+
+	public inspectAsync(f: (value: T) => Promise<void>): AsyncResult<T, E> {
+		return new AsyncResult(f(this._value).then(() => this as unknown as Result<T, E>));
+	}
+
+	public inspectErr(_f: (error: E) => void): this {
+		return this;
+	}
+
+	public inspectErrAsync(_f: (error: E) => Promise<void>): AsyncResult<T, E> {
+		return this as unknown as AsyncResult<T, E>;
+	}
+
+	public expect(_message: string): T {
+		return this._value;
+	}
+
+	public unwrapUnchecked(): T {
+		return this._value;
+	}
+
+	public expectErr(_message: string): never {
+		throw new Panic(`${_message}: ${this._value}`, { cause: this._value });
+	}
+
+	public unwrapErrUnchecked(): null {
+		return null;
+	}
+
+	public and<U, F>(other: Result<U, F>): Result<U, E | F> {
+		return other as Result<U, E | F>;
+	}
+
+	public andThen<U, F>(f: (value: T) => Result<U, F>): Result<U, E | F> {
+		return f(this._value) as Result<U, E | F>;
+	}
+
+	public andThenAsync<U, F>(
+		f: (value: T) => AsyncResult<U, F> | Promise<Result<U, F>>,
+	): AsyncResult<U, E | F> {
+		return new AsyncResult(f(this._value) as unknown as Promise<Result<U, E | F>>);
+	}
+
+	public or<U, F>(_other: Result<U, F>): Result<T | U, F> {
+		return this as unknown as Result<T | U, F>;
+	}
+
+	public orElse<U, F>(_f: (error: E) => Result<U, F>): Result<T | U, F> {
+		return this as unknown as Result<T | U, F>;
+	}
+
+	public orElseAsync<U, F>(
+		_f: (error: E) => AsyncResult<U, F> | Promise<Result<U, F>>,
+	): AsyncResult<T | U, F> {
+		return new AsyncResult(Promise.resolve(this as unknown as Result<T | U, F>));
+	}
+
+	public unwrapOr<U>(_defaultValue: U): T | U {
+		return this._value;
+	}
+
+	public unwrapOrElse<U>(_defaultValue: (error: E) => U): T | U {
+		return this._value;
+	}
+
+	public unwrapOrElseAsync<U>(_defaultValue: (error: E) => Promise<U>): Promise<T | U> {
+		return Promise.resolve(this._value);
+	}
+
+	// public flatten<U, F>(this: Result<Result<U, F>, E>): Result<U, E | F> {
+	// 	return this._value as Result<U, E | F>;
+	// }
+
 	public unwrap(): T {
-		return this._value as T;
+		return this._value;
 	}
-}
-
-/**
- * Contains the success value.
- */
-export function Ok<T>(value: T): Ok<T> {
-	return new OkImpl<T>(true, value) as Ok<T>;
-}
-
-class ErrImpl<E> extends ResultImpl<never, E> {
-	public unwrapErr(): E {
-		return this._value as E;
-	}
-}
-
-export interface Err<E, T = never> extends ResultImpl<T, E> {
-	[symbols.tag]: "Err";
-
-	unwrapUnchecked(): null;
-	unwrapErrUnchecked(): E;
-	expect(message: string): never;
-	expectErr(message: string): E;
 
 	// Deprecated
 
-	/**
-	 * Returns the contained value, if it exists.
-	 *
-	 * @deprecated Use `unwrap()` instead.
-	 */
-	value(): undefined;
-	/**
-	 * Returns the contained value, if it exists.
-	 *
-	 * @deprecated Use `unwrapErr()` instead.
-	 */
-	error(): E;
+	public try(): Generator<Err<E, never>, T> {
+		return this[Symbol.iterator]();
+	}
+
+	public value(): T {
+		return this._value;
+	}
+
+	public error(): undefined {
+		return undefined;
+	}
 }
 
-/**
- * Contains the error value.
- */
-export function Err<E>(error: E): Err<E> {
-	const err = new ResultImpl<never, E>(false, error) as Err<E>;
-	err.unwrapErrUnchecked = () => error;
-	return err;
+export interface Ok<T, E> extends OkImpl<T, E> {
+	(value: T): Ok<T, E>;
+	prototype: OkImpl<T, E>;
 }
+
+export function Ok<T, E>(value: T): Ok<T, E> {
+	return new OkImpl(value) as Ok<T, E>;
+}
+Ok.prototype = OkImpl.prototype;
+
+class ErrImpl<E, T> implements ResultMethods<T, E> {
+	private readonly _value: E;
+
+	public constructor(value: E) {
+		this._value = value;
+	}
+
+	public get [Symbol.toStringTag](): "Err" {
+		return "Err";
+	}
+
+	public toJSON(): { Err: E } {
+		return { Err: this._value };
+	}
+
+	public toString(): `Err(${string})` {
+		return `Err(${String(this._value)})`;
+	}
+
+	public [nodejsUtilInspectCustom](): string {
+		return this.toString();
+	}
+
+	public *[Symbol.iterator](): Generator<Err<E, never>, T> {
+		// deno-lint-ignore no-this-alias
+		const self = this;
+		// @ts-expect-error -- This is structurally equivalent and safe
+		yield self;
+		// @ts-expect-error -- This is structurally equivalent and safe
+		return self as T;
+	}
+
+	public match<A, B>(pattern: ResultMatch<T, E, A, B>): B {
+		return pattern.Err(this._value);
+	}
+
+	public matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<B> {
+		return pattern.Err(this._value);
+	}
+
+	public isOk(): this is Ok<T, E> {
+		return false;
+	}
+
+	public isOkAnd(_f: (value: T) => boolean): this is Ok<T, E> {
+		return false;
+	}
+
+	public isErr(): this is Err<E, T> {
+		return true;
+	}
+
+	public isErrAnd(f: (error: E) => boolean): this is Err<E, T> {
+		return f(this._value);
+	}
+
+	public ok(): Option<T> {
+		return None as unknown as Option<T>;
+	}
+
+	public err(): Option<E> {
+		return Some(this._value);
+	}
+
+	public map<U>(_f: (value: T) => U): Result<U, E> {
+		return this as unknown as Result<U, E>;
+	}
+
+	public mapAsync<U>(_f: (value: T) => Promise<U>): AsyncResult<U, E> {
+		return new AsyncResult(Promise.resolve(this as unknown as Result<U, E>));
+	}
+
+	public mapOr<A, B>(defaultValue: A, _f: (value: T) => B): A {
+		return defaultValue;
+	}
+
+	public mapOrAsync<A, B>(defaultValue: A, _f: (value: T) => Promise<B>): Promise<A> {
+		return Promise.resolve(defaultValue);
+	}
+
+	public mapOrElse<A, B>(defaultValue: (error: E) => A, _f: (value: T) => B): A {
+		return defaultValue(this._value);
+	}
+
+	public mapOrElseAsync<A, B>(
+		defaultValue: (error: E) => Promise<A>,
+		_f: (value: T) => Promise<B>,
+	): Promise<A> {
+		return defaultValue(this._value);
+	}
+
+	public mapErr<F>(f: (error: E) => F): Result<T, F> {
+		return Err(f(this._value));
+	}
+
+	public mapErrAsync<F>(f: (error: E) => Promise<F>): AsyncResult<T, F> {
+		return new AsyncResult(f(this._value).then((v) => Err(v)));
+	}
+
+	public inspect(_f: (value: T) => void): this {
+		return this;
+	}
+
+	public inspectAsync(_f: (value: T) => Promise<void>): AsyncResult<T, E> {
+		return new AsyncResult(Promise.resolve(this as unknown as Result<T, E>));
+	}
+
+	public inspectErr(f: (error: E) => void): this {
+		f(this._value);
+		return this;
+	}
+
+	public inspectErrAsync(f: (error: E) => Promise<void>): AsyncResult<T, E> {
+		return new AsyncResult(f(this._value).then(() => this as unknown as Result<T, E>));
+	}
+
+	public expect(message: string): never {
+		throw new Panic(`${message}: ${this._value}`, { cause: this._value });
+	}
+
+	public unwrapUnchecked(): null {
+		return null;
+	}
+
+	public unwrapErrUnchecked(): E {
+		return this._value;
+	}
+
+	public expectErr(message: string): never {
+		throw new Panic(`${message}: ${this._value}`, { cause: this._value });
+	}
+
+	public and<U, F>(_other: Result<U, F>): Result<U, E | F> {
+		return this as unknown as Result<U, E | F>;
+	}
+
+	public andThen<U, F>(_f: (value: T) => Result<U, F>): Result<U, E | F> {
+		return this as unknown as Result<U, E | F>;
+	}
+
+	public andThenAsync<U, F>(
+		_f: (value: T) => AsyncResult<U, F> | Promise<Result<U, F>>,
+	): AsyncResult<U, E | F> {
+		return new AsyncResult(Promise.resolve(this as unknown as Result<U, E | F>));
+	}
+
+	public or<U, F>(other: Result<U, F>): Result<T | U, F> {
+		return other as Result<T | U, F>;
+	}
+
+	public orElse<U, F>(f: (error: E) => Result<U, F>): Result<T | U, F> {
+		return f(this._value) as Result<T | U, F>;
+	}
+
+	public orElseAsync<U, F>(
+		f: (error: E) => AsyncResult<U, F> | Promise<Result<U, F>>,
+	): AsyncResult<T | U, F> {
+		return new AsyncResult(f(this._value) as unknown as Promise<Result<T | U, F>>);
+	}
+
+	public unwrapOr<U>(_defaultValue: U): T | U {
+		return _defaultValue;
+	}
+
+	public unwrapOrElse<U>(_defaultValue: (error: E) => U): U {
+		return _defaultValue(this._value);
+	}
+
+	public unwrapErr(): E {
+		return this._value;
+	}
+
+	public unwrapOrElseAsync<U>(_defaultValue: (error: E) => Promise<U>): Promise<U> {
+		return _defaultValue(this._value);
+	}
+
+	// public flatten<U, F>(this: Result<Result<U, F>, E>): Result<U, E | F> {
+	// 	return this._value as Result<U, E | F>;
+	// }
+
+	// Deprecated
+
+	public try(): Generator<Err<E, never>, T> {
+		return this[Symbol.iterator]();
+	}
+
+	public value(): undefined {
+		return undefined;
+	}
+
+	public error(): E {
+		return this._value;
+	}
+}
+
+export interface Err<E, T> extends ErrImpl<E, T> {
+	(value: E): Err<E, T>;
+	prototype: ErrImpl<E, T>;
+}
+
+export function Err<E, T>(value: E): Err<E, T> {
+	return new ErrImpl(value) as Err<E, T>;
+}
+Err.prototype = ErrImpl.prototype;
 
 /**
  * `Result` is a type that represents either success (`Ok`) or failure (`Err`).
@@ -1243,7 +1376,7 @@ export namespace Result {
 	export function fromThrowableAsync<T>(f: () => Promise<T>): AsyncResult<T, Error> {
 		async function safe(): Promise<Result<T, Error>> {
 			try {
-				return Ok(await f());
+				return Ok(await f() as T);
 			} catch (error) {
 				return Err(handleCaughtError(error));
 			}

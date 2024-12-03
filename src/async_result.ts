@@ -4,7 +4,7 @@
  */
 
 import { AsyncOption } from "./async_option.ts";
-import type { Err, Result, ResultImpl, ResultMatch, ResultMatchAsync } from "./result.ts";
+import type { Err, Result, ResultMatch, ResultMatchAsync } from "./result2.ts";
 
 /**
  * A promise that resolves to a `Result`.
@@ -346,9 +346,9 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 * assertEquals(await x.flatten().flatten(), Ok("hello"));
 	 * ```
 	 */
-	public flatten<U, F>(this: AsyncResult<ResultImpl<U, F>, E>): AsyncResult<U, E | F> {
-		return new AsyncResult(this.then((result) => result.flatten()));
-	}
+	// public flatten<U, F>(this: AsyncResult<Result<U, F>, E>): AsyncResult<U, E | F> {
+	// 	return new AsyncResult(this.then((result) => result.flatten()));
+	// }
 
 	/**
 	 * Calls the provided function with the contained value (if `Ok`).

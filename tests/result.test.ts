@@ -3,7 +3,7 @@ import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import { assertSpyCall, assertSpyCalls, spy } from "@std/testing/mock";
 import { expectTypeOf } from "expect-type";
-import { Err, Ok, Result } from "../src/result.ts";
+import { Err, Ok, Result } from "../src/result2.ts";
 import { None, Some } from "../src/option.ts";
 import { ErrorWithTag, Panic } from "../src/error.ts";
 
@@ -64,6 +64,7 @@ describe("core", () => {
 			expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
 
 			expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
+			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => number>();
 			expectTypeOf(r.unwrapUnchecked).toEqualTypeOf<() => number>();
 			expectTypeOf(r.unwrapErrUnchecked).toEqualTypeOf<() => null>();
 
@@ -74,6 +75,7 @@ describe("core", () => {
 			expectTypeOf(r.error).toEqualTypeOf<() => string>();
 
 			expectTypeOf(r.unwrap).toEqualTypeOf<() => null>();
+			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
 			expectTypeOf(r.unwrapUnchecked).toEqualTypeOf<() => null>();
 			expectTypeOf(r.unwrapErrUnchecked).toEqualTypeOf<() => string>();
 
