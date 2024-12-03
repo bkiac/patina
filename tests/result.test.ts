@@ -83,7 +83,6 @@ describe("core", () => {
 
 		// @ts-expect-error - unwrap should not exist on Result
 		expectTypeOf(r.unwrap).toEqualTypeOf<any>();
-
 		// @ts-expect-error - unwrapErr should not exist on Result
 		expectTypeOf(r.unwrapErr).toEqualTypeOf<any>();
 
@@ -94,11 +93,11 @@ describe("core", () => {
 			expectTypeOf(r.value).toEqualTypeOf<() => number>();
 			expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
 
-			// @ts-expect-error - unwrapErr should not exist on Err
-			expectTypeOf(r.unwrapErr).toEqualTypeOf<any>();
-
 			expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
 			expectTypeOf(r.unwrapUnchecked).toEqualTypeOf<() => number>();
+
+			// @ts-expect-error - unwrapErr should not exist on Err
+			expectTypeOf(r.unwrapErr).toEqualTypeOf<any>();
 			expectTypeOf(r.unwrapErrUnchecked).toEqualTypeOf<() => null>();
 
 			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
@@ -109,9 +108,9 @@ describe("core", () => {
 
 			// @ts-expect-error - unwrap should not exist on Err
 			expectTypeOf(r.unwrap).toEqualTypeOf<any>();
+			expectTypeOf(r.unwrapUnchecked).toEqualTypeOf<() => null>();
 
 			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
-			expectTypeOf(r.unwrapUnchecked).toEqualTypeOf<() => null>();
 			expectTypeOf(r.unwrapErrUnchecked).toEqualTypeOf<() => string>();
 
 			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();

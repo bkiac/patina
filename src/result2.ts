@@ -1,7 +1,7 @@
 import { Panic, parseError } from "./error.ts";
 import { None, type Option, Some } from "./option.ts";
 import { AsyncResult } from "./async_result.ts";
-// import type * as symbols from "./symbols.ts";
+import type { InferErr, InferOk } from "./util.ts";
 
 export type ResultMatch<T, E, A, B> = {
 	Ok: (value: T) => A;
@@ -833,7 +833,7 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(x.flatten().flatten(), Ok("hello"));
 	 * ```
 	 */
-	// flatten<U, F>(this: Result<Result<U, F>, E>): Result<U, E | F>;
+	flatten<R extends Result<any, any>>(this: Result<R, E>): Result<InferOk<R>, InferErr<R> | E>;
 
 	// Deprecated
 
@@ -1025,9 +1025,11 @@ class OkImpl<T, E> implements ResultMethods<T, E> {
 		return Promise.resolve(this._value);
 	}
 
-	// public flatten<U, F>(this: Result<Result<U, F>, E>): Result<U, E | F> {
-	// 	return this._value as Result<U, E | F>;
-	// }
+	public flatten<R extends Result<any, any>>(
+		this: Result<R, E>,
+	): Result<InferOk<R>, InferErr<R> | E> {
+		return this.expect("should flatten the result");
+	}
 
 	public unwrap(): T {
 		return this._value;
@@ -1234,9 +1236,11 @@ class ErrImpl<E, T> implements ResultMethods<T, E> {
 		return _defaultValue(this._value);
 	}
 
-	// public flatten<U, F>(this: Result<Result<U, F>, E>): Result<U, E | F> {
-	// 	return this._value as Result<U, E | F>;
-	// }
+	public flatten<R extends Result<any, any>>(
+		this: Result<R, E>,
+	): Result<InferOk<R>, InferErr<R> | E> {
+		return this.expect("should flatten the result");
+	}
 
 	// Deprecated
 

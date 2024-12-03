@@ -3,7 +3,7 @@
  * @module
  */
 
-import { type Err, type Ok, type Result, ResultImpl } from "./result.ts";
+import { Err, Ok, type Result } from "./result2.ts";
 import { type Option, OptionImpl } from "./option.ts";
 import { AsyncResult } from "./async_result.ts";
 import { AsyncOption } from "./async_option.ts";
@@ -36,7 +36,7 @@ export type ExtractErr<T> = T extends Err<infer E, any> ? E
  * Checks if a value is a `Result`.
  */
 export function isResult<T, E>(value: unknown): value is Result<T, E> {
-	return value instanceof ResultImpl;
+	return value instanceof Ok || value instanceof Err;
 }
 
 /**
