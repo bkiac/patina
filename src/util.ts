@@ -3,7 +3,7 @@
  * @module
  */
 
-import { Err, Ok, type Result } from "./result2.ts";
+import { Err, Ok, type Result } from "./result.ts";
 import { type Option, OptionImpl } from "./option.ts";
 import { AsyncResult } from "./async_result.ts";
 import { AsyncOption } from "./async_option.ts";

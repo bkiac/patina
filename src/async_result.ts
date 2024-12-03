@@ -4,7 +4,7 @@
  */
 
 import { AsyncOption } from "./async_option.ts";
-import type { Err, Result, ResultMatch, ResultMatchAsync } from "./result2.ts";
+import type { Err, Result, ResultMatch, ResultMatchAsync } from "./result.ts";
 
 /**
  * A promise that resolves to a `Result`.
