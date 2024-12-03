@@ -1050,12 +1050,12 @@ class OkImpl<T, E> implements ResultMethods<T, E> {
 	}
 }
 
-export interface Ok<T, E> extends OkImpl<T, E> {
+export interface Ok<T, E = unknown> extends OkImpl<T, E> {
 	(value: T): Ok<T, E>;
 	prototype: OkImpl<T, E>;
 }
 
-export function Ok<T, E>(value: T): Ok<T, E> {
+export function Ok<T, E = unknown>(value: T): Ok<T, E> {
 	return new OkImpl(value) as Ok<T, E>;
 }
 Ok.prototype = OkImpl.prototype;
@@ -1257,12 +1257,12 @@ class ErrImpl<E, T> implements ResultMethods<T, E> {
 	}
 }
 
-export interface Err<E, T> extends ErrImpl<E, T> {
+export interface Err<E, T = unknown> extends ErrImpl<E, T> {
 	(value: E): Err<E, T>;
 	prototype: ErrImpl<E, T>;
 }
 
-export function Err<E, T>(value: E): Err<E, T> {
+export function Err<E, T = unknown>(value: E): Err<E, T> {
 	return new ErrImpl(value) as Err<E, T>;
 }
 Err.prototype = ErrImpl.prototype;

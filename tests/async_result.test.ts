@@ -9,11 +9,11 @@ import { None, Some } from "../src/option.ts";
 import { ErrorWithTag, Panic } from "../src/error.ts";
 
 function TestOkPromise<T, E>(value: T) {
-	return new AsyncResult<T, E>(Promise.resolve(Ok<T>(value)));
+	return new AsyncResult<T, E>(Promise.resolve(Ok<T, E>(value)));
 }
 
 function TestErrPromise<T, E>(error: E) {
-	return new AsyncResult<T, E>(Promise.resolve(Err<E>(error)));
+	return new AsyncResult<T, E>(Promise.resolve(Err<E, T>(error)));
 }
 
 function TestOk<T, E>(value: T): Result<T, E> {
