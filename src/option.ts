@@ -1,13 +1,8 @@
-/**
- * This module contains the `Option` class, which represents an optional value.
- * @module
- */
-
 import { AsyncOption } from "./async_option.ts";
 import { AsyncResult } from "./async_result.ts";
 import { Panic } from "./error.ts";
 import { Err, Ok, type Result } from "./result.ts";
-import type * as symbols from "./symbols.ts";
+import type { InferSome } from "./util.ts";
 
 /**
  * The type of the matcher for `Option.match`.
@@ -37,47 +32,22 @@ export type OptionMatchAsync<T, A, B> = {
 	None: () => Promise<B>;
 };
 
-/**
- * The implementation of the `Option` class.
- * @internal
- */
-export class OptionImpl<T> {
-	private readonly _some: boolean;
-	private readonly _value: T | null;
+const nodejsUtilInspectCustom = Symbol.for("nodejs.util.inspect.custom");
 
-	public constructor(some: boolean, value: T | null) {
-		Object.defineProperty(this.constructor, "name", { value: "Option" });
-		this._some = some;
-		this._value = value;
-	}
-
-	public get [Symbol.toStringTag](): "Some" | "None" {
-		return this._some ? "Some" : "None";
-	}
+interface OptionMethods<T> {
+	get [Symbol.toStringTag](): "Some" | "None";
 
 	/**
 	 * Converts the `Option` to a JSON object.
 	 */
-	public toJSON(): T | null {
-		if (this._some) {
-			return this._value as T;
-		}
-		return null;
-	}
+	toJSON(): T | null;
 
 	/**
 	 * Converts the `Option` to a string.
 	 */
-	public toString(): `Some(${string})` | "None" {
-		if (this._some) {
-			return `Some(${String(this._value)})`;
-		}
-		return "None";
-	}
+	toString(): `Some(${string})` | "None";
 
-	public [Symbol.for("nodejs.util.inspect.custom")](): string {
-		return this.toString();
-	}
+	[nodejsUtilInspectCustom](): string;
 
 	/**
 	 * Matches the option to its content.
@@ -100,12 +70,7 @@ export class OptionImpl<T> {
 	 * assertEquals(y, 0)
 	 * ```
 	 */
-	public match<A, B>(pattern: OptionMatch<T, A, B>): A | B {
-		if (this._some) {
-			return pattern.Some(this._value as T);
-		}
-		return pattern.None();
-	}
+	match<A, B>(pattern: OptionMatch<T, A, B>): A | B;
 
 	/**
 	 * Matches the option to its content asynchronously.
@@ -128,12 +93,7 @@ export class OptionImpl<T> {
 	 * assertEquals(y, 0)
 	 * ```
 	 */
-	public matchAsync<A, B>(pattern: OptionMatchAsync<T, A, B>): Promise<A | B> {
-		if (this._some) {
-			return pattern.Some(this._value as T);
-		}
-		return pattern.None();
-	}
+	matchAsync<A, B>(pattern: OptionMatchAsync<T, A, B>): Promise<A | B>;
 
 	/**
 	 * Returns `true` if the option is `Some`.
@@ -149,9 +109,7 @@ export class OptionImpl<T> {
 	 * assertEquals(x.isSome(), false)
 	 * ```
 	 */
-	public isSome(): this is Some<T> {
-		return this._some;
-	}
+	isSome(): this is Some<T>;
 
 	/**
 	 * Returns `true` if the option is `Some` and the contained value is equal to `value`.
@@ -171,12 +129,7 @@ export class OptionImpl<T> {
 	 * assertEquals(x.isSomeAnd(x => x > 1), false)
 	 * ```
 	 */
-	public isSomeAnd(predicate: (value: T) => boolean): this is Some<T> {
-		if (this._some) {
-			return predicate(this._value as T);
-		}
-		return false;
-	}
+	isSomeAnd(predicate: (value: T) => boolean): this is Some<T>;
 
 	/**
 	 * Returns `true` if the option is `None`.
@@ -192,9 +145,7 @@ export class OptionImpl<T> {
 	 * assertEquals(x.isNone(), true)
 	 * ```
 	 */
-	public isNone(): this is None<T> {
-		return !this._some;
-	}
+	isNone(): this is None<T>;
 
 	/**
 	 * Returns the contained `Some` value, if exists. Otherwise, throws a `Panic` with the provided message.
@@ -217,42 +168,7 @@ export class OptionImpl<T> {
 	 * assertThrows(() => None.expect("value should exist"), "value should exist")
 	 * ```
 	 */
-	public expect(message: string): T {
-		if (this._some) {
-			return this._value as T;
-		}
-		throw new Panic(message);
-	}
-
-	/**
-	 * Returns the contained `Some` value, if exists, otherwise returns `null`.
-	 *
-	 * Type is narrowed to `T` if the option is already checked to be `Some`.
-	 *
-	 * @returns The contained value, if exists, otherwise `null`.
-	 *
-	 * @example
-	 * ```
-	 * const x = Some("air")
-	 * assertEquals(x.unwrap(), "air")
-	 *
-	 * const y = None
-	 * assertEquals(y.unwrap(), null)
-	 *
-	 * const z = Option.fromNullish(...) // Option<T>
-	 * if (z.isSome()) {
-	 * 	const a = z.unwrap() // `a` has type `T`
-	 * } else {
-	 * 	const b = z.unwrap() // `b` has type `null`
-	 * }
-	 * ```
-	 */
-	public unwrap(): T | null {
-		if (this._some) {
-			return this._value as T;
-		}
-		return null;
-	}
+	expect(message: string): T;
 
 	/**
 	 * Returns the contained `Some` value, if exists.
@@ -268,12 +184,7 @@ export class OptionImpl<T> {
 	 * assertEquals(None.unwrapOr("bike"), "bike")
 	 * ```
 	 */
-	public unwrapOr<U>(defaultValue: U): T | U {
-		if (this._some) {
-			return this._value as T;
-		}
-		return defaultValue;
-	}
+	unwrapOr<U>(defaultValue: U): T | U;
 
 	/**
 	 * Returns the contained `Some` value, if exists.
@@ -292,12 +203,7 @@ export class OptionImpl<T> {
 	 * assertEquals(y, 0)
 	 * ```
 	 */
-	public unwrapOrElse<U>(defaultValue: () => U): T | U {
-		if (this._some) {
-			return this._value as T;
-		}
-		return defaultValue();
-	}
+	unwrapOrElse<U>(defaultValue: () => U): T | U;
 
 	/**
 	 * Returns the contained `Some` value, if exists.
@@ -316,12 +222,7 @@ export class OptionImpl<T> {
 	 * assertEquals(y, 0)
 	 * ```
 	 */
-	public unwrapOrElseAsync<U>(defaultValue: () => Promise<U>): Promise<T | U> {
-		if (this._some) {
-			return Promise.resolve(this._value as T);
-		}
-		return defaultValue();
-	}
+	unwrapOrElseAsync<U>(defaultValue: () => Promise<U>): Promise<T | U>;
 
 	/**
 	 * Maps an `Option<T>` to `Option<U>` by applying a function to a contained value.
@@ -339,12 +240,7 @@ export class OptionImpl<T> {
 	 * assertEquals(x.map(s => s.length), None)
 	 * ```
 	 */
-	public map<U>(f: (value: T) => U): Option<U> {
-		if (this._some) {
-			return Some(f(this._value as T));
-		}
-		return None;
-	}
+	map<U>(f: (value: T) => U): Option<U>;
 
 	/**
 	 * Maps an `Option<T>` to `AsyncOption<U>` by applying an async function to a contained value.
@@ -362,12 +258,7 @@ export class OptionImpl<T> {
 	 * assertEquals(await x.mapAsync(async (s) => s.length), None)
 	 * ```
 	 */
-	public mapAsync<U>(f: (value: T) => Promise<U>): AsyncOption<U> {
-		if (this._some) {
-			return new AsyncOption(f(this._value as T).then(Some));
-		}
-		return new AsyncOption(Promise.resolve(None));
-	}
+	mapAsync<U>(f: (value: T) => Promise<U>): AsyncOption<U>;
 
 	/**
 	 * Calls a function with the contained value if `Some`.
@@ -390,12 +281,7 @@ export class OptionImpl<T> {
 	 * Option.fromNullish(list[5]).inspect((x) => console.log(`got: ${x}`))
 	 * ```
 	 */
-	public inspect(f: (value: T) => void): this {
-		if (this._some) {
-			f(this._value as T);
-		}
-		return this;
-	}
+	inspect(f: (value: T) => void): this;
 
 	/**
 	 * Calls an async function with the contained value if `Some`.
@@ -418,12 +304,7 @@ export class OptionImpl<T> {
 	 * await Option.fromNullish(list[5]).inspectAsync(async (x) => console.log(`got: ${x}`))
 	 * ```
 	 */
-	public inspectAsync(f: (value: T) => Promise<void>): AsyncOption<T> {
-		if (this._some) {
-			return new AsyncOption(f(this._value as T).then(() => this as unknown as Some<T>));
-		}
-		return new AsyncOption(Promise.resolve(None));
-	}
+	inspectAsync(f: (value: T) => Promise<void>): AsyncOption<T>;
 
 	/**
 	 * Returns the provided default result (if none), or applies a function to the contained value (if any).
@@ -441,12 +322,7 @@ export class OptionImpl<T> {
 	 * assertEquals(x.mapOr(42, (v) => v.length), 42)
 	 * ```
 	 */
-	public mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B {
-		if (this._some) {
-			return f(this._value as T);
-		}
-		return defaultValue;
-	}
+	mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B;
 
 	/**
 	 * Returns the provided default result (if none), or applies an async function to the contained value (if any).
@@ -464,12 +340,7 @@ export class OptionImpl<T> {
 	 * assertEquals(await x.mapOrAsync(42, async (v) => v.length), 42)
 	 * ```
 	 */
-	public mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B> {
-		if (this._some) {
-			return f(this._value as T);
-		}
-		return Promise.resolve(defaultValue);
-	}
+	mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B>;
 
 	/**
 	 * Returns the provided default result (if none), or computes a default value by applying a function to the contained value (if any).
@@ -508,12 +379,7 @@ export class OptionImpl<T> {
 	 * }
 	 * ```
 	 */
-	public mapOrElse<A, B>(defaultValue: () => A, f: (value: T) => B): A | B {
-		if (this._some) {
-			return f(this._value as T);
-		}
-		return defaultValue();
-	}
+	mapOrElse<A, B>(defaultValue: () => A, f: (value: T) => B): A | B;
 
 	/**
 	 * Returns the provided default result (if none), or computes a default value by applying an async function to the contained value (if any).
@@ -533,15 +399,10 @@ export class OptionImpl<T> {
 	 * assertEquals(await x.mapOrElseAsync(async () => 2 * k, async (v) => v.length), 42)
 	 * ```
 	 */
-	public mapOrElseAsync<A, B>(
+	mapOrElseAsync<A, B>(
 		defaultValue: () => Promise<A>,
 		f: (value: T) => Promise<B>,
-	): Promise<A | B> {
-		if (this._some) {
-			return f(this._value as T);
-		}
-		return defaultValue();
-	}
+	): Promise<A | B>;
 
 	/**
 	 * Transforms the `Option<T>` into a `Result<T, E>`, mapping `Some(v)` to `Ok(v)` and `None` to `Err(err)`.
@@ -558,12 +419,7 @@ export class OptionImpl<T> {
 	 * assertEquals(x.okOr(0), Err(0))
 	 * ```
 	 */
-	public okOr<E>(err: E): Result<T, E> {
-		if (this._some) {
-			return Ok(this._value as T);
-		}
-		return Err(err);
-	}
+	okOr<E>(err: E): Result<T, E>;
 
 	/**
 	 * Transforms the `Option<T>` into a `Result<T, E>`, mapping `Some(v)` to `Ok(v)` and `None` to `Err(err())`.
@@ -580,12 +436,7 @@ export class OptionImpl<T> {
 	 * assertEquals(x.okOrElse(() => 0), Err(0))
 	 * ```
 	 */
-	public okOrElse<E>(err: () => E): Result<T, E> {
-		if (this._some) {
-			return Ok(this._value as T);
-		}
-		return Err(err());
-	}
+	okOrElse<E>(err: () => E): Result<T, E>;
 
 	/**
 	 * Transforms the `Option<T>` into a `AsyncResult<T, E>`, mapping `Some(v)` to `Ok(v)` and `None` to `Err(err())`.
@@ -602,12 +453,7 @@ export class OptionImpl<T> {
 	 * assertEquals(await x.okOrElseAsync(async () => 0), Err(0))
 	 * ```
 	 */
-	public okOrElseAsync<E>(err: () => Promise<E>): AsyncResult<T, E> {
-		if (this._some) {
-			return new AsyncResult(Promise.resolve(Ok(this._value as T)));
-		}
-		return new AsyncResult(err().then((e) => Err(e)));
-	}
+	okOrElseAsync<E>(err: () => Promise<E>): AsyncResult<T, E>;
 
 	/**
 	 * Returns `None` if the option is `None`, otherwise returns `other`.
@@ -634,12 +480,7 @@ export class OptionImpl<T> {
 	 * assertEquals(x.and(y), None)
 	 * ```
 	 */
-	public and<U>(other: Option<U>): Option<U> {
-		if (this._some) {
-			return other;
-		}
-		return None;
-	}
+	and<U>(other: Option<U>): Option<U>;
 
 	/**
 	 * Returns `None` if the option is `None`, otherwise calls `f` with the wrapped value and returns the result.
@@ -674,12 +515,7 @@ export class OptionImpl<T> {
 	 * assertEquals(item20, None)
 	 * ```
 	 */
-	public andThen<U>(f: (value: T) => Option<U>): Option<U> {
-		if (this._some) {
-			return f(this._value as T);
-		}
-		return None;
-	}
+	andThen<U>(f: (value: T) => Option<U>): Option<U>;
 
 	/**
 	 * Returns `None` if the option is `None`, otherwise calls `f` with the wrapped value and returns the result.
@@ -714,12 +550,7 @@ export class OptionImpl<T> {
 	 * assertEquals(item20, None)
 	 * ```
 	 */
-	public andThenAsync<U>(f: (value: T) => Promise<Option<U>> | AsyncOption<U>): AsyncOption<U> {
-		if (this._some) {
-			return new AsyncOption(f(this._value as T));
-		}
-		return new AsyncOption(Promise.resolve(None));
-	}
+	andThenAsync<U>(f: (value: T) => Promise<Option<U>> | AsyncOption<U>): AsyncOption<U>;
 
 	/**
 	 * Returns `None` if the option is `None`, otherwise calls `predicate` with the wrapped value and returns:
@@ -743,12 +574,7 @@ export class OptionImpl<T> {
 	 * assertEquals(Some(4).filter(isEven), Some(4))
 	 * ```
 	 */
-	public filter(predicate: (value: T) => boolean): Option<T> {
-		if (this._some && predicate(this._value as T)) {
-			return this as unknown as Option<T>;
-		}
-		return None;
-	}
+	filter(predicate: (value: T) => boolean): Option<T>;
 
 	/**
 	 * Returns `None` if the option is `None`, otherwise calls `predicate` with the wrapped value and returns:
@@ -772,15 +598,7 @@ export class OptionImpl<T> {
 	 * assertEquals(await Some(4).filterAsync(isEven), Some(4))
 	 * ```
 	 */
-	public filterAsync(predicate: (value: T) => Promise<boolean>): AsyncOption<T> {
-		const check = async (): Promise<Option<T>> => {
-			if (this._some && (await predicate(this._value as T))) {
-				return this as unknown as Option<T>;
-			}
-			return None;
-		};
-		return new AsyncOption(check());
-	}
+	filterAsync(predicate: (value: T) => Promise<boolean>): AsyncOption<T>;
 
 	/**
 	 * Returns the option if it contains a value, otherwise returns `other`.
@@ -807,12 +625,7 @@ export class OptionImpl<T> {
 	 * assertEquals(x.or(y), None)
 	 * ```
 	 */
-	public or<U>(other: Option<U>): Option<T | U> {
-		if (this._some) {
-			return this as unknown as Option<T | U>;
-		}
-		return other;
-	}
+	or<U>(other: Option<U>): Option<T | U>;
 
 	/**
 	 * Returns the option if it contains a value, otherwise calls `f` and returns the result.
@@ -830,12 +643,7 @@ export class OptionImpl<T> {
 	 * assertEquals(None.orElse(nobody), None)
 	 * ```
 	 */
-	public orElse<U>(f: () => Option<U>): Option<T | U> {
-		if (this._some) {
-			return this as unknown as Option<T | U>;
-		}
-		return f();
-	}
+	orElse<U>(f: () => Option<U>): Option<T | U>;
 
 	/**
 	 * Returns the option if it contains a value, otherwise calls `f` and returns the result.
@@ -853,12 +661,7 @@ export class OptionImpl<T> {
 	 * assertEquals(await None.orElseAsync(nobody), None)
 	 * ```
 	 */
-	public orElseAsync<U>(f: () => Promise<Option<U>> | AsyncOption<U>): AsyncOption<T | U> {
-		if (this._some) {
-			return new AsyncOption(Promise.resolve(this as unknown as Some<T>));
-		}
-		return new AsyncOption(f());
-	}
+	orElseAsync<U>(f: () => Promise<Option<U>> | AsyncOption<U>): AsyncOption<T | U>;
 
 	/**
 	 * Returns `Some` if exactly one of `this`, `other` is `Some`, otherwise returns `None`.
@@ -885,12 +688,7 @@ export class OptionImpl<T> {
 	 * assertEquals(x.xor(y), None)
 	 * ```
 	 */
-	public xor<U>(other: Option<U>): Option<T | U> {
-		if (this._some) {
-			return other._some ? None : (this as unknown as Option<T | U>);
-		}
-		return other;
-	}
+	xor<U>(other: Option<U>): Option<T | U>;
 
 	/**
 	 * Converts from `Option<Option<T>>` to `Option<T>`.
@@ -915,85 +713,352 @@ export class OptionImpl<T> {
 	 * assertEquals(x.flatten().flatten(), Some(6))
 	 * ```
 	 */
-	public flatten<U>(this: Option<Option<U>>): Option<U> {
-		if (this._some) {
-			return this._value as Option<U>;
+	flatten<U>(this: Option<Option<U>>): Option<U>;
+}
+
+class SomeImpl<T> implements OptionMethods<T> {
+	private readonly _value: T;
+
+	public constructor(value: T) {
+		this._value = value;
+	}
+
+	public get [Symbol.toStringTag](): "Some" {
+		return "Some";
+	}
+
+	public toJSON(): T {
+		return this._value;
+	}
+
+	public toString(): `Some(${string})` {
+		return `Some(${String(this._value)})`;
+	}
+
+	public [nodejsUtilInspectCustom](): string {
+		return this.toString();
+	}
+
+	public match<A, B>(pattern: OptionMatch<T, A, B>): A | B {
+		return pattern.Some(this._value);
+	}
+
+	public matchAsync<A, B>(pattern: OptionMatchAsync<T, A, B>): Promise<A | B> {
+		return pattern.Some(this._value);
+	}
+
+	public isSome(): this is Some<T> {
+		return true;
+	}
+
+	public isSomeAnd(predicate: (value: T) => boolean): this is Some<T> {
+		return predicate(this._value);
+	}
+
+	public isNone(): this is None<T> {
+		return false;
+	}
+
+	public expect(_message: string): T {
+		return this._value;
+	}
+
+	/**
+	 * Returns the contained `Some` value, if exists, otherwise returns `null`.
+	 *
+	 * Type is narrowed to `T` if the option is already checked to be `Some`.
+	 *
+	 * @returns The contained value, if exists, otherwise `null`.
+	 *
+	 * @example
+	 * ```
+	 * const x = Some("air")
+	 * assertEquals(x.unwrap(), "air")
+	 *
+	 * const y = None
+	 * assertEquals(y.unwrap(), null)
+	 *
+	 * const z = Option.fromNullish(...) // Option<T>
+	 * if (z.isSome()) {
+	 * 	const a = z.unwrap() // `a` has type `T`
+	 * } else {
+	 * 	const b = z.unwrap() // `b` has type `null`
+	 * }
+	 * ```
+	 */
+	public unwrap(): T {
+		return this._value;
+	}
+
+	public unwrapOr<U>(_defaultValue: U): T | U {
+		return this._value;
+	}
+
+	public unwrapOrElse<U>(_defaultValue: () => U): T | U {
+		return this._value;
+	}
+
+	public unwrapOrElseAsync<U>(_defaultValue: () => Promise<U>): Promise<T | U> {
+		return Promise.resolve(this._value);
+	}
+
+	public map<U>(f: (value: T) => U): Option<U> {
+		return Some(f(this._value));
+	}
+
+	public mapAsync<U>(f: (value: T) => Promise<U>): AsyncOption<U> {
+		return new AsyncOption(f(this._value).then(Some));
+	}
+
+	public inspect(f: (value: T) => void): this {
+		f(this._value);
+		return this;
+	}
+
+	public inspectAsync(f: (value: T) => Promise<void>): AsyncOption<T> {
+		return new AsyncOption(f(this._value).then(() => this as unknown as Some<T>));
+	}
+
+	public mapOr<A, B>(_defaultValue: A, f: (value: T) => B): A | B {
+		return f(this._value);
+	}
+
+	public mapOrAsync<A, B>(_defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B> {
+		return f(this._value);
+	}
+
+	public mapOrElse<A, B>(_defaultValue: () => A, f: (value: T) => B): A | B {
+		return f(this._value);
+	}
+
+	public mapOrElseAsync<A, B>(
+		_defaultValue: () => Promise<A>,
+		f: (value: T) => Promise<B>,
+	): Promise<A | B> {
+		return f(this._value);
+	}
+
+	public okOr<E>(_err: E): Result<T, E> {
+		return Ok(this._value);
+	}
+
+	public okOrElse<E>(_err: () => E): Result<T, E> {
+		return Ok(this._value);
+	}
+
+	public okOrElseAsync<E>(_err: () => Promise<E>): AsyncResult<T, E> {
+		return new AsyncResult(Promise.resolve(Ok(this._value)));
+	}
+
+	public and<U>(other: Option<U>): Option<U> {
+		return other;
+	}
+
+	public andThen<U>(f: (value: T) => Option<U>): Option<U> {
+		return f(this._value);
+	}
+
+	public andThenAsync<U>(f: (value: T) => Promise<Option<U>> | AsyncOption<U>): AsyncOption<U> {
+		return new AsyncOption(f(this._value));
+	}
+
+	public filter(predicate: (value: T) => boolean): Option<T> {
+		if (predicate(this._value)) {
+			return this as unknown as Option<T>;
 		}
-		return None;
+		return None as unknown as Option<T>;
 	}
 
-	// Deprecated
+	public filterAsync(predicate: (value: T) => Promise<boolean>): AsyncOption<T> {
+		return new AsyncOption(
+			predicate(this._value).then((result) => (result ? this : None) as unknown as Option<T>),
+		);
+	}
 
-	/**
-	 * Returns the contained `Some` value, if it exists.
-	 *
-	 * @deprecated Use `unwrap()` instead.
-	 */
-	public value(): T | undefined {
-		return this._some ? (this._value as T) : undefined;
+	public or<U>(_other: Option<U>): Option<T | U> {
+		return this as unknown as Option<T | U>;
+	}
+
+	public orElse<U>(_f: () => Option<U>): Option<T | U> {
+		return this as unknown as Option<T | U>;
+	}
+
+	public orElseAsync<U>(_f: () => Promise<Option<U>> | AsyncOption<U>): AsyncOption<T | U> {
+		return new AsyncOption(Promise.resolve(this as unknown as Option<T | U>));
+	}
+
+	public xor<U>(other: Option<U>): Option<T | U> {
+		if (other.isSome()) {
+			return None as unknown as Option<T | U>;
+		}
+		return this as unknown as Option<T | U>;
+	}
+
+	public flatten<U extends Option<any>>(this: Option<U>): Option<InferSome<U>> {
+		// Here this must be Some<U>, so we can assert it
+		// Option<U> input is required to make the union work
+		const self = this as Some<U>;
+		return self._value;
 	}
 }
 
-export interface Some<T> extends OptionImpl<T> {
-	[symbols.tag]: "Some";
-
-	unwrap(): T;
-	expect(message: string): T;
-
-	// Deprecated
-
-	/**
-	 * Returns the contained `Some` value, if it exists.
-	 *
-	 * @deprecated Use `unwrap()` instead.
-	 */
-	value(): T;
+export interface Some<T> extends SomeImpl<T> {
+	(value: T): Some<T>;
+	prototype: SomeImpl<T>;
 }
 
-/**
- * Some value of type `T`.
- */
 export function Some<T>(value: T): Some<T> {
-	return new OptionImpl(true, value) as Some<T>;
+	return new SomeImpl(value) as Some<T>;
 }
+Some.prototype = SomeImpl.prototype;
 
-export interface None<T = never> extends OptionImpl<T> {
-	[symbols.tag]: "None";
-
-	unwrap(): null;
-	expect(message: string): never;
-
-	// Deprecated
-
-	/**
-	 * Returns the contained `Some` value, if it exists.
-	 *
-	 * @deprecated Use `unwrap()` instead.
-	 */
-	value(): undefined;
-}
-
-/**
- * No value.
- */
-export const None = new OptionImpl(false, null) as None;
-
-/**
- * `Option` represents an optional value: every `Option` is either `Some` and contains a value, or `None`, and does not.
- */
-export type Option<T> = Some<T> | None<T>;
-
-// deno-lint-ignore no-namespace
-export namespace Option {
-	/**
-	 * Creates an `Option` from a nullish value.
-	 */
-	export function fromNullish<T>(value: T | undefined | null): Option<T> {
-		return value == null ? None : Some(value);
+class NoneImpl<T = unknown> implements OptionMethods<T> {
+	public get [Symbol.toStringTag](): "None" {
+		return "None";
 	}
 
-	/**
-	 * @deprecated Use `Option.fromNullish()` instead.
-	 */
-	export const from = fromNullish;
+	public toJSON(): null {
+		return null;
+	}
+
+	public toString(): "None" {
+		return "None";
+	}
+
+	public [nodejsUtilInspectCustom](): string {
+		return this.toString();
+	}
+
+	public match<A, B>(pattern: OptionMatch<T, A, B>): A | B {
+		return pattern.None();
+	}
+
+	public matchAsync<A, B>(pattern: OptionMatchAsync<T, A, B>): Promise<A | B> {
+		return pattern.None();
+	}
+
+	public isSome(): this is Some<T> {
+		return false;
+	}
+
+	public isSomeAnd(_predicate: (value: T) => boolean): this is Some<T> {
+		return false;
+	}
+
+	public isNone(): this is None<T> {
+		return true;
+	}
+
+	public expect(message: string): T {
+		throw new Panic(message);
+	}
+
+	public unwrapOr<U>(defaultValue: U): T | U {
+		return defaultValue;
+	}
+
+	public unwrapOrElse<U>(defaultValue: () => U): T | U {
+		return defaultValue();
+	}
+
+	public unwrapOrElseAsync<U>(defaultValue: () => Promise<U>): Promise<T | U> {
+		return defaultValue();
+	}
+
+	public map<U>(_f: (value: T) => U): Option<U> {
+		return this as unknown as Option<U>;
+	}
+
+	public mapAsync<U>(_f: (value: T) => Promise<U>): AsyncOption<U> {
+		return new AsyncOption(Promise.resolve(this as unknown as Option<U>));
+	}
+
+	public inspect(_f: (value: T) => void): this {
+		return this;
+	}
+
+	public inspectAsync(_f: (value: T) => Promise<void>): AsyncOption<T> {
+		return new AsyncOption(Promise.resolve(this as unknown as Option<T>));
+	}
+
+	public mapOr<A, B>(defaultValue: A, _f: (value: T) => B): A | B {
+		return defaultValue;
+	}
+
+	public mapOrAsync<A, B>(defaultValue: A, _f: (value: T) => Promise<B>): Promise<A | B> {
+		return Promise.resolve(defaultValue);
+	}
+
+	public mapOrElse<A, B>(defaultValue: () => A, _f: (value: T) => B): A | B {
+		return defaultValue();
+	}
+
+	public mapOrElseAsync<A, B>(
+		defaultValue: () => Promise<A>,
+		_f: (value: T) => Promise<B>,
+	): Promise<A | B> {
+		return defaultValue();
+	}
+
+	public okOr<E>(err: E): Result<T, E> {
+		return Err(err);
+	}
+
+	public okOrElse<E>(err: () => E): Result<T, E> {
+		return Err(err());
+	}
+
+	public okOrElseAsync<E>(err: () => Promise<E>): AsyncResult<T, E> {
+		return new AsyncResult(err().then((e) => Err(e)));
+	}
+
+	public and<U>(_other: Option<U>): Option<U> {
+		return this as unknown as Option<U>;
+	}
+
+	public andThen<U>(_f: (value: T) => Option<U>): Option<U> {
+		return this as unknown as Option<U>;
+	}
+
+	public andThenAsync<U>(_f: (value: T) => Promise<Option<U>> | AsyncOption<U>): AsyncOption<U> {
+		return new AsyncOption(Promise.resolve(this as unknown as Option<U>));
+	}
+
+	public filter(_predicate: (value: T) => boolean): Option<T> {
+		return this as unknown as Option<T>;
+	}
+
+	public filterAsync(_predicate: (value: T) => Promise<boolean>): AsyncOption<T> {
+		return new AsyncOption(Promise.resolve(this as unknown as Option<T>));
+	}
+
+	public or<U>(other: Option<U>): Option<T | U> {
+		return other as Option<T | U>;
+	}
+
+	public orElse<U>(_f: () => Option<U>): Option<T | U> {
+		return this as unknown as Option<T | U>;
+	}
+
+	public orElseAsync<U>(_f: () => Promise<Option<U>> | AsyncOption<U>): AsyncOption<T | U> {
+		return new AsyncOption(Promise.resolve(this as unknown as Option<T | U>));
+	}
+
+	public xor<U>(other: Option<U>): Option<T | U> {
+		return other as Option<T | U>;
+	}
+
+	public flatten<U extends Option<any>>(this: Option<U>): Option<InferSome<U>> {
+		return this as unknown as Option<InferSome<U>>;
+	}
 }
+
+export interface None<T = unknown> extends NoneImpl<T> {
+	(value: T): None<T>;
+	prototype: NoneImpl<T>;
+}
+
+export const None = new NoneImpl() as None;
+None.prototype = NoneImpl.prototype;
+
+export type Option<T> = Some<T> | None<T>;

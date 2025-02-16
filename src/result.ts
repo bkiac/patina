@@ -1239,7 +1239,7 @@ class ErrImpl<E, T> implements ResultMethods<T, E> {
 	public flatten<R extends Result<any, any>>(
 		this: Result<R, E>,
 	): Result<InferOk<R>, InferErr<R> | E> {
-		return this as Result<InferOk<R>, InferErr<R> | E>;
+		return this as unknown as Result<InferOk<R>, InferErr<R> | E>;
 	}
 
 	// Deprecated

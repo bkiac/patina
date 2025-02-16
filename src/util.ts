@@ -4,7 +4,7 @@
  */
 
 import { Err, Ok, type Result } from "./result.ts";
-import { type Option, OptionImpl } from "./option.ts";
+import { None, type Option, Some } from "./option.ts";
 import { AsyncResult } from "./async_result.ts";
 import { AsyncOption } from "./async_option.ts";
 
@@ -17,6 +17,11 @@ export type InferOk<T> = T extends Ok<infer O, any> ? O : never;
  * Infers the `Err` type from a `Result`.
  */
 export type InferErr<T> = T extends Err<infer E, any> ? E : never;
+
+/**
+ * Infers the `Some` type from an `Option`.
+ */
+export type InferSome<T> = T extends Some<infer S> ? S : never;
 
 /**
  * Extracts the `Ok` type from a `Result`.
@@ -50,7 +55,7 @@ export function isAsyncResult<T, E>(value: unknown): value is AsyncResult<T, E> 
  * Checks if a value is an `Option`.
  */
 export function isOption<T>(value: unknown): value is Option<T> {
-	return value instanceof OptionImpl;
+	return value instanceof Some || value instanceof None;
 }
 
 /**
