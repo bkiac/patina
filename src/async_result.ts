@@ -847,27 +847,4 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	public async unwrapOrElseAsync<U>(defaultValue: (error: E) => Promise<U>): Promise<T | U> {
 		return (await this).unwrapOrElseAsync(defaultValue);
 	}
-
-	// Deprecated
-
-	/**
-	 * @deprecated You can yield the `Result` directly: `yield* Ok(1)` instead of `yield* Ok(1).try()`.
-	 */
-	public async *try(): AsyncGenerator<Err<E, never>, T> {
-		return yield* this[Symbol.asyncIterator]();
-	}
-
-	/**
-	 * @deprecated - Use `unwrap()` instead.
-	 */
-	async value(): Promise<T | undefined> {
-		return (await this).value();
-	}
-
-	/**
-	 * @deprecated - Use `unwrapErr()` instead.
-	 */
-	async error(): Promise<E | undefined> {
-		return (await this).error();
-	}
 }

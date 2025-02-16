@@ -834,27 +834,6 @@ export interface ResultMethods<T, E> {
 	 * ```
 	 */
 	flatten<R extends Result<any, any>>(this: Result<R, E>): Result<InferOk<R>, InferErr<R> | E>;
-
-	// Deprecated
-
-	/**
-	 * @deprecated You can yield the `Result` directly: `yield* Ok(1)` instead of `yield* Ok(1).try()`.
-	 */
-	try(): Generator<Err<E, never>, T>;
-
-	/**
-	 * Returns the contained value, if it exists.
-	 *
-	 * @deprecated Use `unwrap()` instead.
-	 */
-	value(): T | undefined;
-
-	/**
-	 * Returns the contained error, if it exists.
-	 *
-	 * @deprecated Use `unwrapErr()` instead.
-	 */
-	error(): E | undefined;
 }
 
 class OkImpl<T, E> implements ResultMethods<T, E> {
@@ -1033,20 +1012,6 @@ class OkImpl<T, E> implements ResultMethods<T, E> {
 
 	public unwrap(): T {
 		return this._value;
-	}
-
-	// Deprecated
-
-	public try(): Generator<Err<E, never>, T> {
-		return this[Symbol.iterator]();
-	}
-
-	public value(): T {
-		return this._value;
-	}
-
-	public error(): undefined {
-		return undefined;
 	}
 }
 
@@ -1241,20 +1206,6 @@ class ErrImpl<E, T> implements ResultMethods<T, E> {
 	): Result<InferOk<R>, InferErr<R> | E> {
 		return this as unknown as Result<InferOk<R>, InferErr<R> | E>;
 	}
-
-	// Deprecated
-
-	public try(): Generator<Err<E, never>, T> {
-		return this[Symbol.iterator]();
-	}
-
-	public value(): undefined {
-		return undefined;
-	}
-
-	public error(): E {
-		return this._value;
-	}
 }
 
 export interface Err<E, T = unknown> extends ErrImpl<E, T> {
@@ -1387,9 +1338,4 @@ export namespace Result {
 		}
 		return new AsyncResult(safe());
 	}
-
-	/**
-	 * @deprecated Use `Result.fromThrowable()` instead.
-	 */
-	export const from = fromThrowable;
 }
