@@ -503,36 +503,6 @@ export interface ResultMethods<T, E> {
 	expect(message: string): T;
 
 	/**
-	 * Returns the contained `Ok` value, if exists, otherwise returns `null`.
-	 *
-	 * Because this function may return `null`, its use is generally discouraged.
-	 * Instead, prefer to:
-	 * - Use pattern matching with `match()` and handle the `Err` case explicitly
-	 * - Use `unwrapOr()`, `unwrapOrElse()`, or similar methods
-	 *
-	 * Type is narrowed to `T` if the result is already checked to be `Ok`.
-	 *
-	 * @returns The contained value, if exists, otherwise `null`.
-	 *
-	 * @example
-	 * ```typescript
-	 * const x = Ok(2)
-	 * assertEquals(x.unwrap(), 2)
-	 *
-	 * const y = Err("emergency failure")
-	 * assertEquals(y.unwrap(), null)
-	 *
-	 * const z = Result.fromThrowable(...) // Result<T, E>
-	 * if (z.isOk()) {
-	 *     const a = z.unwrap() // `a` has type `T`
-	 * } else {
-	 *     const b = z.unwrap() // `b` has type `null`
-	 * }
-	 * ```
-	 */
-	unwrapUnchecked(): T | null;
-
-	/**
 	 * Returns the contained `Err` value.
 	 *
 	 * Because this function may throw, its use is generally discouraged. Instead, prefer to:
@@ -550,36 +520,6 @@ export interface ResultMethods<T, E> {
 	 * ```
 	 */
 	expectErr(message: string): E;
-
-	/**
-	 * Returns the contained `Err` value, if exists, otherwise returns `null`.
-	 *
-	 * Because this function may return `null`, its use is generally discouraged.
-	 * Instead, prefer to:
-	 * - Use pattern matching with `match()` and handle the `Ok` case explicitly
-	 * - Use similar methods that handle both cases
-	 *
-	 * Type is narrowed to `E` if the result is already checked to be `Err`.
-	 *
-	 * @returns The contained error value, if exists, otherwise `null`.
-	 *
-	 * @example
-	 * ```typescript
-	 * const x: Result<number, string> = Ok(2);
-	 * assertEquals(x.unwrapErrUnchecked(), null);
-	 *
-	 * const y: Result<number, string> = Err("emergency failure");
-	 * assertEquals(y.unwrapErrUnchecked(), "emergency failure");
-	 *
-	 * const z = Result.fromThrowable(...); // Result<T, E>
-	 * if (z.isErr()) {
-	 *     const e = z.unwrapErrUnchecked() // `e` has type `E`
-	 * } else {
-	 *     const u = z.unwrapErr() // `u` has type `null`
-	 * }
-	 * ```
-	 */
-	unwrapErrUnchecked(): E | null;
 
 	/**
 	 * Returns `other` if the result is `Ok`, otherwise returns `this` (as `Err`).
@@ -836,7 +776,7 @@ export interface ResultMethods<T, E> {
 	flatten<R extends Result<any, any>>(this: Result<R, E>): Result<InferOk<R>, InferErr<R> | E>;
 }
 
-class OkImpl<T, E> implements ResultMethods<T, E> {
+export class OkImpl<T, E> implements ResultMethods<T, E> {
 	private readonly _value: T;
 
 	public constructor(value: T) {
@@ -952,16 +892,8 @@ class OkImpl<T, E> implements ResultMethods<T, E> {
 		return this._value;
 	}
 
-	public unwrapUnchecked(): T {
-		return this._value;
-	}
-
 	public expectErr(_message: string): never {
 		throw new Panic(`${_message}: ${this._value}`, { cause: this._value });
-	}
-
-	public unwrapErrUnchecked(): null {
-		return null;
 	}
 
 	public and<U, F>(other: Result<U, F>): Result<U, E | F> {
@@ -1017,15 +949,13 @@ class OkImpl<T, E> implements ResultMethods<T, E> {
 
 export interface Ok<T, E = unknown> extends OkImpl<T, E> {
 	(value: T): Ok<T, E>;
-	prototype: OkImpl<T, E>;
 }
 
 export function Ok<T, E = unknown>(value: T): Ok<T, E> {
 	return new OkImpl(value) as Ok<T, E>;
 }
-Ok.prototype = OkImpl.prototype;
 
-class ErrImpl<E, T> implements ResultMethods<T, E> {
+export class ErrImpl<E, T> implements ResultMethods<T, E> {
 	private readonly _value: E;
 
 	public constructor(value: E) {
@@ -1145,14 +1075,6 @@ class ErrImpl<E, T> implements ResultMethods<T, E> {
 		throw new Panic(`${message}: ${this._value}`, { cause: this._value });
 	}
 
-	public unwrapUnchecked(): null {
-		return null;
-	}
-
-	public unwrapErrUnchecked(): E {
-		return this._value;
-	}
-
 	public expectErr(_message: string): E {
 		return this._value;
 	}
@@ -1185,20 +1107,20 @@ class ErrImpl<E, T> implements ResultMethods<T, E> {
 		return new AsyncResult(f(this._value) as unknown as Promise<Result<T | U, F>>);
 	}
 
-	public unwrapOr<U>(_defaultValue: U): T | U {
-		return _defaultValue;
+	public unwrapOr<U>(defaultValue: U): T | U {
+		return defaultValue;
 	}
 
-	public unwrapOrElse<U>(_defaultValue: (error: E) => U): U {
-		return _defaultValue(this._value);
+	public unwrapOrElse<U>(defaultValue: (error: E) => U): U {
+		return defaultValue(this._value);
 	}
 
 	public unwrapErr(): E {
 		return this._value;
 	}
 
-	public unwrapOrElseAsync<U>(_defaultValue: (error: E) => Promise<U>): Promise<U> {
-		return _defaultValue(this._value);
+	public unwrapOrElseAsync<U>(defaultValue: (error: E) => Promise<U>): Promise<U> {
+		return defaultValue(this._value);
 	}
 
 	public flatten<R extends Result<any, any>>(
@@ -1210,13 +1132,11 @@ class ErrImpl<E, T> implements ResultMethods<T, E> {
 
 export interface Err<E, T = unknown> extends ErrImpl<E, T> {
 	(value: E): Err<E, T>;
-	prototype: ErrImpl<E, T>;
 }
 
 export function Err<E, T = unknown>(value: E): Err<E, T> {
 	return new ErrImpl(value) as Err<E, T>;
 }
-Err.prototype = ErrImpl.prototype;
 
 /**
  * `Result` is a type that represents either success (`Ok`) or failure (`Err`).

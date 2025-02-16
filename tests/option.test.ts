@@ -19,8 +19,6 @@ describe("core", () => {
 		const option = Some(42);
 		expect(option.isSome()).toEqual(true);
 		expect(option.isNone()).toEqual(false);
-		expect(option.value()).toEqual(42);
-		expectTypeOf(option.value).toEqualTypeOf<() => number>();
 		expectTypeOf(option.unwrap).toEqualTypeOf<() => number>();
 	});
 
@@ -28,30 +26,20 @@ describe("core", () => {
 		const option = None;
 		expect(option.isSome()).toEqual(false);
 		expect(option.isNone()).toEqual(true);
-		expectTypeOf(option.value).toEqualTypeOf<() => undefined>();
-		expectTypeOf(option.unwrap).toEqualTypeOf<() => null>();
 		expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>();
 	});
 
 	it("works with discriminated union", () => {
 		const option = TestSome(42);
-		expectTypeOf(option.value()).toEqualTypeOf<number | undefined>();
 		if (option.isSome()) {
-			expectTypeOf(option.value).toEqualTypeOf<() => number>();
 			expectTypeOf(option.unwrap).toEqualTypeOf<() => number>();
 			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => number>();
 		} else {
-			expectTypeOf(option.value).toEqualTypeOf<() => undefined>();
-			expectTypeOf(option.unwrap).toEqualTypeOf<() => null>();
 			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>();
 		}
-
 		if (option.isNone()) {
-			expectTypeOf(option.value).toEqualTypeOf<() => undefined>();
-			expectTypeOf(option.unwrap).toEqualTypeOf<() => null>();
 			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>();
 		} else {
-			expectTypeOf(option.value).toEqualTypeOf<() => number>();
 			expectTypeOf(option.unwrap).toEqualTypeOf<() => number>();
 			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => number>();
 		}
@@ -61,36 +49,36 @@ describe("core", () => {
 describe("okOr", () => {
 	it("returns the value when called on a Some option", () => {
 		const option = TestSome(42);
-		expect(option.okOr("error").unwrapUnchecked()).toEqual(42);
+		expect(option.okOr("error").expect("ok")).toEqual(42);
 	});
 
 	it("returns the error value when called on a None option", () => {
 		const option = TestNone<string>();
-		expect(option.okOr("error").unwrapErrUnchecked()).toEqual("error");
+		expect(option.okOr("error").expectErr("err")).toEqual("error");
 	});
 });
 
 describe("okOrElse", () => {
 	it("returns the value when called on a Some option", () => {
 		const option = TestSome(42);
-		expect(option.okOrElse(() => "error").unwrapUnchecked()).toEqual(42);
+		expect(option.okOrElse(() => "error").expect("ok")).toEqual(42);
 	});
 
 	it("returns the error value when called on a None option", () => {
 		const option = TestNone<string>();
-		expect(option.okOrElse(() => "error").unwrapErrUnchecked()).toEqual("error");
+		expect(option.okOrElse(() => "error").expectErr("err")).toEqual("error");
 	});
 });
 
 describe("okOrElseAsync", () => {
 	it("returns the value when called on a Some option", async () => {
 		const option = TestSome(42);
-		await expect(option.okOrElseAsync(async () => "error").unwrap()).resolves.toEqual(42);
+		await expect(option.okOrElseAsync(async () => "error").expect("ok")).resolves.toEqual(42);
 	});
 
 	it("returns the error value when called on a None option", async () => {
 		const option = TestNone<string>();
-		await expect(option.okOrElseAsync(async () => "error").unwrapErr()).resolves.toEqual(
+		await expect(option.okOrElseAsync(async () => "error").expectErr("err")).resolves.toEqual(
 			"error",
 		);
 	});
@@ -395,12 +383,12 @@ describe("orElse", () => {
 describe("orElseAsync", () => {
 	it("returns the original option for a Some option", async () => {
 		const a = TestSome(1);
-		await expect(a.orElseAsync(async () => Some(2)).unwrap()).resolves.toEqual(1);
+		await expect(a.orElseAsync(async () => Some(2)).expect("ok")).resolves.toEqual(1);
 	});
 
 	it("returns the result of the function for a None option", async () => {
 		const a = TestNone<string>();
-		await expect(a.orElseAsync(async () => Some(2)).unwrap()).resolves.toEqual(2);
+		await expect(a.orElseAsync(async () => Some(2)).expect("ok")).resolves.toEqual(2);
 	});
 
 	it("can chain multiple async operations", async () => {
@@ -409,7 +397,7 @@ describe("orElseAsync", () => {
 			a
 				.orElseAsync(async () => Some(1))
 				.orElseAsync(async () => Some(2))
-				.unwrap(),
+				.expect("ok"),
 		).resolves.toEqual(1);
 	});
 });
@@ -417,12 +405,12 @@ describe("orElseAsync", () => {
 describe("unwrap", () => {
 	it("returns the value when called on a Some option", () => {
 		const option = TestSome(42);
-		expect(option.unwrap()).toEqual(42);
+		expect(option.expect("ok")).toEqual(42);
 	});
 
 	it("returns null when called on a None option", () => {
 		const option = TestNone<string>();
-		expect(option.unwrap()).toEqual(null);
+		expect(option.expect("ok")).toEqual(null);
 	});
 });
 

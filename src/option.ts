@@ -716,7 +716,7 @@ interface OptionMethods<T> {
 	flatten<U>(this: Option<Option<U>>): Option<U>;
 }
 
-class SomeImpl<T> implements OptionMethods<T> {
+export class SomeImpl<T> implements OptionMethods<T> {
 	private readonly _value: T;
 
 	public constructor(value: T) {
@@ -895,7 +895,7 @@ class SomeImpl<T> implements OptionMethods<T> {
 	}
 
 	public flatten<U extends Option<any>>(this: Option<U>): Option<InferSome<U>> {
-		// Here this must be Some<U>, so we can assert it
+		// this must be Some<U>, so we can assert it
 		// Option<U> input is required to make the union work
 		const self = this as Some<U>;
 		return self._value;
@@ -904,15 +904,13 @@ class SomeImpl<T> implements OptionMethods<T> {
 
 export interface Some<T> extends SomeImpl<T> {
 	(value: T): Some<T>;
-	prototype: SomeImpl<T>;
 }
 
 export function Some<T>(value: T): Some<T> {
 	return new SomeImpl(value) as Some<T>;
 }
-Some.prototype = SomeImpl.prototype;
 
-class NoneImpl<T = unknown> implements OptionMethods<T> {
+export class NoneImpl<T = unknown> implements OptionMethods<T> {
 	public get [Symbol.toStringTag](): "None" {
 		return "None";
 	}
@@ -949,7 +947,7 @@ class NoneImpl<T = unknown> implements OptionMethods<T> {
 		return true;
 	}
 
-	public expect(message: string): T {
+	public expect(message: string): never {
 		throw new Panic(message);
 	}
 
@@ -1055,10 +1053,18 @@ class NoneImpl<T = unknown> implements OptionMethods<T> {
 
 export interface None<T = unknown> extends NoneImpl<T> {
 	(value: T): None<T>;
-	prototype: NoneImpl<T>;
 }
 
-export const None = new NoneImpl() as None;
-None.prototype = NoneImpl.prototype;
+export const None: None<never> = new NoneImpl() as None<never>;
 
 export type Option<T> = Some<T> | None<T>;
+
+// deno-lint-ignore no-namespace
+export namespace Option {
+	export function fromNullish<T>(value: T | null | undefined): Option<T> {
+		if (value == null) {
+			return None as unknown as Option<T>;
+		}
+		return Some(value) as Option<T>;
+	}
+}

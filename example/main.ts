@@ -68,11 +68,11 @@ const getAverageGrade = asyncFn(async (studentId: string) => {
 		});
 
 	if (grades.isErr()) {
-		return Err(grades.unwrapErrUnchecked());
+		return Err(grades.unwrapErr());
 	}
 
 	// Safe to unwrap because we checked for error
-	const value = grades.unwrapUnchecked();
+	const value = grades.unwrap();
 	return divide(
 		value.reduce((a, b) => a + b, 0),
 		value.length,

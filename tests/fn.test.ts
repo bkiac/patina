@@ -15,13 +15,13 @@ describe("asyncFn", () => {
 	it("returns Ok result when provided async function does not throw", async () => {
 		const wrappedFn = asyncFn(async () => Promise.resolve(Ok(42)));
 		const result = await wrappedFn();
-		expect(result.unwrapUnchecked()).toEqual(42);
+		expect(result.expect("ok")).toEqual(42);
 	});
 
 	it("returns Err result when provided async function returns Err", async () => {
 		const wrappedFn = asyncFn(async () => Promise.resolve(Err("rekt")));
 		const result = await wrappedFn();
-		expect(result.unwrapErrUnchecked()).toEqual("rekt");
+		expect(result.expectErr("err")).toEqual("rekt");
 	});
 
 	describe("types", () => {

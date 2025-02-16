@@ -18,13 +18,13 @@ describe("okOr", () => {
 	it("returns the option when Some", async () => {
 		const option = promiseSome(42);
 		const err = "error";
-		await expect(option.okOr(err).unwrap()).resolves.toEqual(42);
+		await expect(option.okOr(err).expect("ok")).resolves.toEqual(42);
 	});
 
 	it("returns the error when None", async () => {
 		const option = promiseNone();
 		const err = "error";
-		await expect(option.okOr(err).unwrapErr()).resolves.toEqual(err);
+		await expect(option.okOr(err).expectErr("err")).resolves.toEqual(err);
 	});
 });
 
@@ -32,13 +32,13 @@ describe("okOrElse", () => {
 	it("returns the option when Some", async () => {
 		const option = promiseSome(42);
 		const err = "error";
-		await expect(option.okOrElse(() => err).unwrap()).resolves.toEqual(42);
+		await expect(option.okOrElse(() => err).expect("ok")).resolves.toEqual(42);
 	});
 
 	it("returns the error when None", async () => {
 		const option = promiseNone();
 		const err = "error";
-		await expect(option.okOrElse(() => err).unwrapErr()).resolves.toEqual(err);
+		await expect(option.okOrElse(() => err).expectErr("err")).resolves.toEqual(err);
 	});
 });
 
@@ -46,51 +46,50 @@ describe("and", () => {
 	it("returns the other option when Some and None", async () => {
 		const a = promiseSome(2);
 		const b = promiseNone();
-		await expect(a.and(b).unwrapOr(0)).resolves.toEqual(0);
+		await expect(a.and(b)).resolves.toEqual(None);
 	});
 
 	it("returns the other option when Some and Some", async () => {
 		const a = promiseSome(2);
 		const b = promiseSome("str");
-		await expect(a.and(b).unwrap()).resolves.toEqual("str");
+		await expect(a.and(b).expect("some")).resolves.toEqual("str");
 	});
 
 	it("returns None when None and Some", async () => {
 		const a = promiseNone();
 		const b = promiseSome("foo");
-		await expect(a.and(b).unwrapOr(0)).resolves.toEqual(0);
+		await expect(a.and(b)).resolves.toEqual(None);
 	});
 
 	it("returns None when None and None", async () => {
 		const a = promiseNone();
 		const b = promiseNone();
-		await expect(a.and(b).unwrapOr(0)).resolves.toEqual(0);
+		await expect(a.and(b)).resolves.toEqual(None);
 	});
 });
 
 describe("andThen", () => {
 	it("returns the mapped value for a Some option", async () => {
 		const a = promiseSome(0);
-		await expect(a.andThen((value) => Some(value + 1)).unwrap()).resolves.toEqual(1);
+		await expect(a.andThen((value) => Some(value + 1)).expect("some")).resolves.toEqual(1);
 	});
 
 	it("returns None for a None option", async () => {
 		const a = promiseNone();
-		await expect(a.andThen((value) => Some(value + 1)).unwrapOr(0)).resolves.toEqual(0);
+		await expect(a.andThen((value) => Some(value + 1))).resolves.toEqual(None);
 	});
 });
 
 describe("andThenAsync", () => {
 	it("returns the mapped value for a Some option", async () => {
 		const a = promiseSome(0);
-		await expect(a.andThenAsync(async (value) => Some(value + 1)).unwrap()).resolves.toEqual(1);
+		await expect(a.andThenAsync(async (value) => Some(value + 1)).expect("some")).resolves
+			.toEqual(1);
 	});
 
 	it("returns None for a None option", async () => {
 		const a = promiseNone();
-		await expect(a.andThenAsync(async (value) => Some(value + 1)).unwrapOr(0)).resolves.toEqual(
-			0,
-		);
+		await expect(a.andThenAsync(async (value) => Some(value + 1))).resolves.toEqual(None);
 	});
 
 	it("can chain multiple async operations", async () => {
@@ -99,7 +98,7 @@ describe("andThenAsync", () => {
 			a
 				.andThenAsync(async (value) => Some(value + 1))
 				.andThenAsync(async (value) => Some(value * 2))
-				.unwrap(),
+				.expect("some"),
 		).resolves.toEqual(4);
 	});
 });
@@ -119,7 +118,7 @@ describe("expect", () => {
 describe("filter", () => {
 	it("returns the option when the predicate returns true", async () => {
 		const option = promiseSome(42);
-		await expect(option.filter((value) => value === 42).unwrap()).resolves.toEqual(42);
+		await expect(option.filter((value) => value === 42).expect("some")).resolves.toEqual(42);
 	});
 
 	it("returns None when the predicate returns false", async () => {
@@ -131,9 +130,8 @@ describe("filter", () => {
 describe("filterAsync", () => {
 	it("returns the option when the predicate returns true", async () => {
 		const option = promiseSome(42);
-		await expect(option.filterAsync(async (value) => value === 42).unwrap()).resolves.toEqual(
-			42,
-		);
+		await expect(option.filterAsync(async (value) => value === 42).expect("some")).resolves
+			.toEqual(42);
 	});
 
 	it("returns None when the predicate returns false", async () => {
@@ -303,12 +301,12 @@ describe("orElse", () => {
 describe("orElseAsync", () => {
 	it("returns the result for a Some option", async () => {
 		const a = promiseSome(1);
-		await expect(a.orElseAsync(async () => Some(2)).unwrap()).resolves.toEqual(1);
+		await expect(a.orElseAsync(async () => Some(2)).expect("some")).resolves.toEqual(1);
 	});
 
 	it("returns the mapped value for a None option", async () => {
 		const a = promiseNone();
-		await expect(a.orElseAsync(async () => Some(2)).unwrap()).resolves.toEqual(2);
+		await expect(a.orElseAsync(async () => Some(2)).expect("some")).resolves.toEqual(2);
 	});
 
 	it("can chain multiple async operations", async () => {
@@ -317,7 +315,7 @@ describe("orElseAsync", () => {
 			a
 				.orElseAsync(async () => Some(1))
 				.orElseAsync(async () => Some(2))
-				.unwrap(),
+				.expect("some"),
 		).resolves.toEqual(1);
 	});
 });
@@ -325,12 +323,12 @@ describe("orElseAsync", () => {
 describe("unwrap", () => {
 	it("returns the value when called on a Some option", async () => {
 		const option = promiseSome(42);
-		await expect(option.unwrap()).resolves.toEqual(42);
+		await expect(option.expect("some")).resolves.toEqual(42);
 	});
 
 	it("returns null when called on a None option", async () => {
 		const option = promiseNone();
-		await expect(option.unwrap()).resolves.toEqual(null);
+		await expect(option).resolves.toEqual(None);
 	});
 });
 

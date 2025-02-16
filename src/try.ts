@@ -43,7 +43,7 @@ import type { InferErr, InferOk } from "./util.ts";
 export function tryBlock<Y extends Err<any, never>, R extends Result<any, any>>(
 	scope: () => Generator<Y, R>,
 ): Result<InferOk<R>, InferErr<Y> | InferErr<R>> {
-	return scope().next().value;
+	return scope().next().value as Result<InferOk<R>, InferErr<Y> | InferErr<R>>;
 }
 
 /**
@@ -87,7 +87,7 @@ export function tryBlockAsync<Y extends Err<any, never>, R extends Result<any, a
 	const next = scope().next();
 	return new AsyncResult(
 		next
-			.then((result) => result.value)
+			.then((result) => result.value as Result<InferOk<R>, InferErr<Y> | InferErr<R>>)
 			.catch((error) => {
 				if (error instanceof Panic) {
 					throw error;

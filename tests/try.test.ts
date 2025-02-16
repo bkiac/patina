@@ -47,7 +47,7 @@ test("tryBlock", () => {
 		return Ok(x + y);
 	});
 	expectTypeOf(block).toEqualTypeOf<Result<number, string>>();
-	expect(block.unwrapUnchecked()).toEqual(2);
+	expect(block.expect("ok")).toEqual(2);
 
 	const block4 = tryBlock(function* () {
 		yield* Err("error");
@@ -68,7 +68,7 @@ test("tryBlock", () => {
 		return Ok(x + y);
 	});
 	expectTypeOf(block2).toEqualTypeOf<Result<number, string>>();
-	expect(block2.unwrapErrUnchecked()).toEqual("error");
+	expect(block2.expectErr("err")).toEqual("error");
 
 	const block3 = tryBlock(function* () {
 		const okx: Result<number, string> = Ok(1);
@@ -90,7 +90,7 @@ test("tryBlockAsync", async () => {
 		return Ok(x + y);
 	});
 	expectTypeOf(block5).toEqualTypeOf<AsyncResult<number, string>>();
-	await expect(block5.unwrap()).resolves.toEqual(2);
+	await expect(block5.expect("ok")).resolves.toEqual(2);
 
 	const block1 = tryBlockAsync(async function* () {
 		yield* Err("error");
@@ -111,7 +111,7 @@ test("tryBlockAsync", async () => {
 		return Ok(x + y);
 	});
 	expectTypeOf(block6).toEqualTypeOf<AsyncResult<number, string>>();
-	await expect(block6.unwrap()).resolves.toEqual(2);
+	await expect(block6.expect("ok")).resolves.toEqual(2);
 
 	const block7 = tryBlockAsync(async function* () {
 		const okx: AsyncResult<number, string> = AsyncOk(1);
@@ -121,7 +121,7 @@ test("tryBlockAsync", async () => {
 		return Ok(x + y);
 	});
 	expectTypeOf(block7).toEqualTypeOf<AsyncResult<number, string>>();
-	await expect(block7.unwrapErr()).resolves.toEqual("error");
+	await expect(block7.expectErr("err")).resolves.toEqual("error");
 
 	// Do not catch panic
 	const panic = new Panic();
