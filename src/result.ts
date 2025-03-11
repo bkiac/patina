@@ -978,7 +978,11 @@ export class ResultImpl<T, E> {
 	public flatten<R extends Result<any, any>>(
 		this: Result<R, E>,
 	): Result<InferOk<R>, InferErr<R> | E> {
-		return this as unknown as Result<InferOk<R>, InferErr<R> | E>;
+		if (this._ok) {
+			return this._value as Result<InferOk<R>, InferErr<R> | E>;
+		} else {
+			return this as unknown as Result<InferOk<R>, InferErr<R> | E>;
+		}
 	}
 
 	/**

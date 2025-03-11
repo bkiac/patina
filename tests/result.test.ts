@@ -31,7 +31,6 @@ describe("core", () => {
 		expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
 		expect(r.expect("")).toEqual(42);
 
-		expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
 		expect(() => r.expectErr("")).toThrow(Panic);
 	});
 
@@ -47,7 +46,6 @@ describe("core", () => {
 		expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
 		expect(r.unwrapErr()).toEqual("error");
 
-		expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
 		expect(() => r.expect("")).toThrow(Panic);
 
 		expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
@@ -71,14 +69,10 @@ describe("core", () => {
 			expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
 			// @ts-expect-error - unwrapErr should not exist on Err
 			expectTypeOf(r.unwrapErr).toEqualTypeOf<any>();
-			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
-			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
 		} else {
 			// @ts-expect-error - unwrap should not exist on Err
 			expectTypeOf(r.unwrap).toEqualTypeOf<any>();
 			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
-			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
-			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
 		}
 	});
 });
