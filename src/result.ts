@@ -513,7 +513,7 @@ export class ResultImpl<T, E> {
 	 */
 	public mapErrAsync<F>(f: (error: E) => Promise<F>): AsyncResult<T, F> {
 		if (this._ok) {
-			return this as unknown as AsyncResult<T, F>;
+			return new AsyncResult(Promise.resolve(this as unknown as Result<T, F>));
 		} else {
 			return new AsyncResult(f(this._value as E).then((error) => Err(error)));
 		}
@@ -788,9 +788,9 @@ export class ResultImpl<T, E> {
 		f: (value: T) => AsyncResult<U, F> | Promise<Result<U, F>>,
 	): AsyncResult<U, E | F> {
 		if (this._ok) {
-			return f(this._value as T) as AsyncResult<U, E | F>;
+			return new AsyncResult(f(this._value as T));
 		} else {
-			return this as unknown as AsyncResult<U, E | F>;
+			return new AsyncResult(Promise.resolve(this as unknown as Result<U, F>));
 		}
 	}
 
@@ -877,9 +877,9 @@ export class ResultImpl<T, E> {
 		f: (error: E) => AsyncResult<U, F> | Promise<Result<U, F>>,
 	): AsyncResult<T | U, F> {
 		if (this._ok) {
-			return this as unknown as AsyncResult<T | U, F>;
+			return new AsyncResult(Promise.resolve(this) as Promise<Result<T | U, F>>);
 		} else {
-			return f(this._value as E) as AsyncResult<T | U, F>;
+			return new AsyncResult(f(this._value as E));
 		}
 	}
 

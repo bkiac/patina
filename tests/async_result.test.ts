@@ -360,13 +360,13 @@ describe("orElse", () => {
 describe("orElseAsync", () => {
 	it("returns the result for an Ok result", async () => {
 		const a = TestOkPromise<number, string>(0);
-		await expect(a.orElseAsync(async () => Ok(1)).expect("ok")).resolves.toEqual(0);
+		await expect(a.orElseAsync(async () => Ok(1))).resolves.toEqual(Ok(0));
 	});
 
 	it("returns the mapped value for an Err result", async () => {
 		const a = TestErrPromise<string, string>("original");
-		await expect(a.orElseAsync(async () => Ok(1)).expect("ok")).resolves.toEqual(0);
-		await expect(a.orElseAsync(async () => Err(1)).expectErr("err")).resolves.toEqual(1);
+		await expect(a.orElseAsync(async () => Ok(0))).resolves.toEqual(Ok(0));
+		await expect(a.orElseAsync(async () => Err(0))).resolves.toEqual(Err(0));
 	});
 });
 
