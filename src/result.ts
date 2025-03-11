@@ -13,8 +13,6 @@ export type ResultMatchAsync<T, E, A, B> = {
 	Err: (error: E) => Promise<B>;
 };
 
-const nodejsUtilInspectCustom = Symbol.for("nodejs.util.inspect.custom");
-
 class ResultImpl<T, E> {
 	private readonly _ok: boolean;
 	private readonly _value: T | E;
@@ -48,6 +46,11 @@ class ResultImpl<T, E> {
 		return this.toString();
 	}
 
+	/**
+	 * Returns a generator that yields the contained value (if `Ok`) or an error (if `Err`).
+	 *
+	 * See `tryBlock()` and `tryBlockAsync()` for more information.
+	 */
 	public *[Symbol.iterator](): Generator<Err<E, never>, T> {
 		if (this._ok) {
 			return this._value as T;
@@ -60,276 +63,6 @@ class ResultImpl<T, E> {
 			return self as E;
 		}
 	}
-
-	public match<A, B>(pattern: ResultMatch<T, E, A, B>): A | B {
-		if (this._ok) {
-			return pattern.Ok(this._value as T);
-		} else {
-			return pattern.Err(this._value as E);
-		}
-	}
-
-	public matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A | B> {
-		if (this._ok) {
-			return pattern.Ok(this._value as T);
-		} else {
-			return pattern.Err(this._value as E);
-		}
-	}
-
-	public isOk(): this is Ok<T, E> {
-		return this._ok;
-	}
-
-	public isOkAnd(f: (value: T) => boolean): this is Ok<T, E> {
-		return this._ok && f(this._value as T);
-	}
-
-	public isErr(): this is Err<E, T> {
-		return !this._ok;
-	}
-
-	public isErrAnd(f: (error: E) => boolean): this is Err<E, T> {
-		return !this._ok && f(this._value as E);
-	}
-
-	public ok(): Option<T> {
-		if (this._ok) {
-			return Some(this.value as T);
-		} else {
-			return None;
-		}
-	}
-
-	public err(): Option<E> {
-		if (!this._ok) {
-			return Some(this._value as E);
-		} else {
-			return None;
-		}
-	}
-
-	public map<U>(f: (value: T) => U): Result<U, E> {
-		if (this._ok) {
-			return Ok(f(this._value as T));
-		} else {
-			return this as unknown as Result<U, E>;
-		}
-	}
-
-	public mapAsync<U>(f: (value: T) => Promise<U>): AsyncResult<U, E> {
-		if (this._ok) {
-			return new AsyncResult(f(this._value as T).then((value) => Ok(value)));
-		} else {
-			return new AsyncResult(Promise.resolve(this as unknown as Result<U, E>));
-		}
-	}
-
-	public mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B {
-		if (this._ok) {
-			return f(this._value as T);
-		} else {
-			return defaultValue;
-		}
-	}
-
-	public mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B> {
-		if (this._ok) {
-			return f(this._value as T);
-		} else {
-			return Promise.resolve(defaultValue);
-		}
-	}
-
-	public mapOrElse<A, B>(defaultValue: (error: E) => A, f: (value: T) => B): A | B {
-		if (this._ok) {
-			return f(this._value as T);
-		} else {
-			return defaultValue(this._value as E);
-		}
-	}
-
-	public mapOrElseAsync<A, B>(
-		defaultValue: (error: E) => Promise<A>,
-		f: (value: T) => Promise<B>,
-	): Promise<A | B> {
-		if (this._ok) {
-			return f(this._value as T);
-		} else {
-			return defaultValue(this._value as E);
-		}
-	}
-
-	public mapErr<F>(f: (error: E) => F): Result<T, F> {
-		if (this._ok) {
-			return this as unknown as Result<T, F>;
-		} else {
-			return Err(f(this._value as E));
-		}
-	}
-
-	public mapErrAsync<F>(f: (error: E) => Promise<F>): AsyncResult<T, F> {
-		if (this._ok) {
-			return this as unknown as AsyncResult<T, F>;
-		} else {
-			return new AsyncResult(f(this._value as E).then((error) => Err(error)));
-		}
-	}
-
-	public inspect(f: (value: T) => void): this {
-		if (this._ok) {
-			f(this._value as T);
-		}
-		return this;
-	}
-
-	public inspectAsync(f: (value: T) => Promise<void>): this {
-		if (this._ok) {
-			f(this._value as T);
-		}
-		return this;
-	}
-
-	public inspectErr(f: (error: E) => void): this {
-		if (!this._ok) {
-			f(this._value as E);
-		}
-		return this;
-	}
-
-	public inspectErrAsync(f: (error: E) => Promise<void>): this {
-		if (!this._ok) {
-			f(this._value as E);
-		}
-		return this;
-	}
-
-	public expect(message: string): T {
-		if (this._ok) {
-			return this._value as T;
-		} else {
-			throw new Panic(message, { cause: this._value });
-		}
-	}
-
-	public expectErr(message: string): E {
-		if (!this._ok) {
-			return this._value as E;
-		} else {
-			throw new Panic(message, { cause: this._value });
-		}
-	}
-
-	public and<U, F>(other: Result<U, F>): Result<U, E | F> {
-		if (this._ok) {
-			return other as Result<U, E | F>;
-		} else {
-			return this as unknown as Result<U, E | F>;
-		}
-	}
-
-	public andThen<U, F>(f: (value: T) => Result<U, F>): Result<U, E | F> {
-		if (this._ok) {
-			return f(this._value as T) as Result<U, E | F>;
-		} else {
-			return this as unknown as Result<U, E | F>;
-		}
-	}
-
-	public andThenAsync<U, F>(
-		f: (value: T) => AsyncResult<U, F> | Promise<Result<U, F>>,
-	): AsyncResult<U, E | F> {
-		if (this._ok) {
-			return f(this._value as T) as AsyncResult<U, E | F>;
-		} else {
-			return this as unknown as AsyncResult<U, E | F>;
-		}
-	}
-
-	public or<U, F>(other: Result<U, F>): Result<T | U, F> {
-		if (this._ok) {
-			return this as unknown as Result<T | U, F>;
-		} else {
-			return other as unknown as Result<T | U, F>;
-		}
-	}
-
-	public orElse<U, F>(f: (error: E) => Result<U, F>): Result<T | U, F> {
-		if (this._ok) {
-			return this as unknown as Result<T | U, F>;
-		} else {
-			return f(this._value as E) as Result<T | U, F>;
-		}
-	}
-
-	public orElseAsync<U, F>(
-		f: (error: E) => AsyncResult<U, F> | Promise<Result<U, F>>,
-	): AsyncResult<T | U, F> {
-		if (this._ok) {
-			return this as unknown as AsyncResult<T | U, F>;
-		} else {
-			return f(this._value as E) as AsyncResult<T | U, F>;
-		}
-	}
-
-	public unwrapOr<U>(defaultValue: U): T | U {
-		if (this._ok) {
-			return this._value as T;
-		} else {
-			return defaultValue;
-		}
-	}
-
-	public unwrapOrElse<U>(defaultValue: (error: E) => U): T | U {
-		if (this._ok) {
-			return this._value as T;
-		} else {
-			return defaultValue(this._value as E);
-		}
-	}
-
-	public flatten<R extends Result<any, any>>(
-		this: Result<R, E>,
-	): Result<InferOk<R>, InferErr<R> | E> {
-		return this as unknown as Result<InferOk<R>, InferErr<R> | E>;
-	}
-
-	public ["~unwrap"](): T {
-		if (this._ok) {
-			return this._value as T;
-		} else {
-			throw new Panic("Called `unwrap()` on an `Err` value", {
-				cause: this._value,
-			});
-		}
-	}
-
-	public ["~unwrapErr"](): E {
-		if (!this._ok) {
-			return this._value as E;
-		} else {
-			throw new Panic("Called `unwrapErr()` on an `Ok` value", {
-				cause: this._value,
-			});
-		}
-	}
-}
-
-export interface ResultMethods<T, E> {
-	get [Symbol.toStringTag](): "Ok" | "Err";
-
-	toJSON(): { Ok: T } | { Err: E };
-
-	toString(): `Ok(${string})` | `Err(${string})`;
-
-	[nodejsUtilInspectCustom](): string;
-
-	/**
-	 * Returns a generator that yields the contained value (if `Ok`) or an error (if `Err`).
-	 *
-	 * See `tryBlock()` and `tryBlockAsync()` for more information.
-	 */
-	[Symbol.iterator](): Generator<Err<E, never>, T>;
 
 	/**
 	 * Matches the result with two functions.
@@ -352,7 +85,13 @@ export interface ResultMethods<T, E> {
 	 * }), 5)
 	 * ```
 	 */
-	match<A, B>(pattern: ResultMatch<T, E, A, B>): A | B;
+	public match<A, B>(pattern: ResultMatch<T, E, A, B>): A | B {
+		if (this._ok) {
+			return pattern.Ok(this._value as T);
+		} else {
+			return pattern.Err(this._value as E);
+		}
+	}
 
 	/**
 	 * Matches the result with two async functions.
@@ -375,7 +114,13 @@ export interface ResultMethods<T, E> {
 	 * }), 5)
 	 * ```
 	 */
-	matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A | B>;
+	public matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A | B> {
+		if (this._ok) {
+			return pattern.Ok(this._value as T);
+		} else {
+			return pattern.Err(this._value as E);
+		}
+	}
 
 	/**
 	 * Returns `true` if the result is `Ok`.
@@ -403,7 +148,9 @@ export interface ResultMethods<T, E> {
 	 * }
 	 * ```
 	 */
-	isOk(): this is Ok<T, E>;
+	public isOk(): this is Ok<T, E> {
+		return this._ok;
+	}
 
 	/**
 	 * Returns `true` if the result is `Ok` and the value satisfies the predicate.
@@ -425,7 +172,9 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(x.isOkAnd((x) => x > 1), false);
 	 * ```
 	 */
-	isOkAnd(f: (value: T) => boolean): this is Ok<T, E>;
+	public isOkAnd(f: (value: T) => boolean): this is Ok<T, E> {
+		return this._ok && f(this._value as T);
+	}
 
 	/**
 	 * Returns `true` if the result is `Err`.
@@ -450,7 +199,9 @@ export interface ResultMethods<T, E> {
 	 * }
 	 * ```
 	 */
-	isErr(): this is Err<E, T>;
+	public isErr(): this is Err<E, T> {
+		return !this._ok;
+	}
 
 	/**
 	 * Returns `true` if the result is `Err` and the error satisfies the predicate.
@@ -472,7 +223,9 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(x.isErrAnd((e) => e.length > 3), false);
 	 * ```
 	 */
-	isErrAnd(f: (error: E) => boolean): this is Err<E, T>;
+	public isErrAnd(f: (error: E) => boolean): this is Err<E, T> {
+		return !this._ok && f(this._value as E);
+	}
 
 	/**
 	 * Converts from `Result<T, E>` to `Option<T>`, discarding the error if any.
@@ -488,7 +241,13 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(x.ok(), None);
 	 * ```
 	 */
-	ok(): Option<T>;
+	public ok(): Option<T> {
+		if (this._ok) {
+			return Some(this._value as T);
+		} else {
+			return None;
+		}
+	}
 
 	/**
 	 * Converts from `Result<T, E>` to `Option<E>`, discarding the success value if any.
@@ -504,7 +263,13 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(x.err(), Some("Nothing here"));
 	 * ```
 	 */
-	err(): Option<E>;
+	public err(): Option<E> {
+		if (!this._ok) {
+			return Some(this._value as E);
+		} else {
+			return None;
+		}
+	}
 
 	/**
 	 * Maps a `Result<T, E>` to `Result<U, E>` by applying a function to a contained `Ok` value,
@@ -537,7 +302,13 @@ export interface ResultMethods<T, E> {
 	 * }
 	 * ```
 	 */
-	map<U>(f: (value: T) => U): Result<U, E>;
+	public map<U>(f: (value: T) => U): Result<U, E> {
+		if (this._ok) {
+			return Ok(f(this._value as T));
+		} else {
+			return this as unknown as Result<U, E>;
+		}
+	}
 
 	/**
 	 * Maps a `Result<T, E>` to `AsyncResult<U, E>` by applying an async function to a contained `Ok` value,
@@ -570,7 +341,13 @@ export interface ResultMethods<T, E> {
 	 * }
 	 * ```
 	 */
-	mapAsync<U>(f: (value: T) => Promise<U>): AsyncResult<U, E>;
+	public mapAsync<U>(f: (value: T) => Promise<U>): AsyncResult<U, E> {
+		if (this._ok) {
+			return new AsyncResult(f(this._value as T).then((value) => Ok(value)));
+		} else {
+			return new AsyncResult(Promise.resolve(this as unknown as Result<U, E>));
+		}
+	}
 
 	/**
 	 * Returns the provided default (if `Err`), or applies a function to the contained value (if `Ok`).
@@ -588,7 +365,13 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(x.mapOr(42, (v) => v.length), 42)
 	 * ```
 	 */
-	mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B;
+	public mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B {
+		if (this._ok) {
+			return f(this._value as T);
+		} else {
+			return defaultValue;
+		}
+	}
 
 	/**
 	 * Returns the provided default (if `Err`), or applies a function to the contained value (if `Ok`).
@@ -606,7 +389,13 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(await x.mapOrAsync(42, async (v) => v.length), 42)
 	 * ```
 	 */
-	mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B>;
+	public mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B> {
+		if (this._ok) {
+			return f(this._value as T);
+		} else {
+			return Promise.resolve(defaultValue);
+		}
+	}
 
 	/**
 	 * Maps a `Result<T, E>` to `A | B` by applying fallback function `defaultValue` to a contained `Err` value,
@@ -629,7 +418,13 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(x.mapOrElse((e) => k * 2, (v) => v.length), 42);
 	 * ```
 	 */
-	mapOrElse<A, B>(defaultValue: (error: E) => A, f: (value: T) => B): A | B;
+	public mapOrElse<A, B>(defaultValue: (error: E) => A, f: (value: T) => B): A | B {
+		if (this._ok) {
+			return f(this._value as T);
+		} else {
+			return defaultValue(this._value as E);
+		}
+	}
 
 	/**
 	 * Maps a `Result<T, E>` to `Promise<A | B>` by applying fallback function `defaultValue` to a contained `Err` value,
@@ -652,10 +447,16 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(await x.mapOrElseAsync(async (e) => k * 2, async (v) => v.length), 42);
 	 * ```
 	 */
-	mapOrElseAsync<A, B>(
+	public mapOrElseAsync<A, B>(
 		defaultValue: (error: E) => Promise<A>,
 		f: (value: T) => Promise<B>,
-	): Promise<A | B>;
+	): Promise<A | B> {
+		if (this._ok) {
+			return f(this._value as T);
+		} else {
+			return defaultValue(this._value as E);
+		}
+	}
 
 	/**
 	 * Maps a `Result<T, E>` to `Result<T, F>` by applying a function to a contained `Err` value,
@@ -678,7 +479,13 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(x.mapErr(stringify), Err("error code: 13"));
 	 * ```
 	 */
-	mapErr<F>(f: (error: E) => F): Result<T, F>;
+	public mapErr<F>(f: (error: E) => F): Result<T, F> {
+		if (this._ok) {
+			return this as unknown as Result<T, F>;
+		} else {
+			return Err(f(this._value as E));
+		}
+	}
 
 	/**
 	 * Maps a `Result<T, E>` to `AsyncResult<T, F>` by applying an async function to a contained `Err` value,
@@ -701,7 +508,13 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(x.mapErrAsync(stringify), Err("error code: 13"));
 	 * ```
 	 */
-	mapErrAsync<F>(f: (error: E) => Promise<F>): AsyncResult<T, F>;
+	public mapErrAsync<F>(f: (error: E) => Promise<F>): AsyncResult<T, F> {
+		if (this._ok) {
+			return this as unknown as AsyncResult<T, F>;
+		} else {
+			return new AsyncResult(f(this._value as E).then((error) => Err(error)));
+		}
+	}
 
 	/**
 	 * Calls the provided function with the contained value (if `Ok`).
@@ -719,7 +532,12 @@ export interface ResultMethods<T, E> {
 	 *     .expect("failed to parse number");
 	 * ```
 	 */
-	inspect(f: (value: T) => void): this;
+	public inspect(f: (value: T) => void): this {
+		if (this._ok) {
+			f(this._value as T);
+		}
+		return this;
+	}
 
 	/**
 	 * Calls the provided async function with the contained value (if `Ok`).
@@ -737,7 +555,12 @@ export interface ResultMethods<T, E> {
 	 *     .expect("failed to parse number");
 	 * ```
 	 */
-	inspectAsync(f: (value: T) => Promise<void>): AsyncResult<T, E>;
+	public inspectAsync(f: (value: T) => Promise<void>): this {
+		if (this._ok) {
+			f(this._value as T);
+		}
+		return this;
+	}
 
 	/**
 	 * Calls the provided function with the contained error (if `Err`).
@@ -755,7 +578,12 @@ export interface ResultMethods<T, E> {
 	 *     .map((contents) => processContents(contents));
 	 * ```
 	 */
-	inspectErr(f: (error: E) => void): this;
+	public inspectErr(f: (error: E) => void): this {
+		if (!this._ok) {
+			f(this._value as E);
+		}
+		return this;
+	}
 
 	/**
 	 * Calls the provided function with the contained error (if `Err`).
@@ -772,7 +600,12 @@ export interface ResultMethods<T, E> {
 	 *     .map((contents) => processContents(contents));
 	 * ```
 	 */
-	inspectErrAsync(f: (error: E) => Promise<void>): AsyncResult<T, E>;
+	public inspectErrAsync(f: (error: E) => Promise<void>): this {
+		if (!this._ok) {
+			f(this._value as E);
+		}
+		return this;
+	}
 
 	/**
 	 * Returns the contained `Ok` value.
@@ -800,7 +633,13 @@ export interface ResultMethods<T, E> {
 	 * }).expect("config file should exist");
 	 * ```
 	 */
-	expect(message: string): T;
+	public expect(message: string): T {
+		if (this._ok) {
+			return this._value as T;
+		} else {
+			throw new Panic(message, { cause: this._value });
+		}
+	}
 
 	/**
 	 * Returns the contained `Err` value.
@@ -819,7 +658,13 @@ export interface ResultMethods<T, E> {
 	 * x.expectErr("Testing expectErr"); // throws Panic: Testing expectErr: 10
 	 * ```
 	 */
-	expectErr(message: string): E;
+	public expectErr(message: string): E {
+		if (!this._ok) {
+			return this._value as E;
+		} else {
+			throw new Panic(message, { cause: this._value });
+		}
+	}
 
 	/**
 	 * Returns `other` if the result is `Ok`, otherwise returns `this` (as `Err`).
@@ -846,7 +691,13 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(x.and(y), Ok("different result type"))
 	 * ```
 	 */
-	and<U, F>(other: Result<U, F>): Result<U, E | F>;
+	public and<U, F>(other: Result<U, F>): Result<U, E | F> {
+		if (this._ok) {
+			return other as Result<U, E | F>;
+		} else {
+			return this as unknown as Result<U, E | F>;
+		}
+	}
 
 	/**
 	 * Calls `f` if the result is `Ok`, otherwise returns `this` (as `Err`).
@@ -885,7 +736,13 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(shouldFail.isErr(), true)
 	 * ```
 	 */
-	andThen<U, F>(f: (value: T) => Result<U, F>): Result<U, E | F>;
+	public andThen<U, F>(f: (value: T) => Result<U, F>): Result<U, E | F> {
+		if (this._ok) {
+			return f(this._value as T) as Result<U, E | F>;
+		} else {
+			return this as unknown as Result<U, E | F>;
+		}
+	}
 
 	/**
 	 * Calls `f` if the result is `Ok`, otherwise returns `this` (as `Err`).
@@ -924,9 +781,15 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(shouldFail.isErr(), true)
 	 * ```
 	 */
-	andThenAsync<U, F>(
+	public andThenAsync<U, F>(
 		f: (value: T) => AsyncResult<U, F> | Promise<Result<U, F>>,
-	): AsyncResult<U, E | F>;
+	): AsyncResult<U, E | F> {
+		if (this._ok) {
+			return f(this._value as T) as AsyncResult<U, E | F>;
+		} else {
+			return this as unknown as AsyncResult<U, E | F>;
+		}
+	}
 
 	/**
 	 * Returns `other` if the result is `Err`, otherwise returns `this` (as `Ok`).
@@ -953,7 +816,13 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(x.or(y), Ok(2))
 	 * ```
 	 */
-	or<U, F>(other: Result<U, F>): Result<T | U, F>;
+	public or<U, F>(other: Result<U, F>): Result<T | U, F> {
+		if (this._ok) {
+			return this as unknown as Result<T | U, F>;
+		} else {
+			return other as unknown as Result<T | U, F>;
+		}
+	}
 
 	/**
 	 * Calls `f` if the result is `Err`, otherwise returns `this` (as `Ok`).
@@ -974,7 +843,13 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(Err(3).orElse(err).orElse(err), Err(3))
 	 * ```
 	 */
-	orElse<U, F>(f: (error: E) => Result<U, F>): Result<T | U, F>;
+	public orElse<U, F>(f: (error: E) => Result<U, F>): Result<T | U, F> {
+		if (this._ok) {
+			return this as unknown as Result<T | U, F>;
+		} else {
+			return f(this._value as E) as Result<T | U, F>;
+		}
+	}
 
 	/**
 	 * Calls `f` if the result is `Err`, otherwise returns `this` (as `Ok`).
@@ -995,9 +870,15 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(await Err(3).orElseAsync(err).orElseAsync(err), Err(3))
 	 * ```
 	 */
-	orElseAsync<U, F>(
+	public orElseAsync<U, F>(
 		f: (error: E) => AsyncResult<U, F> | Promise<Result<U, F>>,
-	): AsyncResult<T | U, F>;
+	): AsyncResult<T | U, F> {
+		if (this._ok) {
+			return this as unknown as AsyncResult<T | U, F>;
+		} else {
+			return f(this._value as E) as AsyncResult<T | U, F>;
+		}
+	}
 
 	/**
 	 * Returns the contained `Ok` value or a provided default.
@@ -1016,7 +897,13 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(x.unwrapOr(defaultValue), defaultValue)
 	 * ```
 	 */
-	unwrapOr<U>(defaultValue: U): T | U;
+	public unwrapOr<U>(defaultValue: U): T | U {
+		if (this._ok) {
+			return this._value as T;
+		} else {
+			return defaultValue;
+		}
+	}
 
 	/**
 	 * Returns the contained `Ok` value or computes it from a function.
@@ -1032,7 +919,13 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(Err("foo").unwrapOrElse(count), 3)
 	 * ```
 	 */
-	unwrapOrElse<U>(defaultValue: (error: E) => U): T | U;
+	public unwrapOrElse<U>(defaultValue: (error: E) => U): T | U {
+		if (this._ok) {
+			return this._value as T;
+		} else {
+			return defaultValue(this._value as E);
+		}
+	}
 
 	/**
 	 * Returns the contained `Ok` value or computes it from a function.
@@ -1048,7 +941,13 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(await Err("foo").unwrapOrElseAsync(count), 3)
 	 * ```
 	 */
-	unwrapOrElseAsync<U>(defaultValue: (error: E) => Promise<U>): Promise<T | U>;
+	public unwrapOrElseAsync<U>(defaultValue: (error: E) => Promise<U>): Promise<T | U> {
+		if (this._ok) {
+			return Promise.resolve(this._value as T);
+		} else {
+			return defaultValue(this._value as E);
+		}
+	}
 
 	/**
 	 * Converts from `Result<Result<T, F>, E>` to `Result<T, E | F>`.
@@ -1073,10 +972,48 @@ export interface ResultMethods<T, E> {
 	 * assertEquals(x.flatten().flatten(), Ok("hello"));
 	 * ```
 	 */
-	flatten<R extends Result<any, any>>(this: Result<R, E>): Result<InferOk<R>, InferErr<R> | E>;
+	public flatten<R extends Result<any, any>>(
+		this: Result<R, E>,
+	): Result<InferOk<R>, InferErr<R> | E> {
+		return this as unknown as Result<InferOk<R>, InferErr<R> | E>;
+	}
+
+	public ["~unwrap"](): T {
+		if (this._ok) {
+			return this._value as T;
+		} else {
+			throw new Panic("Called `unwrap()` on an `Err` value", {
+				cause: this._value,
+			});
+		}
+	}
+
+	public ["~unwrapErr"](): E {
+		if (!this._ok) {
+			return this._value as E;
+		} else {
+			throw new Panic("Called `unwrapErr()` on an `Ok` value", {
+				cause: this._value,
+			});
+		}
+	}
 }
 
 export interface Ok<T, E = unknown> extends ResultImpl<T, E> {
+	/**
+	 * Safely unwraps the contained `Ok` value. Only available on `Ok` variants.
+	 *
+	 * @example
+	 * ```typescript
+	 * const x: Result<number, string> = Ok(10);
+	 * if (x.isOk()) {
+	 *     assertEquals(x.unwrap(), 10);
+	 * } else {
+	 *     // TypeScript error: Property 'unwrap' does not exist on 'Err<string, number>'.
+	 *     assertEquals(x.unwrap(), 10);
+	 * }
+	 * ```
+	 */
 	unwrap(): T;
 }
 
@@ -1087,6 +1024,20 @@ export function Ok<T, E = unknown>(value: T): Ok<T, E> {
 }
 
 export interface Err<E, T = unknown> extends ResultImpl<T, E> {
+	/**
+	 * Safely unwraps the contained `Err` value. Only available on `Err` variants.
+	 *
+	 * @example
+	 * ```typescript
+	 * const x: Result<number, string> = Err("error");
+	 * if (x.isErr()) {
+	 *     assertEquals(x.unwrapErr(), "error");
+	 * } else {
+	 *     // TypeScript error: Property 'unwrapErr' does not exist on 'Ok<number, string>'.
+	 *     assertEquals(x.unwrapErr(), "error");
+	 * }
+	 * ```
+	 */
 	unwrapErr(): E;
 }
 
