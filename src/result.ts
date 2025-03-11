@@ -13,7 +13,7 @@ export type ResultMatchAsync<T, E, A, B> = {
 	Err: (error: E) => Promise<B>;
 };
 
-class ResultImpl<T, E> {
+export class ResultImpl<T, E> {
 	private readonly _ok: boolean;
 	private readonly _value: T | E;
 
@@ -1018,9 +1018,9 @@ export interface Ok<T, E = unknown> extends ResultImpl<T, E> {
 }
 
 export function Ok<T, E = unknown>(value: T): Ok<T, E> {
-	const ok = new ResultImpl<T, E>(true, value) as Ok<T, E>;
-	ok.unwrap = ok["~unwrap"];
-	return ok;
+	const self = new ResultImpl<T, E>(true, value) as Ok<T, E>;
+	self.unwrap = self["~unwrap"];
+	return self;
 }
 
 export interface Err<E, T = unknown> extends ResultImpl<T, E> {
@@ -1042,9 +1042,9 @@ export interface Err<E, T = unknown> extends ResultImpl<T, E> {
 }
 
 export function Err<E, T = unknown>(value: E): Err<E, T> {
-	const err = new ResultImpl<T, E>(false, value) as Err<E, T>;
-	err.unwrapErr = err["~unwrapErr"];
-	return err;
+	const self = new ResultImpl<T, E>(false, value) as Err<E, T>;
+	self.unwrapErr = self["~unwrapErr"];
+	return self;
 }
 
 /**
