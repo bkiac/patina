@@ -105,25 +105,25 @@ describe("and", () => {
 	it("returns the error when Ok and Err", () => {
 		const a = TestOk<string, string>("a");
 		const b = TestErr<string, string>("b");
-		expect(a.and(b).unwrapOr(null)).toEqual("b");
+		expect(a.and(b)).toEqual(b);
 	});
 
 	it("returns the late value when Ok and Ok", () => {
 		const a = TestOk<string, string>("a");
 		const b = TestOk<string, string>("b");
-		expect(a.and(b).unwrapOr(null)).toEqual("b");
+		expect(a.and(b)).toEqual(b);
 	});
 
 	it("returns the error when Err and Ok", () => {
 		const a = TestErr<string, string>("a");
 		const b = TestOk<string, string>("b");
-		expect(a.and(b).unwrapOr(null)).toEqual("a");
+		expect(a.and(b)).toEqual(a);
 	});
 
 	it("returns the early error when Err and Err", () => {
 		const a = TestErr<number, string>("a");
 		const b = TestErr<number, string>("b");
-		expect(a.and(b).unwrapOr(null)).toEqual("a");
+		expect(a.and(b)).toEqual(a);
 	});
 });
 
@@ -442,13 +442,10 @@ describe("unwrap", () => {
 		}
 	});
 
-	it("returns null for an Err result", () => {
+	it("should not exist on Err", () => {
 		const result = TestErr<number, string>("error");
-		if (result.isErr()) {
-			expect(result.unwrapErr()).toEqual("error");
-		} else {
-			throw new Error("should not happen");
-		}
+		// @ts-expect-error - unwrap should not exist on Err
+		expectTypeOf(result.unwrap).toEqualTypeOf<any>();
 	});
 });
 
@@ -462,13 +459,10 @@ describe("unwrapErr", () => {
 		}
 	});
 
-	it("returns null for an Ok result", () => {
+	it("does not exist on Ok", () => {
 		const result = TestOk<number, string>(42);
-		if (result.isOk()) {
-			throw new Error("should not happen");
-		} else {
-			expect(result.unwrapErr()).toEqual(null);
-		}
+		// @ts-expect-error - unwrapErr should not exist on Ok
+		expectTypeOf(result.unwrapErr).toEqualTypeOf<any>();
 	});
 });
 

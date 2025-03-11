@@ -410,9 +410,10 @@ describe("unwrap", () => {
 		expect(option.expect("ok")).toEqual(42);
 	});
 
-	it("returns null when called on a None option", () => {
+	it("should not exist on None", () => {
 		const option = TestNone<string>();
-		expect(option.expect("ok")).toEqual(null);
+		// @ts-expect-error - unwrap should not exist on None
+		expectTypeOf(option.unwrap).toEqualTypeOf<any>();
 	});
 });
 

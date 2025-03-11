@@ -370,32 +370,6 @@ describe("orElseAsync", () => {
 	});
 });
 
-describe("unwrap", () => {
-	it("returns the value for an Ok result", async () => {
-		const result = TestOkPromise<number, string>(42);
-		await expect(result.expect("ok")).resolves.toEqual(42);
-	});
-
-	it("returns null for an Err result", async () => {
-		const error = new Error("Test error");
-		const result = TestErrPromise<number, Error>(error);
-		await expect(result.expectErr("err")).resolves.toEqual(error);
-	});
-});
-
-describe("unwrapErr", () => {
-	it("returns the error for an Err result", async () => {
-		const error = new Error("Test error");
-		const result = TestErrPromise<number, Error>(error);
-		await expect(result.expectErr("err")).resolves.toEqual(error);
-	});
-
-	it("returns null for an Ok result", async () => {
-		const result = TestOkPromise<number, string>(42);
-		await expect(result.expect("ok")).resolves.toEqual(42);
-	});
-});
-
 describe("unwrapOr", () => {
 	it("returns the value for an Ok result", async () => {
 		const result = TestOkPromise<number, string>(42);

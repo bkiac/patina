@@ -858,9 +858,13 @@ export class OptionImpl<T> {
 	 */
 	public xor<U>(other: Option<U>): Option<T | U> {
 		if (this._some) {
-			return other as Option<T | U>;
+			if (other._some) {
+				return None;
+			} else {
+				return this as unknown as Option<T | U>;
+			}
 		} else {
-			return this as unknown as Option<T | U>;
+			return other;
 		}
 	}
 

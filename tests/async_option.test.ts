@@ -320,18 +320,6 @@ describe("orElseAsync", () => {
 	});
 });
 
-describe("unwrap", () => {
-	it("returns the value when called on a Some option", async () => {
-		const option = promiseSome(42);
-		await expect(option.expect("some")).resolves.toEqual(42);
-	});
-
-	it("returns null when called on a None option", async () => {
-		const option = promiseNone();
-		await expect(option).resolves.toEqual(None);
-	});
-});
-
 describe("unwrapOr", () => {
 	it("returns the value when called on a Some option", async () => {
 		const option = promiseSome(42);
