@@ -6,6 +6,11 @@
 import { AsyncResult } from "./async_result.ts";
 import type { Option, OptionMatch, OptionMatchAsync } from "./option.ts";
 
+type OptionPromiseType<T> =
+	| Promise<Option<T>>
+	| PromiseLike<Option<T>>
+	| AsyncOption<T>;
+
 /**
  * A promise that resolves to an `Option`.
  *
@@ -15,13 +20,13 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	/**
 	 * The promise that resolves to an `Option`.
 	 */
-	public readonly promise: Promise<Option<T>> | PromiseLike<Option<T>> | AsyncOption<T>;
+	public readonly promise: OptionPromiseType<T>;
 
 	/**
 	 * Creates a new `AsyncOption`.
 	 * @param promise - The promise that resolves to an `Option`.
 	 */
-	public constructor(promise: Promise<Option<T>> | PromiseLike<Option<T>> | AsyncOption<T>) {
+	public constructor(promise: OptionPromiseType<T>) {
 		this.promise = promise;
 	}
 

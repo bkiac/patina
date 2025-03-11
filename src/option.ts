@@ -1055,7 +1055,9 @@ export interface None<T = unknown> extends NoneImpl<T> {
 	(value: T): None<T>;
 }
 
-export const None: None<never> = new NoneImpl() as None<never>;
+export function None<T>(): None<T> {
+	return new NoneImpl() as None<T>;
+}
 
 export type Option<T> = Some<T> | None<T>;
 

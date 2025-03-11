@@ -7,11 +7,11 @@ import { None, Option, Some } from "../src/option.ts";
 import { Panic } from "../src/error.ts";
 
 function TestSome<T>(value: T): Option<T> {
-	return Some(value) as Option<T>;
+	return Some(value);
 }
 
 function TestNone<T>(): Option<T> {
-	return None as Option<T>;
+	return None<T>();
 }
 
 describe("core", () => {
@@ -23,7 +23,7 @@ describe("core", () => {
 	});
 
 	it("returns a None option", () => {
-		const option = None;
+		const option = None();
 		expect(option.isSome()).toEqual(false);
 		expect(option.isNone()).toEqual(true);
 		expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>();
