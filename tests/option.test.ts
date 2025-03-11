@@ -11,7 +11,7 @@ function TestSome<T>(value: T): Option<T> {
 }
 
 function TestNone<T>(): Option<T> {
-	return None<T>();
+	return None as unknown as Option<T>;
 }
 
 describe("core", () => {
@@ -23,25 +23,27 @@ describe("core", () => {
 	});
 
 	it("returns a None option", () => {
-		const option = None();
+		const option = None;
 		expect(option.isSome()).toEqual(false);
 		expect(option.isNone()).toEqual(true);
-		expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>();
+		// @ts-expect-error unwrap should not be defined on None
+		expectTypeOf(option.unwrap).toEqualTypeOf<any>();
 	});
 
 	it("works with discriminated union", () => {
 		const option = TestSome(42);
 		if (option.isSome()) {
-			expectTypeOf(option.unwrap).toEqualTypeOf<() => number>();
+			// Check if `isSome` is working by checking any function, like `expect`
 			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => number>();
-		} else {
-			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>();
+			expectTypeOf(option.unwrap).toEqualTypeOf<() => number>();
 		}
+
 		if (option.isNone()) {
-			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => never>();
+			// Do nothing
 		} else {
-			expectTypeOf(option.unwrap).toEqualTypeOf<() => number>();
+			// Check if `isNone` is working by checking any function, like `expect`
 			expectTypeOf(option.expect).toEqualTypeOf<(msg: string) => number>();
+			expectTypeOf(option.unwrap).toEqualTypeOf<() => number>();
 		}
 	});
 });

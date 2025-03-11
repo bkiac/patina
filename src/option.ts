@@ -31,6 +31,8 @@ export type OptionMatchAsync<T, A, B> = {
 	None: () => Promise<B>;
 };
 
+const unwrapSymbol = Symbol("unwrap");
+
 export class OptionImpl<T> {
 	private readonly _some: boolean;
 	private readonly _value: T | null;
@@ -893,7 +895,10 @@ export class OptionImpl<T> {
 		}
 	}
 
-	public ["~unwrap"](): T {
+	/**
+	 * @internal Use `unwrap()` on narrowed `Some` variants instead.
+	 */
+	public [unwrapSymbol](): T {
 		if (this._some) {
 			return this._value as T;
 		} else {
@@ -902,17 +907,21 @@ export class OptionImpl<T> {
 	}
 }
 
+declare const tag: unique symbol;
+
 export interface Some<T> extends OptionImpl<T> {
+	[tag]: "Some";
 	unwrap(): T;
 }
 
 export function Some<T>(value: T): Some<T> {
 	const self = new OptionImpl(true, value) as Some<T>;
-	self.unwrap = self["~unwrap"];
+	self.unwrap = self[unwrapSymbol];
 	return self;
 }
 
 export interface None<T = unknown> extends OptionImpl<T> {
+	[tag]: "None";
 }
 
 export const None = new OptionImpl(false, null) as None<never>;

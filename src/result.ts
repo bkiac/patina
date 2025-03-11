@@ -13,6 +13,9 @@ export type ResultMatchAsync<T, E, A, B> = {
 	Err: (error: E) => Promise<B>;
 };
 
+const unwrapSymbol = Symbol("unwrap");
+const unwrapErrSymbol = Symbol("unwrapErr");
+
 export class ResultImpl<T, E> {
 	private readonly _ok: boolean;
 	private readonly _value: T | E;
@@ -978,7 +981,10 @@ export class ResultImpl<T, E> {
 		return this as unknown as Result<InferOk<R>, InferErr<R> | E>;
 	}
 
-	public ["~unwrap"](): T {
+	/**
+	 * @internal Use `unwrap()` on narrowed `Ok` variants instead.
+	 */
+	public [unwrapSymbol](): T {
 		if (this._ok) {
 			return this._value as T;
 		} else {
@@ -988,7 +994,10 @@ export class ResultImpl<T, E> {
 		}
 	}
 
-	public ["~unwrapErr"](): E {
+	/**
+	 * @internal Use `unwrapErr()` on narrowed `Err` variants instead.
+	 */
+	public [unwrapErrSymbol](): E {
 		if (!this._ok) {
 			return this._value as E;
 		} else {
@@ -999,7 +1008,11 @@ export class ResultImpl<T, E> {
 	}
 }
 
+declare const tag: unique symbol;
+
 export interface Ok<T, E = unknown> extends ResultImpl<T, E> {
+	[tag]: "Ok";
+
 	/**
 	 * Safely unwraps the contained `Ok` value. Only available on `Ok` variants.
 	 *
@@ -1019,11 +1032,13 @@ export interface Ok<T, E = unknown> extends ResultImpl<T, E> {
 
 export function Ok<T, E = unknown>(value: T): Ok<T, E> {
 	const self = new ResultImpl<T, E>(true, value) as Ok<T, E>;
-	self.unwrap = self["~unwrap"];
+	self.unwrap = self[unwrapSymbol];
 	return self;
 }
 
 export interface Err<E, T = unknown> extends ResultImpl<T, E> {
+	[tag]: "Err";
+
 	/**
 	 * Safely unwraps the contained `Err` value. Only available on `Err` variants.
 	 *
@@ -1043,7 +1058,7 @@ export interface Err<E, T = unknown> extends ResultImpl<T, E> {
 
 export function Err<E, T = unknown>(value: E): Err<E, T> {
 	const self = new ResultImpl<T, E>(false, value) as Err<E, T>;
-	self.unwrapErr = self["~unwrapErr"];
+	self.unwrapErr = self[unwrapErrSymbol];
 	return self;
 }
 

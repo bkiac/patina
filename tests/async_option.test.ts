@@ -11,7 +11,7 @@ function promiseSome<T>(value: T) {
 }
 
 function promiseNone() {
-	return new AsyncOption<never>(Promise.resolve(None()));
+	return new AsyncOption<never>(Promise.resolve(None));
 }
 
 describe("okOr", () => {
@@ -46,7 +46,7 @@ describe("and", () => {
 	it("returns the other option when Some and None", async () => {
 		const a = promiseSome(2);
 		const b = promiseNone();
-		await expect(a.and(b)).resolves.toEqual(None());
+		await expect(a.and(b)).resolves.toEqual(None);
 	});
 
 	it("returns the other option when Some and Some", async () => {
@@ -58,13 +58,13 @@ describe("and", () => {
 	it("returns None when None and Some", async () => {
 		const a = promiseNone();
 		const b = promiseSome("foo");
-		await expect(a.and(b)).resolves.toEqual(None());
+		await expect(a.and(b)).resolves.toEqual(None);
 	});
 
 	it("returns None when None and None", async () => {
 		const a = promiseNone();
 		const b = promiseNone();
-		await expect(a.and(b)).resolves.toEqual(None());
+		await expect(a.and(b)).resolves.toEqual(None);
 	});
 });
 
@@ -76,7 +76,7 @@ describe("andThen", () => {
 
 	it("returns None for a None option", async () => {
 		const a = promiseNone();
-		await expect(a.andThen((value) => Some(value + 1))).resolves.toEqual(None());
+		await expect(a.andThen((value) => Some(value + 1))).resolves.toEqual(None);
 	});
 });
 
@@ -89,7 +89,7 @@ describe("andThenAsync", () => {
 
 	it("returns None for a None option", async () => {
 		const a = promiseNone();
-		await expect(a.andThenAsync(async (value) => Some(value + 1))).resolves.toEqual(None());
+		await expect(a.andThenAsync(async (value) => Some(value + 1))).resolves.toEqual(None);
 	});
 
 	it("can chain multiple async operations", async () => {
@@ -136,12 +136,12 @@ describe("filterAsync", () => {
 
 	it("returns None when the predicate returns false", async () => {
 		const option = promiseSome(42);
-		await expect(option.filterAsync(async (value) => value !== 42)).resolves.toEqual(None());
+		await expect(option.filterAsync(async (value) => value !== 42)).resolves.toEqual(None);
 	});
 
 	it("returns None for a None option", async () => {
 		const option = promiseNone();
-		await expect(option.filterAsync(async (_value) => true)).resolves.toEqual(None());
+		await expect(option.filterAsync(async (_value) => true)).resolves.toEqual(None);
 	});
 });
 
@@ -153,7 +153,7 @@ describe("flatten", () => {
 
 	it("returns None for a None option", async () => {
 		const option = promiseNone();
-		await expect(option.flatten()).resolves.toEqual(None());
+		await expect(option.flatten()).resolves.toEqual(None);
 	});
 });
 
