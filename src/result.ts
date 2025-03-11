@@ -293,7 +293,28 @@ class ResultImpl<T, E> {
 	): Result<InferOk<R>, InferErr<R> | E> {
 		return this as unknown as Result<InferOk<R>, InferErr<R> | E>;
 	}
+
+	public ["~unwrap"](): T {
+		if (this._ok) {
+			return this._value as T;
+		} else {
+			throw new Panic("Called `unwrap()` on an `Err` value", {
+				cause: this._value,
+			});
+		}
+	}
+
+	public ["~unwrapErr"](): E {
+		if (!this._ok) {
+			return this._value as E;
+		} else {
+			throw new Panic("Called `unwrapErr()` on an `Ok` value", {
+				cause: this._value,
+			});
+		}
+	}
 }
+
 export interface ResultMethods<T, E> {
 	get [Symbol.toStringTag](): "Ok" | "Err";
 
@@ -1061,7 +1082,7 @@ export interface Ok<T, E = unknown> extends ResultImpl<T, E> {
 
 export function Ok<T, E = unknown>(value: T): Ok<T, E> {
 	const ok = new ResultImpl<T, E>(true, value) as Ok<T, E>;
-	ok.unwrap = () => value;
+	ok.unwrap = ok["~unwrap"];
 	return ok;
 }
 
@@ -1071,7 +1092,7 @@ export interface Err<E, T = unknown> extends ResultImpl<T, E> {
 
 export function Err<E, T = unknown>(value: E): Err<E, T> {
 	const err = new ResultImpl<T, E>(false, value) as Err<E, T>;
-	err.unwrapErr = () => value;
+	err.unwrapErr = err["~unwrapErr"];
 	return err;
 }
 
