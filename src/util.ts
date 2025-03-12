@@ -11,14 +11,12 @@ import { AsyncOption } from "./async_option.ts";
 /**
  * Infers the `Ok` type from a `Result`.
  */
-export type InferOk<T> = T extends Ok<infer O, any> ? O : T extends Ok<infer O, never> ? O : never;
+export type InferOk<T> = T extends Ok<infer O, any> ? O : never;
 
 /**
  * Infers the `Err` type from a `Result`.
  */
-export type InferErr<T> = T extends Err<infer E, any> ? E
-	: T extends Err<infer E, never> ? E
-	: never;
+export type InferErr<T> = T extends Err<infer E, any> ? E : never;
 
 /**
  * Infers the `Some` type from an `Option`.

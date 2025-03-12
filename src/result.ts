@@ -20,7 +20,7 @@ export class ResultImpl<T, E> {
 	private readonly _ok: boolean;
 	private readonly _value: T | E;
 
-	constructor(ok: boolean, value: T | E) {
+	public constructor(ok: boolean, value: T | E) {
 		this._ok = ok;
 		this._value = value;
 	}
@@ -37,10 +37,11 @@ export class ResultImpl<T, E> {
 	}
 
 	public toString(): `Ok(${string})` | `Err(${string})` {
+		const str = String(this._value);
 		if (this._ok) {
-			return `Ok(${this._value})`;
+			return `Ok(${str})`;
 		}
-		return `Err(${this._value})`;
+		return `Err(${str})`;
 	}
 
 	public [Symbol.for("nodejs.util.inspect.custom")](): string {
@@ -303,7 +304,7 @@ export class ResultImpl<T, E> {
 		if (this._ok) {
 			return Ok(f(this._value as T));
 		}
-		return this as unknown as Result<U, E>;
+		return Err(this._value as E);
 	}
 
 	/**
@@ -341,7 +342,7 @@ export class ResultImpl<T, E> {
 		if (this._ok) {
 			return new AsyncResult(f(this._value as T).then((value) => Ok(value)));
 		}
-		return new AsyncResult(Promise.resolve(this as unknown as Result<U, E>));
+		return new AsyncResult(Promise.resolve(Err(this._value as E)));
 	}
 
 	/**
@@ -472,7 +473,7 @@ export class ResultImpl<T, E> {
 	 */
 	public mapErr<F>(f: (error: E) => F): Result<T, F> {
 		if (this._ok) {
-			return this as unknown as Result<T, F>;
+			return Ok(this._value as T);
 		}
 		return Err(f(this._value as E));
 	}
@@ -500,7 +501,7 @@ export class ResultImpl<T, E> {
 	 */
 	public mapErrAsync<F>(f: (error: E) => Promise<F>): AsyncResult<T, F> {
 		if (this._ok) {
-			return new AsyncResult(Promise.resolve(this as unknown as Result<T, F>));
+			return new AsyncResult(Promise.resolve(Ok(this._value as T)));
 		}
 		return new AsyncResult(f(this._value as E).then((error) => Err(error)));
 	}
@@ -544,11 +545,11 @@ export class ResultImpl<T, E> {
 	 *     .expect("failed to parse number");
 	 * ```
 	 */
-	public inspectAsync(f: (value: T) => Promise<void>): this {
+	public inspectAsync(f: (value: T) => Promise<void>): AsyncResult<T, E> {
 		if (this._ok) {
-			f(this._value as T);
+			return new AsyncResult(f(this._value as T).then(() => this as unknown as Result<T, E>));
 		}
-		return this;
+		return new AsyncResult(Promise.resolve(this as unknown as Result<T, E>));
 	}
 
 	/**
@@ -680,9 +681,9 @@ export class ResultImpl<T, E> {
 	 */
 	public and<U, F>(other: Result<U, F>): Result<U, E | F> {
 		if (this._ok) {
-			return other as Result<U, E | F>;
+			return other;
 		}
-		return this as unknown as Result<U, E | F>;
+		return Err(this._value as E);
 	}
 
 	/**
@@ -724,9 +725,9 @@ export class ResultImpl<T, E> {
 	 */
 	public andThen<U, F>(f: (value: T) => Result<U, F>): Result<U, E | F> {
 		if (this._ok) {
-			return f(this._value as T) as Result<U, E | F>;
+			return f(this._value as T);
 		}
-		return this as unknown as Result<U, E | F>;
+		return Err(this._value as E);
 	}
 
 	/**
@@ -772,7 +773,7 @@ export class ResultImpl<T, E> {
 		if (this._ok) {
 			return new AsyncResult(f(this._value as T));
 		}
-		return new AsyncResult(Promise.resolve(this as unknown as Result<U, F>));
+		return new AsyncResult(Promise.resolve(Err(this._value as E)));
 	}
 
 	/**
@@ -802,9 +803,9 @@ export class ResultImpl<T, E> {
 	 */
 	public or<U, F>(other: Result<U, F>): Result<T | U, F> {
 		if (this._ok) {
-			return this as unknown as Result<T | U, F>;
+			return Ok(this._value as T);
 		}
-		return other as unknown as Result<T | U, F>;
+		return other;
 	}
 
 	/**
@@ -828,9 +829,9 @@ export class ResultImpl<T, E> {
 	 */
 	public orElse<U, F>(f: (error: E) => Result<U, F>): Result<T | U, F> {
 		if (this._ok) {
-			return this as unknown as Result<T | U, F>;
+			return Ok(this._value as T);
 		}
-		return f(this._value as E) as Result<T | U, F>;
+		return f(this._value as E);
 	}
 
 	/**
@@ -956,7 +957,7 @@ export class ResultImpl<T, E> {
 		if (this._ok) {
 			return this._value as Result<InferOk<R>, InferErr<R> | E>;
 		}
-		return this as unknown as Result<InferOk<R>, InferErr<R> | E>;
+		return Err(this._value as E);
 	}
 
 	/**
@@ -1006,12 +1007,36 @@ export interface Ok<T, E = unknown> extends ResultImpl<T, E> {
 	unwrap(): T;
 }
 
+/**
+ * Contains the success value of a `Result`.
+ *
+ * @param value - The value to wrap in an `Ok` variant.
+ * @returns A new `Ok` variant containing the given value.
+ *
+ * @example
+ * ```typescript
+ * const x = Ok(10);
+ * assertEquals(x.unwrap(), 10);
+ * ```
+ */
 export function Ok<T, E = unknown>(value: T): Ok<T, E> {
 	const self = new ResultImpl<T, E>(true, value) as Ok<T, E>;
 	self.unwrap = self[unwrapSymbol];
 	return self;
 }
 
+/**
+ * Contains the error value of a `Result`.
+ *
+ * @param value - The value to wrap in an `Err` variant.
+ * @returns A new `Err` variant containing the given value.
+ *
+ * @example
+ * ```typescript
+ * const x = Err("error");
+ * assertEquals(x.unwrapErr(), "error");
+ * ```
+ */
 export interface Err<E, T = unknown> extends ResultImpl<T, E> {
 	[tag]: "Err";
 

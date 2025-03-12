@@ -560,7 +560,7 @@ export class OptionImpl<T> {
 		if (this._some) {
 			return new AsyncResult(Promise.resolve(Ok(this._value as T)));
 		}
-		return new AsyncResult(f().then(Err) as unknown as Promise<Result<T, E>>);
+		return new AsyncResult(f().then((err) => Err(err)));
 	}
 
 	/**
@@ -762,9 +762,9 @@ export class OptionImpl<T> {
 	 * assertEquals(x.or(y), None)
 	 * ```
 	 */
-	public or<U>(other: Option<U>): Option<U> {
+	public or<U>(other: Option<U>): Option<T | U> {
 		if (this._some) {
-			return this as unknown as Option<U>;
+			return this as unknown as Option<T | U>;
 		}
 		return other;
 	}
@@ -785,9 +785,9 @@ export class OptionImpl<T> {
 	 * assertEquals(None.orElse(nobody), None)
 	 * ```
 	 */
-	public orElse<U>(f: () => Option<U>): Option<U> {
+	public orElse<U>(f: () => Option<U>): Option<T | U> {
 		if (this._some) {
-			return this as unknown as Option<U>;
+			return this as unknown as Option<T | U>;
 		}
 		return f();
 	}
@@ -808,9 +808,9 @@ export class OptionImpl<T> {
 	 * assertEquals(await None.orElseAsync(nobody), None)
 	 * ```
 	 */
-	public orElseAsync<U>(f: () => Promise<Option<U>> | AsyncOption<U>): AsyncOption<U> {
+	public orElseAsync<U>(f: () => Promise<Option<U>> | AsyncOption<U>): AsyncOption<T | U> {
 		if (this._some) {
-			return new AsyncOption(Promise.resolve(this as unknown as Option<U>));
+			return new AsyncOption(Promise.resolve(this as unknown as Option<T | U>));
 		}
 		return new AsyncOption(f());
 	}
@@ -904,20 +904,35 @@ export function Some<T>(value: T): Some<T> {
 	return self;
 }
 
-export interface None<T = unknown> extends OptionImpl<T> {
+export interface None<T = never> extends OptionImpl<T> {
 	[tag]: "None";
 }
 
-export const None = new OptionImpl(false, null) as None<never>;
+export const None = new OptionImpl(false, null) as None;
 
 export type Option<T> = Some<T> | None<T>;
 
 // deno-lint-ignore no-namespace
 export namespace Option {
+	/**
+	 * Creates an `Option<T>` from a value that may be `null` or `undefined`.
+	 *
+	 * @param value - The value to create an `Option<T>` from.
+	 * @returns An `Option<T>` that is `Some(value)` if `value` is not `null` or `undefined`, otherwise `None`.
+	 *
+	 * @example
+	 * ```
+	 * const x = Option.fromNullish(null);
+	 * assertEquals(x, None);
+	 *
+	 * const y = Option.fromNullish(1);
+	 * assertEquals(y, Some(1));
+	 * ```
+	 */
 	export function fromNullish<T>(value: T | null | undefined): Option<T> {
 		if (value == null) {
-			return None as unknown as Option<T>;
+			return None;
 		}
-		return Some(value) as Option<T>;
+		return Some(value);
 	}
 }
