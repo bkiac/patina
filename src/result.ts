@@ -32,17 +32,15 @@ export class ResultImpl<T, E> {
 	public toJSON(): { Ok: T } | { Err: E } {
 		if (this._ok) {
 			return { Ok: this._value as T };
-		} else {
-			return { Err: this._value as E };
 		}
+		return { Err: this._value as E };
 	}
 
 	public toString(): `Ok(${string})` | `Err(${string})` {
 		if (this._ok) {
 			return `Ok(${this._value})`;
-		} else {
-			return `Err(${this._value})`;
 		}
+		return `Err(${this._value})`;
 	}
 
 	public [Symbol.for("nodejs.util.inspect.custom")](): string {
@@ -57,14 +55,14 @@ export class ResultImpl<T, E> {
 	public *[Symbol.iterator](): Generator<Err<E, never>, T> {
 		if (this._ok) {
 			return this._value as T;
-		} else {
-			// deno-lint-ignore no-this-alias
-			const self = this;
-			// @ts-expect-error -- This is structurally equivalent and safe
-			yield self;
-			// @ts-expect-error -- This is structurally equivalent and safe
-			return self as E;
 		}
+
+		// deno-lint-ignore no-this-alias
+		const self = this;
+		// @ts-expect-error -- This is structurally equivalent and safe
+		yield self;
+		// @ts-expect-error -- This is structurally equivalent and safe
+		return self as E;
 	}
 
 	/**
@@ -91,9 +89,8 @@ export class ResultImpl<T, E> {
 	public match<A, B>(pattern: ResultMatch<T, E, A, B>): A | B {
 		if (this._ok) {
 			return pattern.Ok(this._value as T);
-		} else {
-			return pattern.Err(this._value as E);
 		}
+		return pattern.Err(this._value as E);
 	}
 
 	/**
@@ -120,9 +117,8 @@ export class ResultImpl<T, E> {
 	public matchAsync<A, B>(pattern: ResultMatchAsync<T, E, A, B>): Promise<A | B> {
 		if (this._ok) {
 			return pattern.Ok(this._value as T);
-		} else {
-			return pattern.Err(this._value as E);
 		}
+		return pattern.Err(this._value as E);
 	}
 
 	/**
@@ -247,9 +243,8 @@ export class ResultImpl<T, E> {
 	public ok(): Option<T> {
 		if (this._ok) {
 			return Some(this._value as T);
-		} else {
-			return None;
 		}
+		return None;
 	}
 
 	/**
@@ -269,9 +264,8 @@ export class ResultImpl<T, E> {
 	public err(): Option<E> {
 		if (!this._ok) {
 			return Some(this._value as E);
-		} else {
-			return None;
 		}
+		return None;
 	}
 
 	/**
@@ -308,9 +302,8 @@ export class ResultImpl<T, E> {
 	public map<U>(f: (value: T) => U): Result<U, E> {
 		if (this._ok) {
 			return Ok(f(this._value as T));
-		} else {
-			return this as unknown as Result<U, E>;
 		}
+		return this as unknown as Result<U, E>;
 	}
 
 	/**
@@ -347,9 +340,8 @@ export class ResultImpl<T, E> {
 	public mapAsync<U>(f: (value: T) => Promise<U>): AsyncResult<U, E> {
 		if (this._ok) {
 			return new AsyncResult(f(this._value as T).then((value) => Ok(value)));
-		} else {
-			return new AsyncResult(Promise.resolve(this as unknown as Result<U, E>));
 		}
+		return new AsyncResult(Promise.resolve(this as unknown as Result<U, E>));
 	}
 
 	/**
@@ -371,9 +363,8 @@ export class ResultImpl<T, E> {
 	public mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B {
 		if (this._ok) {
 			return f(this._value as T);
-		} else {
-			return defaultValue;
 		}
+		return defaultValue;
 	}
 
 	/**
@@ -395,9 +386,8 @@ export class ResultImpl<T, E> {
 	public mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B> {
 		if (this._ok) {
 			return f(this._value as T);
-		} else {
-			return Promise.resolve(defaultValue);
 		}
+		return Promise.resolve(defaultValue);
 	}
 
 	/**
@@ -424,9 +414,8 @@ export class ResultImpl<T, E> {
 	public mapOrElse<A, B>(defaultValue: (error: E) => A, f: (value: T) => B): A | B {
 		if (this._ok) {
 			return f(this._value as T);
-		} else {
-			return defaultValue(this._value as E);
 		}
+		return defaultValue(this._value as E);
 	}
 
 	/**
@@ -456,9 +445,8 @@ export class ResultImpl<T, E> {
 	): Promise<A | B> {
 		if (this._ok) {
 			return f(this._value as T);
-		} else {
-			return defaultValue(this._value as E);
 		}
+		return defaultValue(this._value as E);
 	}
 
 	/**
@@ -485,9 +473,8 @@ export class ResultImpl<T, E> {
 	public mapErr<F>(f: (error: E) => F): Result<T, F> {
 		if (this._ok) {
 			return this as unknown as Result<T, F>;
-		} else {
-			return Err(f(this._value as E));
 		}
+		return Err(f(this._value as E));
 	}
 
 	/**
@@ -514,9 +501,8 @@ export class ResultImpl<T, E> {
 	public mapErrAsync<F>(f: (error: E) => Promise<F>): AsyncResult<T, F> {
 		if (this._ok) {
 			return new AsyncResult(Promise.resolve(this as unknown as Result<T, F>));
-		} else {
-			return new AsyncResult(f(this._value as E).then((error) => Err(error)));
 		}
+		return new AsyncResult(f(this._value as E).then((error) => Err(error)));
 	}
 
 	/**
@@ -639,9 +625,8 @@ export class ResultImpl<T, E> {
 	public expect(message: string): T {
 		if (this._ok) {
 			return this._value as T;
-		} else {
-			throw new Panic(message, { cause: this._value });
 		}
+		throw new Panic(message, { cause: this._value });
 	}
 
 	/**
@@ -664,9 +649,8 @@ export class ResultImpl<T, E> {
 	public expectErr(message: string): E {
 		if (!this._ok) {
 			return this._value as E;
-		} else {
-			throw new Panic(message, { cause: this._value });
 		}
+		throw new Panic(message, { cause: this._value });
 	}
 
 	/**
@@ -697,9 +681,8 @@ export class ResultImpl<T, E> {
 	public and<U, F>(other: Result<U, F>): Result<U, E | F> {
 		if (this._ok) {
 			return other as Result<U, E | F>;
-		} else {
-			return this as unknown as Result<U, E | F>;
 		}
+		return this as unknown as Result<U, E | F>;
 	}
 
 	/**
@@ -742,9 +725,8 @@ export class ResultImpl<T, E> {
 	public andThen<U, F>(f: (value: T) => Result<U, F>): Result<U, E | F> {
 		if (this._ok) {
 			return f(this._value as T) as Result<U, E | F>;
-		} else {
-			return this as unknown as Result<U, E | F>;
 		}
+		return this as unknown as Result<U, E | F>;
 	}
 
 	/**
@@ -789,9 +771,8 @@ export class ResultImpl<T, E> {
 	): AsyncResult<U, E | F> {
 		if (this._ok) {
 			return new AsyncResult(f(this._value as T));
-		} else {
-			return new AsyncResult(Promise.resolve(this as unknown as Result<U, F>));
 		}
+		return new AsyncResult(Promise.resolve(this as unknown as Result<U, F>));
 	}
 
 	/**
@@ -822,9 +803,8 @@ export class ResultImpl<T, E> {
 	public or<U, F>(other: Result<U, F>): Result<T | U, F> {
 		if (this._ok) {
 			return this as unknown as Result<T | U, F>;
-		} else {
-			return other as unknown as Result<T | U, F>;
 		}
+		return other as unknown as Result<T | U, F>;
 	}
 
 	/**
@@ -849,9 +829,8 @@ export class ResultImpl<T, E> {
 	public orElse<U, F>(f: (error: E) => Result<U, F>): Result<T | U, F> {
 		if (this._ok) {
 			return this as unknown as Result<T | U, F>;
-		} else {
-			return f(this._value as E) as Result<T | U, F>;
 		}
+		return f(this._value as E) as Result<T | U, F>;
 	}
 
 	/**
@@ -878,9 +857,8 @@ export class ResultImpl<T, E> {
 	): AsyncResult<T | U, F> {
 		if (this._ok) {
 			return new AsyncResult(Promise.resolve(this) as Promise<Result<T | U, F>>);
-		} else {
-			return new AsyncResult(f(this._value as E));
 		}
+		return new AsyncResult(f(this._value as E));
 	}
 
 	/**
@@ -903,9 +881,8 @@ export class ResultImpl<T, E> {
 	public unwrapOr<U>(defaultValue: U): T | U {
 		if (this._ok) {
 			return this._value as T;
-		} else {
-			return defaultValue;
 		}
+		return defaultValue;
 	}
 
 	/**
@@ -925,9 +902,8 @@ export class ResultImpl<T, E> {
 	public unwrapOrElse<U>(defaultValue: (error: E) => U): T | U {
 		if (this._ok) {
 			return this._value as T;
-		} else {
-			return defaultValue(this._value as E);
 		}
+		return defaultValue(this._value as E);
 	}
 
 	/**
@@ -947,9 +923,8 @@ export class ResultImpl<T, E> {
 	public unwrapOrElseAsync<U>(defaultValue: (error: E) => Promise<U>): Promise<T | U> {
 		if (this._ok) {
 			return Promise.resolve(this._value as T);
-		} else {
-			return defaultValue(this._value as E);
 		}
+		return defaultValue(this._value as E);
 	}
 
 	/**
@@ -980,9 +955,8 @@ export class ResultImpl<T, E> {
 	): Result<InferOk<R>, InferErr<R> | E> {
 		if (this._ok) {
 			return this._value as Result<InferOk<R>, InferErr<R> | E>;
-		} else {
-			return this as unknown as Result<InferOk<R>, InferErr<R> | E>;
 		}
+		return this as unknown as Result<InferOk<R>, InferErr<R> | E>;
 	}
 
 	/**
@@ -991,11 +965,10 @@ export class ResultImpl<T, E> {
 	public [unwrapSymbol](): T {
 		if (this._ok) {
 			return this._value as T;
-		} else {
-			throw new Panic("Called `unwrap()` on an `Err` value", {
-				cause: this._value,
-			});
 		}
+		throw new Panic("Called `unwrap()` on an `Err` value", {
+			cause: this._value,
+		});
 	}
 
 	/**
@@ -1004,11 +977,10 @@ export class ResultImpl<T, E> {
 	public [unwrapErrSymbol](): E {
 		if (!this._ok) {
 			return this._value as E;
-		} else {
-			throw new Panic("Called `unwrapErr()` on an `Ok` value", {
-				cause: this._value,
-			});
 		}
+		throw new Panic("Called `unwrapErr()` on an `Ok` value", {
+			cause: this._value,
+		});
 	}
 }
 

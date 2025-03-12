@@ -1,3 +1,8 @@
+/**
+ * This module contains the `Option` class, which represents an optional value.
+ * @module
+ */
+
 import { AsyncOption } from "./async_option.ts";
 import { AsyncResult } from "./async_result.ts";
 import { Panic } from "./error.ts";
@@ -33,6 +38,9 @@ export type OptionMatchAsync<T, A, B> = {
 
 const unwrapSymbol = Symbol("unwrap");
 
+/**
+ * @internal The internal implementation of `Option`.
+ */
 export class OptionImpl<T> {
 	private readonly _some: boolean;
 	private readonly _value: T | null;
@@ -82,9 +90,8 @@ export class OptionImpl<T> {
 	public match<A, B>(pattern: OptionMatch<T, A, B>): A | B {
 		if (this._some) {
 			return pattern.Some(this._value as T);
-		} else {
-			return pattern.None();
 		}
+		return pattern.None();
 	}
 
 	/**
@@ -111,9 +118,8 @@ export class OptionImpl<T> {
 	public matchAsync<A, B>(pattern: OptionMatchAsync<T, A, B>): Promise<A | B> {
 		if (this._some) {
 			return pattern.Some(this._value as T);
-		} else {
-			return pattern.None();
 		}
+		return pattern.None();
 	}
 
 	/**
@@ -198,9 +204,8 @@ export class OptionImpl<T> {
 	public expect(message: string): T {
 		if (this._some) {
 			return this._value as T;
-		} else {
-			throw new Panic(message);
 		}
+		throw new Panic(message);
 	}
 
 	/**
@@ -220,9 +225,8 @@ export class OptionImpl<T> {
 	public unwrapOr<U>(defaultValue: U): T | U {
 		if (this._some) {
 			return this._value as T;
-		} else {
-			return defaultValue;
 		}
+		return defaultValue;
 	}
 
 	/**
@@ -245,9 +249,8 @@ export class OptionImpl<T> {
 	public unwrapOrElse<U>(defaultValue: () => U): T | U {
 		if (this._some) {
 			return this._value as T;
-		} else {
-			return defaultValue();
 		}
+		return defaultValue();
 	}
 
 	/**
@@ -270,9 +273,8 @@ export class OptionImpl<T> {
 	public unwrapOrElseAsync<U>(defaultValue: () => Promise<U>): Promise<T | U> {
 		if (this._some) {
 			return Promise.resolve(this._value as T);
-		} else {
-			return defaultValue();
 		}
+		return defaultValue();
 	}
 
 	/**
@@ -294,9 +296,8 @@ export class OptionImpl<T> {
 	public map<U>(f: (value: T) => U): Option<U> {
 		if (this._some) {
 			return Some(f(this._value as T));
-		} else {
-			return None;
 		}
+		return None;
 	}
 
 	/**
@@ -318,9 +319,8 @@ export class OptionImpl<T> {
 	public mapAsync<U>(f: (value: T) => Promise<U>): AsyncOption<U> {
 		if (this._some) {
 			return new AsyncOption(f(this._value as T).then(Some));
-		} else {
-			return new AsyncOption(Promise.resolve(None));
 		}
+		return new AsyncOption(Promise.resolve(None));
 	}
 
 	/**
@@ -375,9 +375,8 @@ export class OptionImpl<T> {
 	public inspectAsync(f: (value: T) => Promise<void>): AsyncOption<T> {
 		if (this._some) {
 			return new AsyncOption(f(this._value as T).then(() => this as unknown as Some<T>));
-		} else {
-			return new AsyncOption(Promise.resolve(this as unknown as Some<T>));
 		}
+		return new AsyncOption(Promise.resolve(this as unknown as Some<T>));
 	}
 
 	/**
@@ -399,9 +398,8 @@ export class OptionImpl<T> {
 	public mapOr<A, B>(defaultValue: A, f: (value: T) => B): A | B {
 		if (this._some) {
 			return f(this._value as T);
-		} else {
-			return defaultValue;
 		}
+		return defaultValue;
 	}
 
 	/**
@@ -423,9 +421,8 @@ export class OptionImpl<T> {
 	public mapOrAsync<A, B>(defaultValue: A, f: (value: T) => Promise<B>): Promise<A | B> {
 		if (this._some) {
 			return f(this._value as T);
-		} else {
-			return Promise.resolve(defaultValue);
 		}
+		return Promise.resolve(defaultValue);
 	}
 
 	/**
@@ -468,9 +465,8 @@ export class OptionImpl<T> {
 	public mapOrElse<A, B>(defaultValue: () => A, f: (value: T) => B): A | B {
 		if (this._some) {
 			return f(this._value as T);
-		} else {
-			return defaultValue();
 		}
+		return defaultValue();
 	}
 
 	/**
@@ -497,9 +493,8 @@ export class OptionImpl<T> {
 	): Promise<A | B> {
 		if (this._some) {
 			return f(this._value as T);
-		} else {
-			return defaultValue();
 		}
+		return defaultValue();
 	}
 
 	/**
@@ -520,9 +515,8 @@ export class OptionImpl<T> {
 	public okOr<E>(err: E): Result<T, E> {
 		if (this._some) {
 			return Ok(this._value as T);
-		} else {
-			return Err(err);
 		}
+		return Err(err);
 	}
 
 	/**
@@ -543,9 +537,8 @@ export class OptionImpl<T> {
 	public okOrElse<E>(f: () => E): Result<T, E> {
 		if (this._some) {
 			return Ok(this._value as T);
-		} else {
-			return Err(f());
 		}
+		return Err(f());
 	}
 
 	/**
@@ -566,9 +559,8 @@ export class OptionImpl<T> {
 	public okOrElseAsync<E>(f: () => Promise<E>): AsyncResult<T, E> {
 		if (this._some) {
 			return new AsyncResult(Promise.resolve(Ok(this._value as T)));
-		} else {
-			return new AsyncResult(f().then(Err) as unknown as Promise<Result<T, E>>);
 		}
+		return new AsyncResult(f().then(Err) as unknown as Promise<Result<T, E>>);
 	}
 
 	/**
@@ -599,9 +591,8 @@ export class OptionImpl<T> {
 	public and<U>(other: Option<U>): Option<U> {
 		if (this._some) {
 			return other;
-		} else {
-			return None;
 		}
+		return None;
 	}
 
 	/**
@@ -640,9 +631,8 @@ export class OptionImpl<T> {
 	public andThen<U>(f: (value: T) => Option<U>): Option<U> {
 		if (this._some) {
 			return f(this._value as T);
-		} else {
-			return None;
 		}
+		return None;
 	}
 
 	/**
@@ -681,9 +671,8 @@ export class OptionImpl<T> {
 	public andThenAsync<U>(f: (value: T) => Promise<Option<U>> | AsyncOption<U>): AsyncOption<U> {
 		if (this._some) {
 			return new AsyncOption(f(this._value as T));
-		} else {
-			return new AsyncOption(Promise.resolve(None));
 		}
+		return new AsyncOption(Promise.resolve(None));
 	}
 
 	/**
@@ -711,9 +700,8 @@ export class OptionImpl<T> {
 	public filter(predicate: (value: T) => boolean): Option<T> {
 		if (this._some && predicate(this._value as T)) {
 			return this as unknown as Option<T>;
-		} else {
-			return None;
 		}
+		return None;
 	}
 
 	/**
@@ -745,9 +733,8 @@ export class OptionImpl<T> {
 					result ? this as unknown as Option<T> : None
 				),
 			);
-		} else {
-			return new AsyncOption(Promise.resolve(None));
 		}
+		return new AsyncOption(Promise.resolve(None));
 	}
 
 	/**
@@ -778,9 +765,8 @@ export class OptionImpl<T> {
 	public or<U>(other: Option<U>): Option<U> {
 		if (this._some) {
 			return this as unknown as Option<U>;
-		} else {
-			return other;
 		}
+		return other;
 	}
 
 	/**
@@ -802,9 +788,8 @@ export class OptionImpl<T> {
 	public orElse<U>(f: () => Option<U>): Option<U> {
 		if (this._some) {
 			return this as unknown as Option<U>;
-		} else {
-			return f();
 		}
+		return f();
 	}
 
 	/**
@@ -826,9 +811,8 @@ export class OptionImpl<T> {
 	public orElseAsync<U>(f: () => Promise<Option<U>> | AsyncOption<U>): AsyncOption<U> {
 		if (this._some) {
 			return new AsyncOption(Promise.resolve(this as unknown as Option<U>));
-		} else {
-			return new AsyncOption(f());
 		}
+		return new AsyncOption(f());
 	}
 
 	/**
@@ -860,12 +844,10 @@ export class OptionImpl<T> {
 		if (this._some) {
 			if (other._some) {
 				return None;
-			} else {
-				return this as unknown as Option<T | U>;
 			}
-		} else {
-			return other;
+			return this as unknown as Option<T | U>;
 		}
+		return other;
 	}
 
 	/**
@@ -894,9 +876,8 @@ export class OptionImpl<T> {
 	public flatten<U>(this: Option<Option<U>>): Option<U> {
 		if (this._some) {
 			return this._value as Option<U>;
-		} else {
-			return None;
 		}
+		return None;
 	}
 
 	/**
@@ -905,9 +886,8 @@ export class OptionImpl<T> {
 	public [unwrapSymbol](): T {
 		if (this._some) {
 			return this._value as T;
-		} else {
-			throw new Panic("Called `unwrap` on a `None` value");
 		}
+		throw new Panic("Called `unwrap` on a `None` value");
 	}
 }
 
