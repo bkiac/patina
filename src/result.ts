@@ -1019,7 +1019,7 @@ export interface Ok<T, E = unknown> extends ResultImpl<T, E> {
  * assertEquals(x.unwrap(), 10);
  * ```
  */
-export function Ok<T, E = unknown>(value: T): Ok<T, E> {
+export function Ok<T, E = never>(value: T): Ok<T, E> {
 	const self = new ResultImpl<T, E>(true, value) as Ok<T, E>;
 	self.unwrap = self[unwrapSymbol];
 	return self;
@@ -1037,7 +1037,7 @@ export function Ok<T, E = unknown>(value: T): Ok<T, E> {
  * assertEquals(x.unwrapErr(), "error");
  * ```
  */
-export interface Err<E, T = unknown> extends ResultImpl<T, E> {
+export interface Err<E, T = never> extends ResultImpl<T, E> {
 	[tag]: "Err";
 
 	/**

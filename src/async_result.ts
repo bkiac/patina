@@ -4,7 +4,7 @@
  */
 
 import { AsyncOption } from "./async_option.ts";
-import type { Err, Result, ResultMatch, ResultMatchAsync } from "./result.ts";
+import { Err, Ok, type Result, type ResultMatch, type ResultMatchAsync } from "./result.ts";
 import type { InferErr, InferOk } from "./util.ts";
 
 /**
@@ -15,6 +15,90 @@ import type { InferErr, InferOk } from "./util.ts";
  * This class also implements the `PromiseLike<Result<T, E>>` interface, so it can be awaited like a `Promise` to convert to a `Result`.
  */
 export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
+	public static all<R extends readonly AsyncResult<any, any>[] | []>(
+		results: R,
+	): AsyncResult<
+		{ -readonly [I in keyof R]: InferOk<Awaited<R[I]>> },
+		InferErr<Awaited<R[number]>>
+	>;
+	public static all<T, E>(results: Iterable<AsyncResult<T, E>>): AsyncResult<T[], E>;
+
+	/**
+	 * Returns a new `AsyncResult` that resolves to an array of the results of the given `AsyncResult`s.
+	 *
+	 * Uses `Promise.all()` under the hood.
+	 *
+	 * @param results - The `AsyncResult`s to resolve
+	 * @returns A new `AsyncResult` that resolves to an array of the results of the given `AsyncResult`s
+	 *
+	 * @example
+	 * ```typescript
+	 * const allOks = [AsyncOk(1), AsyncOk(2)];
+	 * const result = AsyncResult.all(allOks);
+	 * assertEquals(await result, Ok([1, 2]));
+	 *
+	 * const withErr = [AsyncOk(1), AsyncErr("error")];
+	 * const result2 = AsyncResult.all(withErr);
+	 * assertEquals(await result2, Err("error"));
+	 * ```
+	 */
+	public static all<T, E>(results: Iterable<AsyncResult<T, E>>): AsyncResult<T[], E> {
+		const promises = [];
+		for (const result of results) {
+			promises.push(result.toPromise());
+		}
+		return new AsyncResult(
+			Promise.all(promises).then((values) => {
+				return Ok(values);
+			}).catch((e) => {
+				return Err(e);
+			}),
+		);
+	}
+
+	// public static async allSettled<T, E>(
+	// 	iterable: Iterable<AsyncResult<T, E>>,
+	// ): Promise<Result<T, E>[]> {
+	// 	const promises = [];
+	// 	for (const result of iterable) {
+	// 		promises.push(result.toPromise());
+	// 	}
+	// 	return (await Promise.allSettled(promises)).map((result) => {
+	// 		if (result.status === "fulfilled") {
+	// 			return Ok(result.value);
+	// 		}
+	// 		return Err(result.reason);
+	// 	});
+	// }
+
+	// public static any<T, E>(iterable: Iterable<AsyncResult<T, E>>): AsyncResult<T, E> {
+	// 	const promises = [];
+	// 	for (const result of iterable) {
+	// 		promises.push(result.toPromise());
+	// 	}
+	// 	return new AsyncResult(
+	// 		Promise.any(promises).then((value) => {
+	// 			return Ok(value);
+	// 		}).catch((e) => {
+	// 			return Err(e);
+	// 		}),
+	// 	);
+	// }
+
+	// public static race<T, E>(iterable: Iterable<AsyncResult<T, E>>): AsyncResult<T, E> {
+	// 	const promises = [];
+	// 	for (const result of iterable) {
+	// 		promises.push(result.toPromise());
+	// 	}
+	// 	return new AsyncResult(
+	// 		Promise.race(promises).then((value) => {
+	// 			return Ok(value);
+	// 		}).catch((e) => {
+	// 			return Err(e);
+	// 		}),
+	// 	);
+	// }
+
 	public readonly promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>> | AsyncResult<T, E>;
 
 	public constructor(
@@ -39,6 +123,26 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 
 	public [Symbol.for("nodejs.util.inspect.custom")](): string {
 		return this.toString();
+	}
+
+	/**
+	 * Converts an `AsyncResult` to a regular `Promise`.
+	 *
+	 * @returns A promise that resolves to the contained value if `Ok`, otherwise throws the contained error
+	 *
+	 * @example
+	 * ```typescript
+	 * const x: AsyncResult<number, string> = AsyncOk(2)
+	 * assertEquals(await x.toPromise(), 2)
+	 *
+	 * const y: AsyncResult<number, string> = AsyncErr("error")
+	 * await y.toPromise().catch((e) => assertEquals(e, "error"))
+	 * ```
+	 */
+	public async toPromise(): Promise<T> {
+		return (await this).unwrapOrElse((e) => {
+			throw e;
+		});
 	}
 
 	/**

@@ -3,11 +3,11 @@ import { AsyncOption } from "./async_option.ts";
 import { Err, Ok } from "./result.ts";
 import { None, Some } from "./option.ts";
 
-export function AsyncOk<T, E = any>(value: T): AsyncResult<T, E> {
+export function AsyncOk<T, E = never>(value: T): AsyncResult<T, E> {
 	return new AsyncResult(Promise.resolve(Ok(value)));
 }
 
-export function AsyncErr<E, T = any>(error: E): AsyncResult<T, E> {
+export function AsyncErr<E, T = never>(error: E): AsyncResult<T, E> {
 	return new AsyncResult(Promise.resolve(Err(error)));
 }
 
