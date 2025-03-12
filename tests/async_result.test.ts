@@ -429,11 +429,11 @@ describe("all", () => {
 		});
 
 		it("infers iterable", () => {
-			const set = [
+			const array = [
 				TestOkPromise<number, number>(0),
 				TestOkPromise<string, string>("s"),
 			];
-			const result = AsyncResult.all(set);
+			const result = AsyncResult.all(array);
 			expectTypeOf(result).toEqualTypeOf<
 				AsyncResult<Array<(string | number)>, number | string>
 			>();
@@ -470,17 +470,43 @@ describe("all", () => {
 	});
 });
 
-// test("allSettled", async () => {
-// 	const result = AsyncResult.allSettled([
-// 		AsyncOk(1),
-// 		AsyncErr("error"),
-// 	]);
-// 	expectTypeOf(result).toEqualTypeOf<Promise<Result<number, string>[]>>();
-// 	await expect(result).resolves.toEqual([
-// 		Ok(1),
-// 		Err("error"),
-// 	]);
-// });
+describe("allSettled", () => {
+	describe("types", () => {
+		it("infers readonly array", () => {
+			const result = AsyncResult.allSettled([
+				TestOkPromise<number, number>(0),
+				TestOkPromise<string, string>("s"),
+			]);
+			expectTypeOf(result).toEqualTypeOf<
+				Promise<[Result<number, number>, Result<string, string>]>
+			>();
+		});
+
+		it("infers iterable", () => {
+			const array = [
+				TestOkPromise<number, number>(0),
+				TestOkPromise<string, string>("s"),
+			];
+			const result = AsyncResult.allSettled(array);
+			expectTypeOf(result).toEqualTypeOf<
+				Promise<Array<Result<number | string, number | string>>>
+			>();
+		});
+	});
+
+	it("returns all values", async () => {
+		const result = AsyncResult.allSettled([
+			AsyncOk(0),
+			AsyncErr("error"),
+			AsyncOk(1),
+		]);
+		await expect(result).resolves.toEqual([
+			Ok(0),
+			Err("error"),
+			Ok(1),
+		]);
+	});
+});
 
 // describe("any", () => {
 // 	it("returns the values for an Ok result", async () => {

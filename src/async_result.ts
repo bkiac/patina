@@ -15,13 +15,31 @@ import type { InferErr, InferOk } from "./util.ts";
  * This class also implements the `PromiseLike<Result<T, E>>` interface, so it can be awaited like a `Promise` to convert to a `Result`.
  */
 export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
+	/**
+	 * Returns a new `AsyncResult` that resolves to an array of the results of the given `AsyncResult`s.
+	 *
+	 * Uses `Promise.all()` under the hood.
+	 *
+	 * @param results - The `AsyncResult`s to resolve
+	 * @returns A new `AsyncResult` that resolves to an array of the results of the given `AsyncResult`s
+	 *
+	 * @example
+	 * ```typescript
+	 * const allOks = [AsyncOk(1), AsyncOk(2)];
+	 * const result = AsyncResult.all(allOks);
+	 * assertEquals(await result, Ok([1, 2]));
+	 *
+	 * const withErr = [AsyncOk(1), AsyncErr("error")];
+	 * const result2 = AsyncResult.all(withErr);
+	 * assertEquals(await result2, Err("error"));
+	 * ```
+	 */
 	public static all<R extends readonly AsyncResult<any, any>[] | []>(
 		results: R,
 	): AsyncResult<
 		{ -readonly [I in keyof R]: InferOk<Awaited<R[I]>> },
 		InferErr<Awaited<R[number]>>
 	>;
-	public static all<T, E>(results: Iterable<AsyncResult<T, E>>): AsyncResult<T[], E>;
 
 	/**
 	 * Returns a new `AsyncResult` that resolves to an array of the results of the given `AsyncResult`s.
@@ -42,6 +60,8 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 * assertEquals(await result2, Err("error"));
 	 * ```
 	 */
+	public static all<T, E>(results: Iterable<AsyncResult<T, E>>): AsyncResult<T[], E>;
+
 	public static all<T, E>(results: Iterable<AsyncResult<T, E>>): AsyncResult<T[], E> {
 		const promises = [];
 		for (const result of results) {
@@ -56,20 +76,58 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 		);
 	}
 
-	// public static async allSettled<T, E>(
-	// 	iterable: Iterable<AsyncResult<T, E>>,
-	// ): Promise<Result<T, E>[]> {
-	// 	const promises = [];
-	// 	for (const result of iterable) {
-	// 		promises.push(result.toPromise());
-	// 	}
-	// 	return (await Promise.allSettled(promises)).map((result) => {
-	// 		if (result.status === "fulfilled") {
-	// 			return Ok(result.value);
-	// 		}
-	// 		return Err(result.reason);
-	// 	});
-	// }
+	/**
+	 * Returns a new `AsyncResult` that resolves to an array of the results of the given `AsyncResult`s.
+	 *
+	 * Uses `Promise.allSettled()` under the hood.
+	 *
+	 * @param results - The `AsyncResult`s to resolve
+	 * @returns A new `AsyncResult` that resolves to an array of the results of the given `AsyncResult`s
+	 *
+	 * @example
+	 * ```typescript
+	 * const allOks = [AsyncOk(1), AsyncErr("error"), AsyncOk(2)];
+	 * const result = AsyncResult.allSettled(allOks);
+	 * assertEquals(await result, [Ok(1), Err("error"), Ok(2)]);
+	 * ```
+	 */
+	public static allSettled<R extends readonly AsyncResult<any, any>[] | []>(
+		results: R,
+	): Promise<
+		{ -readonly [I in keyof R]: Result<InferOk<Awaited<R[I]>>, InferErr<Awaited<R[I]>>> }
+	>;
+
+	/**
+	 * Returns a new `AsyncResult` that resolves to an array of the results of the given `AsyncResult`s.
+	 *
+	 * Uses `Promise.allSettled()` under the hood.
+	 *
+	 * @param results - The `AsyncResult`s to resolve
+	 * @returns A new `AsyncResult` that resolves to an array of the results of the given `AsyncResult`s
+	 *
+	 * @example
+	 * ```typescript
+	 * const allOks = [AsyncOk(1), AsyncErr("error"), AsyncOk(2)];
+	 * const result = AsyncResult.allSettled(allOks);
+	 * assertEquals(await result, [Ok(1), Err("error"), Ok(2)]);
+	 * ```
+	 */
+	public static allSettled<T, E>(iterable: Iterable<AsyncResult<T, E>>): Promise<Result<T, E>[]>;
+
+	public static async allSettled<T, E>(
+		iterable: Iterable<AsyncResult<T, E>>,
+	): Promise<Result<T, E>[]> {
+		const promises = [];
+		for (const result of iterable) {
+			promises.push(result.toPromise());
+		}
+		return (await Promise.allSettled(promises)).map((result) => {
+			if (result.status === "fulfilled") {
+				return Ok(result.value);
+			}
+			return Err(result.reason);
+		});
+	}
 
 	// public static any<T, E>(iterable: Iterable<AsyncResult<T, E>>): AsyncResult<T, E> {
 	// 	const promises = [];
