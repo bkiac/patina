@@ -125,19 +125,56 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 		) as any;
 	}
 
-	// public static race<T, E>(iterable: Iterable<AsyncResult<T, E>>): AsyncResult<T, E> {
-	// 	const promises = [];
-	// 	for (const result of iterable) {
-	// 		promises.push(result.toPromise());
-	// 	}
-	// 	return new AsyncResult(
-	// 		Promise.race(promises).then((value) => {
-	// 			return Ok(value);
-	// 		}).catch((e) => {
-	// 			return Err(e);
-	// 		}),
-	// 	);
-	// }
+	/**
+	 * Takes an array of `AsyncResult`s and returns the first settled `Result`.
+	 *
+	 * Uses `Promise.race()` under the hood.
+	 *
+	 * @param results - The `AsyncResult`s to resolve
+	 * @returns A new `AsyncResult` that resolves to the first settled `Result`
+	 *
+	 * @example
+	 * ```typescript
+	 * const quick: AsyncResult<string, string> = new AsyncResult(
+	 * 	new Promise((resolve) => {
+	 * 		setTimeout(
+	 * 			resolve,
+	 * 			100,
+	 * 			Ok("quick"),
+	 * 		);
+	 * 	}),
+	 * );
+	 * const slow: AsyncResult<string, string> = new AsyncResult(
+	 * 	new Promise((resolve) => {
+	 * 		setTimeout(
+	 * 			resolve,
+	 * 			1000,
+	 * 			Ok("slow"),
+	 * 		);
+	 * 	}),
+	 * );
+	 * const result = AsyncResult.race([quick, slow]);
+	 * assertEquals(await result, Ok("quick"));
+	 * ```
+	 */
+	public static race<A extends readonly AsyncResult<any, any>[] | []>(
+		results: A,
+	): AsyncResult<
+		InferOk<Awaited<A[number]>>,
+		InferErr<Awaited<A[number]>>
+	> {
+		const promises = [];
+		for (const result of results) {
+			promises.push(result.toPromise());
+		}
+		return new AsyncResult(
+			Promise.race(promises).then((value) => {
+				return Ok(value);
+			}).catch((e) => {
+				return Err(e);
+			}),
+		);
+	}
 
 	public readonly promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>> | AsyncResult<T, E>;
 

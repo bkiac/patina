@@ -449,24 +449,30 @@ describe("all", () => {
 	});
 
 	it("returns the values for an Err result", async () => {
+		const fn = spy(() => {});
+
 		let timeoutId: number;
-		const long: AsyncResult<string, string> = new AsyncResult(
+		const slow: AsyncResult<string, string> = new AsyncResult(
 			new Promise((resolve) => {
-				timeoutId = setTimeout(resolve, 100, Ok("s"));
+				timeoutId = setTimeout(
+					() => {
+						fn();
+						resolve(Ok("s"));
+					},
+					100,
+				);
 			}),
 		);
 
 		const result = await AsyncResult.all([
 			AsyncOk(0),
 			AsyncErr("error"),
-			long,
+			slow,
 		]);
 
-		try {
-			expect(result.expectErr("err")).toEqual("error");
-		} finally {
-			clearTimeout(timeoutId!);
-		}
+		expect(result.expectErr("err")).toEqual("error");
+		assertSpyCalls(fn, 0);
+		clearTimeout(timeoutId!);
 	});
 });
 
@@ -543,5 +549,62 @@ describe("any", () => {
 		const errors = ["error", "error2"];
 		const result = AsyncResult.any(errors.map((error) => AsyncErr(error)));
 		await expect(result.expectErr("err")).resolves.toEqual(errors);
+	});
+});
+
+describe("race", () => {
+	describe("types", () => {
+		it("infers readonly array", () => {
+			const result = AsyncResult.race([
+				TestOkPromise<number, number>(0),
+				TestOkPromise<string, string>("s"),
+			]);
+			expectTypeOf(result).toEqualTypeOf<AsyncResult<number | string, number | string>>();
+		});
+
+		it("infers array", () => {
+			const array = [
+				TestOkPromise<number, number>(0),
+				TestOkPromise<string, string>("s"),
+			];
+			const result = AsyncResult.race(array);
+			expectTypeOf(result).toEqualTypeOf<
+				AsyncResult<number | string, number | string>
+			>();
+		});
+	});
+
+	it("returns the first Ok result", async () => {
+		let quickTimeoutId: number;
+		let slowTimeoutId: number;
+
+		const quick: AsyncResult<string, string> = new AsyncResult(
+			new Promise((resolve) => {
+				quickTimeoutId = setTimeout(
+					resolve,
+					100,
+					Ok("quick"),
+				);
+			}),
+		);
+
+		const slow: AsyncResult<string, string> = new AsyncResult(
+			new Promise((resolve) => {
+				slowTimeoutId = setTimeout(
+					resolve,
+					1000,
+					Ok("slow"),
+				);
+			}),
+		);
+
+		const result = AsyncResult.race([
+			quick,
+			slow,
+		]);
+		await expect(result.expect("ok")).resolves.toEqual("quick");
+
+		clearTimeout(quickTimeoutId!);
+		clearTimeout(slowTimeoutId!);
 	});
 });
