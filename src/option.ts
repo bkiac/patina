@@ -7,7 +7,6 @@ import { AsyncOption } from "./async_option.ts";
 import { AsyncResult } from "./async_result.ts";
 import { Panic } from "./error.ts";
 import { Err, Ok, type Result } from "./result.ts";
-import type * as symbols from "./symbols.ts";
 
 /**
  * The type of the matcher for `Option.match`.
@@ -37,16 +36,16 @@ export type OptionMatchAsync<T, A, B> = {
 	None: () => Promise<B>;
 };
 
+const unwrapSymbol = Symbol("unwrap");
+
 /**
- * The implementation of the `Option` class.
- * @internal
+ * @internal The internal implementation of `Option`.
  */
 export class OptionImpl<T> {
 	private readonly _some: boolean;
-	private readonly _value: T | undefined;
+	private readonly _value: T | null;
 
-	public constructor(some: boolean, value: T | undefined) {
-		Object.defineProperty(this.constructor, "name", { value: "Option" });
+	public constructor(some: boolean, value: T | null) {
 		this._some = some;
 		this._value = value;
 	}
@@ -55,24 +54,12 @@ export class OptionImpl<T> {
 		return this._some ? "Some" : "None";
 	}
 
-	/**
-	 * Converts the `Option` to a JSON object.
-	 */
 	public toJSON(): T | null {
-		if (this._some) {
-			return this._value as T;
-		}
-		return null;
+		return this._value;
 	}
 
-	/**
-	 * Converts the `Option` to a string.
-	 */
 	public toString(): `Some(${string})` | "None" {
-		if (this._some) {
-			return `Some(${String(this._value)})`;
-		}
-		return "None";
+		return this._some ? `Some(${String(this._value)})` : "None";
 	}
 
 	public [Symbol.for("nodejs.util.inspect.custom")](): string {
@@ -172,10 +159,7 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	public isSomeAnd(predicate: (value: T) => boolean): this is Some<T> {
-		if (this._some) {
-			return predicate(this._value as T);
-		}
-		return false;
+		return this._some && predicate(this._value as T);
 	}
 
 	/**
@@ -222,36 +206,6 @@ export class OptionImpl<T> {
 			return this._value as T;
 		}
 		throw new Panic(message);
-	}
-
-	/**
-	 * Returns the contained `Some` value, if exists, otherwise returns `undefined`.
-	 *
-	 * Type is narrowed to `T` if the option is already checked to be `Some`.
-	 *
-	 * @returns The contained value, if exists, otherwise `undefined`.
-	 *
-	 * @example
-	 * ```
-	 * const x = Some("air")
-	 * assertEquals(x.unwrap(), "air")
-	 *
-	 * const y = None
-	 * assertEquals(y.unwrap(), undefined)
-	 *
-	 * const z = Option.fromNullish(...) // Option<T>
-	 * if (z.isSome()) {
-	 * 	const a = z.unwrap() // `a` has type `T`
-	 * } else {
-	 * 	const b = z.unwrap() // `b` has type `undefined`
-	 * }
-	 * ```
-	 */
-	public unwrap(): T | undefined {
-		if (this._some) {
-			return this._value as T;
-		}
-		return undefined;
 	}
 
 	/**
@@ -422,7 +376,7 @@ export class OptionImpl<T> {
 		if (this._some) {
 			return new AsyncOption(f(this._value as T).then(() => this as unknown as Some<T>));
 		}
-		return new AsyncOption(Promise.resolve(None));
+		return new AsyncOption(Promise.resolve(this as unknown as Some<T>));
 	}
 
 	/**
@@ -580,11 +534,11 @@ export class OptionImpl<T> {
 	 * assertEquals(x.okOrElse(() => 0), Err(0))
 	 * ```
 	 */
-	public okOrElse<E>(err: () => E): Result<T, E> {
+	public okOrElse<E>(f: () => E): Result<T, E> {
 		if (this._some) {
 			return Ok(this._value as T);
 		}
-		return Err(err());
+		return Err(f());
 	}
 
 	/**
@@ -602,11 +556,11 @@ export class OptionImpl<T> {
 	 * assertEquals(await x.okOrElseAsync(async () => 0), Err(0))
 	 * ```
 	 */
-	public okOrElseAsync<E>(err: () => Promise<E>): AsyncResult<T, E> {
+	public okOrElseAsync<E>(f: () => Promise<E>): AsyncResult<T, E> {
 		if (this._some) {
 			return new AsyncResult(Promise.resolve(Ok(this._value as T)));
 		}
-		return new AsyncResult(err().then((e) => Err(e)));
+		return new AsyncResult(f().then((err) => Err(err)));
 	}
 
 	/**
@@ -773,13 +727,14 @@ export class OptionImpl<T> {
 	 * ```
 	 */
 	public filterAsync(predicate: (value: T) => Promise<boolean>): AsyncOption<T> {
-		const check = async (): Promise<Option<T>> => {
-			if (this._some && (await predicate(this._value as T))) {
-				return this as unknown as Option<T>;
-			}
-			return None;
-		};
-		return new AsyncOption(check());
+		if (this._some) {
+			return new AsyncOption(
+				predicate(this._value as T).then((result) =>
+					result ? this as unknown as Option<T> : None
+				),
+			);
+		}
+		return new AsyncOption(Promise.resolve(None));
 	}
 
 	/**
@@ -855,7 +810,7 @@ export class OptionImpl<T> {
 	 */
 	public orElseAsync<U>(f: () => Promise<Option<U>> | AsyncOption<U>): AsyncOption<T | U> {
 		if (this._some) {
-			return new AsyncOption(Promise.resolve(this as unknown as Some<T>));
+			return new AsyncOption(Promise.resolve(this as unknown as Option<T | U>));
 		}
 		return new AsyncOption(f());
 	}
@@ -887,7 +842,10 @@ export class OptionImpl<T> {
 	 */
 	public xor<U>(other: Option<U>): Option<T | U> {
 		if (this._some) {
-			return other._some ? None : (this as unknown as Option<T | U>);
+			if (other._some) {
+				return None;
+			}
+			return this as unknown as Option<T | U>;
 		}
 		return other;
 	}
@@ -922,78 +880,59 @@ export class OptionImpl<T> {
 		return None;
 	}
 
-	// Deprecated
-
 	/**
-	 * Returns the contained `Some` value, if it exists.
-	 *
-	 * @deprecated Use `unwrap()` instead.
+	 * @internal Use `unwrap()` on narrowed `Some` variants instead.
 	 */
-	public value(): T | undefined {
-		return this._value;
+	public [unwrapSymbol](): T {
+		if (this._some) {
+			return this._value as T;
+		}
+		throw new Panic("Called `unwrap` on a `None` value");
 	}
 }
 
+declare const tag: unique symbol;
+
 export interface Some<T> extends OptionImpl<T> {
-	[symbols.tag]: "Some";
-
+	[tag]: "Some";
 	unwrap(): T;
-	expect(message: string): T;
-
-	// Deprecated
-
-	/**
-	 * Returns the contained `Some` value, if it exists.
-	 *
-	 * @deprecated Use `unwrap()` instead.
-	 */
-	value(): T;
 }
 
-/**
- * Some value of type `T`.
- */
 export function Some<T>(value: T): Some<T> {
-	return new OptionImpl(true, value) as Some<T>;
+	const self = new OptionImpl(true, value) as Some<T>;
+	self.unwrap = self[unwrapSymbol];
+	return self;
 }
 
 export interface None<T = never> extends OptionImpl<T> {
-	[symbols.tag]: "None";
-
-	unwrap(): undefined;
-	expect(message: string): never;
-
-	// Deprecated
-
-	/**
-	 * Returns the contained `Some` value, if it exists.
-	 *
-	 * @deprecated Use `unwrap()` instead.
-	 */
-	value(): undefined;
+	[tag]: "None";
 }
 
-/**
- * No value.
- */
-export const None = new OptionImpl(false, undefined) as None;
+export const None = new OptionImpl(false, null) as None;
 
-/**
- * `Option` represents an optional value: every `Option` is either `Some` and contains a value, or `None`, and does not.
- */
 export type Option<T> = Some<T> | None<T>;
 
 // deno-lint-ignore no-namespace
 export namespace Option {
 	/**
-	 * Creates an `Option` from a nullish value.
+	 * Creates an `Option<T>` from a value that may be `null` or `undefined`.
+	 *
+	 * @param value - The value to create an `Option<T>` from.
+	 * @returns An `Option<T>` that is `Some(value)` if `value` is not `null` or `undefined`, otherwise `None`.
+	 *
+	 * @example
+	 * ```
+	 * const x = Option.fromNullish(null);
+	 * assertEquals(x, None);
+	 *
+	 * const y = Option.fromNullish(1);
+	 * assertEquals(y, Some(1));
+	 * ```
 	 */
-	export function fromNullish<T>(value: T | undefined | null): Option<T> {
-		return value == null ? None : Some(value);
+	export function fromNullish<T>(value: T | null | undefined): Option<T> {
+		if (value == null) {
+			return None;
+		}
+		return Some(value);
 	}
-
-	/**
-	 * @deprecated Use `Option.fromNullish()` instead.
-	 */
-	export const from = fromNullish;
 }

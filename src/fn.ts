@@ -9,34 +9,6 @@ import { AsyncResult } from "./async_result.ts";
 import type { InferErr, InferOk } from "./util.ts";
 
 /**
- * Wraps a function that returns any shape of `Result<any, any>` and infers its return type as `Result<T, E>`.
- *
- * Of course, you can just type your function manually with a `Result<T, E>` type if you prefer.
- *
- * @param f - The function to wrap.
- * @returns A function that returns a `Result<T, E>`.
- *
- * @example
- * ```
- * // (a: number, b: number) => Err<string> | Ok<number>
- * const divide = (a: number, b: number) => {
- *   if (b === 0) {
- *     return Err("division by zero")
- *   }
- *   return Ok(a / b)
- * }
- *
- * // (a: number, b: number) => Result<number, string>
- * const wrapped = fn(divide)
- * ```
- */
-export function fn<A extends any[], R extends Result<any, any>>(
-	f: (...args: A) => R,
-): (...args: A) => Result<InferOk<R>, InferErr<R>> {
-	return f;
-}
-
-/**
  * Wraps a function that returns any shape of `Promise<Result<any, any>>` or `AsyncResult<any, any>`
  * and wraps the return value in an `AsyncResult<T, E>`.
  *

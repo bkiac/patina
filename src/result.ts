@@ -1,7 +1,7 @@
 import { Panic, parseError } from "./error.ts";
 import { None, type Option, Some } from "./option.ts";
 import { AsyncResult } from "./async_result.ts";
-import type * as symbols from "./symbols.ts";
+import type { InferErr, InferOk } from "./util.ts";
 
 export type ResultMatch<T, E, A, B> = {
 	Ok: (value: T) => A;
@@ -13,6 +13,9 @@ export type ResultMatchAsync<T, E, A, B> = {
 	Err: (error: E) => Promise<B>;
 };
 
+const unwrapSymbol = Symbol("unwrap");
+const unwrapErrSymbol = Symbol("unwrapErr");
+
 export class ResultImpl<T, E> {
 	private readonly _ok: boolean;
 	private readonly _value: T | E;
@@ -20,18 +23,6 @@ export class ResultImpl<T, E> {
 	public constructor(ok: boolean, value: T | E) {
 		this._ok = ok;
 		this._value = value;
-
-		// Make the constructor name equal to "Result"
-		Object.defineProperty(this.constructor, "name", { value: "Result" });
-
-		Object.defineProperty(this, Symbol.iterator, {
-			// Make the iterator non-enumerable to prevent it being used in loops and equality checks
-			enumerable: false,
-			// Make the iterator non-writable to prevent modification
-			writable: false,
-			// Make the iterator non-configurable to prevent redefinition
-			configurable: false,
-		});
 	}
 
 	public get [Symbol.toStringTag](): "Ok" | "Err" {
@@ -62,18 +53,17 @@ export class ResultImpl<T, E> {
 	 *
 	 * See `tryBlock()` and `tryBlockAsync()` for more information.
 	 */
-	public [Symbol.iterator](): Generator<Err<E, never>, T> {
-		const v = this._value;
+	public *[Symbol.iterator](): Generator<Err<E, never>, T> {
 		if (this._ok) {
-			// deno-lint-ignore require-yield
-			return (function* (): Generator<Err<E, never>, T> {
-				return v as T;
-			})();
+			return this._value as T;
 		}
-		return (function* (): Generator<Err<E, never>, T> {
-			yield Err(v as E);
-			throw new Panic("Do not use this generator outside of a try block");
-		})();
+
+		// deno-lint-ignore no-this-alias
+		const self = this;
+		// @ts-expect-error -- This is structurally equivalent and safe
+		yield self;
+		// @ts-expect-error -- This is structurally equivalent and safe
+		return self as E;
 	}
 
 	/**
@@ -350,7 +340,7 @@ export class ResultImpl<T, E> {
 	 */
 	public mapAsync<U>(f: (value: T) => Promise<U>): AsyncResult<U, E> {
 		if (this._ok) {
-			return new AsyncResult(f(this._value as T).then((v) => Ok(v)));
+			return new AsyncResult(f(this._value as T).then((value) => Ok(value)));
 		}
 		return new AsyncResult(Promise.resolve(Err(this._value as E)));
 	}
@@ -482,10 +472,10 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	public mapErr<F>(f: (error: E) => F): Result<T, F> {
-		if (!this._ok) {
-			return Err(f(this._value as E));
+		if (this._ok) {
+			return Ok(this._value as T);
 		}
-		return Ok(this._value as T);
+		return Err(f(this._value as E));
 	}
 
 	/**
@@ -510,10 +500,10 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	public mapErrAsync<F>(f: (error: E) => Promise<F>): AsyncResult<T, F> {
-		if (!this._ok) {
-			return new AsyncResult(f(this._value as E).then((v) => Err(v)));
+		if (this._ok) {
+			return new AsyncResult(Promise.resolve(Ok(this._value as T)));
 		}
-		return new AsyncResult(Promise.resolve(Ok(this._value as T)));
+		return new AsyncResult(f(this._value as E).then((error) => Err(error)));
 	}
 
 	/**
@@ -557,9 +547,9 @@ export class ResultImpl<T, E> {
 	 */
 	public inspectAsync(f: (value: T) => Promise<void>): AsyncResult<T, E> {
 		if (this._ok) {
-			return new AsyncResult(f(this._value as T).then(() => this) as Promise<Result<T, E>>);
+			return new AsyncResult(f(this._value as T).then(() => this as unknown as Result<T, E>));
 		}
-		return new AsyncResult(Promise.resolve(this) as Promise<Result<T, E>>);
+		return new AsyncResult(Promise.resolve(this as unknown as Result<T, E>));
 	}
 
 	/**
@@ -600,11 +590,11 @@ export class ResultImpl<T, E> {
 	 *     .map((contents) => processContents(contents));
 	 * ```
 	 */
-	public inspectErrAsync(f: (error: E) => Promise<void>): AsyncResult<T, E> {
+	public inspectErrAsync(f: (error: E) => Promise<void>): this {
 		if (!this._ok) {
-			return new AsyncResult(f(this._value as E).then(() => this) as Promise<Result<T, E>>);
+			f(this._value as E);
 		}
-		return new AsyncResult(Promise.resolve(this) as Promise<Result<T, E>>);
+		return this;
 	}
 
 	/**
@@ -637,42 +627,7 @@ export class ResultImpl<T, E> {
 		if (this._ok) {
 			return this._value as T;
 		}
-		throw new Panic(`${message}: ${this._value}`, { cause: this._value });
-	}
-
-	/**
-	 * Returns the contained `Ok` value, if exists, otherwise returns `undefined`.
-	 *
-	 * Because this function may return `undefined`, its use is generally discouraged.
-	 * Instead, prefer to:
-	 * - Use pattern matching with `match()` and handle the `Err` case explicitly
-	 * - Use `unwrapOr()`, `unwrapOrElse()`, or similar methods
-	 *
-	 * Type is narrowed to `T` if the result is already checked to be `Ok`.
-	 *
-	 * @returns The contained value, if exists, otherwise `undefined`.
-	 *
-	 * @example
-	 * ```typescript
-	 * const x = Ok(2)
-	 * assertEquals(x.unwrap(), 2)
-	 *
-	 * const y = Err("emergency failure")
-	 * assertEquals(y.unwrap(), undefined)
-	 *
-	 * const z = Result.fromThrowable(...) // Result<T, E>
-	 * if (z.isOk()) {
-	 *     const a = z.unwrap() // `a` has type `T`
-	 * } else {
-	 *     const b = z.unwrap() // `b` has type `undefined`
-	 * }
-	 * ```
-	 */
-	public unwrap(): T | undefined {
-		if (this._ok) {
-			return this._value as T;
-		}
-		return undefined;
+		throw new Panic(message, { cause: this._value });
 	}
 
 	/**
@@ -696,42 +651,7 @@ export class ResultImpl<T, E> {
 		if (!this._ok) {
 			return this._value as E;
 		}
-		throw new Panic(`${message}: ${this._value}`, { cause: this._value });
-	}
-
-	/**
-	 * Returns the contained `Err` value, if exists, otherwise returns `undefined`.
-	 *
-	 * Because this function may return `undefined`, its use is generally discouraged.
-	 * Instead, prefer to:
-	 * - Use pattern matching with `match()` and handle the `Ok` case explicitly
-	 * - Use similar methods that handle both cases
-	 *
-	 * Type is narrowed to `E` if the result is already checked to be `Err`.
-	 *
-	 * @returns The contained error value, if exists, otherwise `undefined`.
-	 *
-	 * @example
-	 * ```typescript
-	 * const x: Result<number, string> = Ok(2);
-	 * assertEquals(x.unwrapErr(), undefined);
-	 *
-	 * const y: Result<number, string> = Err("emergency failure");
-	 * assertEquals(y.unwrapErr(), "emergency failure");
-	 *
-	 * const z = Result.fromThrowable(...); // Result<T, E>
-	 * if (z.isErr()) {
-	 *     const e = z.unwrapErr() // `e` has type `E`
-	 * } else {
-	 *     const u = z.unwrapErr() // `u` has type `undefined`
-	 * }
-	 * ```
-	 */
-	public unwrapErr(): E | undefined {
-		if (!this._ok) {
-			return this._value as E;
-		}
-		return undefined;
+		throw new Panic(message, { cause: this._value });
 	}
 
 	/**
@@ -763,7 +683,7 @@ export class ResultImpl<T, E> {
 		if (this._ok) {
 			return other;
 		}
-		return this as unknown as Result<U, E | F>;
+		return Err(this._value as E);
 	}
 
 	/**
@@ -807,7 +727,7 @@ export class ResultImpl<T, E> {
 		if (this._ok) {
 			return f(this._value as T);
 		}
-		return this as unknown as Result<U, E | F>;
+		return Err(this._value as E);
 	}
 
 	/**
@@ -853,7 +773,7 @@ export class ResultImpl<T, E> {
 		if (this._ok) {
 			return new AsyncResult(f(this._value as T));
 		}
-		return new AsyncResult(Promise.resolve(this) as Promise<Result<U, E | F>>);
+		return new AsyncResult(Promise.resolve(Err(this._value as E)));
 	}
 
 	/**
@@ -883,7 +803,7 @@ export class ResultImpl<T, E> {
 	 */
 	public or<U, F>(other: Result<U, F>): Result<T | U, F> {
 		if (this._ok) {
-			return this as unknown as Result<T | U, F>;
+			return Ok(this._value as T);
 		}
 		return other;
 	}
@@ -909,7 +829,7 @@ export class ResultImpl<T, E> {
 	 */
 	public orElse<U, F>(f: (error: E) => Result<U, F>): Result<T | U, F> {
 		if (this._ok) {
-			return this as unknown as Result<T | U, F>;
+			return Ok(this._value as T);
 		}
 		return f(this._value as E);
 	}
@@ -1031,97 +951,116 @@ export class ResultImpl<T, E> {
 	 * assertEquals(x.flatten().flatten(), Ok("hello"));
 	 * ```
 	 */
-	public flatten<U, F>(this: Result<ResultImpl<U, F>, E>): Result<U, E | F> {
+	public flatten<R extends Result<any, any>>(
+		this: Result<R, E>,
+	): Result<InferOk<R>, InferErr<R> | E> {
 		if (this._ok) {
-			return this._value as Result<U, F>;
+			return this._value as Result<InferOk<R>, InferErr<R> | E>;
 		}
 		return Err(this._value as E);
 	}
 
-	// Deprecated
-
 	/**
-	 * @deprecated You can yield the `Result` directly: `yield* Ok(1)` instead of `yield* Ok(1).try()`.
+	 * @internal Use `unwrap()` on narrowed `Ok` variants instead.
 	 */
-	public try(): Generator<Err<E, never>, T> {
-		return this[Symbol.iterator]();
+	public [unwrapSymbol](): T {
+		if (this._ok) {
+			return this._value as T;
+		}
+		throw new Panic("Called `unwrap()` on an `Err` value", {
+			cause: this._value,
+		});
 	}
 
 	/**
-	 * Returns the contained value, if it exists.
-	 *
-	 * @deprecated Use `unwrap()` instead.
+	 * @internal Use `unwrapErr()` on narrowed `Err` variants instead.
 	 */
-	public value(): T | undefined {
-		return this._ok ? (this._value as T) : undefined;
-	}
-
-	/**
-	 * Returns the contained error, if it exists.
-	 *
-	 * @deprecated Use `unwrapErr()` instead.
-	 */
-	public error(): E | undefined {
-		return this._ok ? undefined : (this._value as E);
+	public [unwrapErrSymbol](): E {
+		if (!this._ok) {
+			return this._value as E;
+		}
+		throw new Panic("Called `unwrapErr()` on an `Ok` value", {
+			cause: this._value,
+		});
 	}
 }
 
-export interface Ok<T = undefined, E = never> extends ResultImpl<T, E> {
-	[symbols.tag]: "Ok";
+declare const tag: unique symbol;
 
+export interface Ok<T, E = unknown> extends ResultImpl<T, E> {
+	[tag]: "Ok";
+
+	/**
+	 * Safely unwraps the contained `Ok` value. Only available on `Ok` variants.
+	 *
+	 * @example
+	 * ```typescript
+	 * const x: Result<number, string> = Ok(10);
+	 * if (x.isOk()) {
+	 *     assertEquals(x.unwrap(), 10);
+	 * } else {
+	 *     // TypeScript error: Property 'unwrap' does not exist on 'Err<string, number>'.
+	 *     assertEquals(x.unwrap(), 10);
+	 * }
+	 * ```
+	 */
 	unwrap(): T;
-	unwrapErr(): undefined;
-	expect(message: string): T;
-	expectErr(message: string): never;
-
-	// Deprecated
-
-	/**
-	 * @deprecated Use `unwrap()` instead.
-	 */
-	value(): T;
-	/**
-	 * @deprecated Use `unwrapErr()` instead.
-	 */
-	error(): undefined;
 }
 
 /**
- * Contains the success value.
+ * Contains the success value of a `Result`.
+ *
+ * @param value - The value to wrap in an `Ok` variant.
+ * @returns A new `Ok` variant containing the given value.
+ *
+ * @example
+ * ```typescript
+ * const x = Ok(10);
+ * assertEquals(x.unwrap(), 10);
+ * ```
  */
-export function Ok<T>(value: T): Ok<T> {
-	return new ResultImpl<T, never>(true, value) as Ok<T>;
+export function Ok<T, E = unknown>(value: T): Ok<T, E> {
+	const self = new ResultImpl<T, E>(true, value) as Ok<T, E>;
+	self.unwrap = self[unwrapSymbol];
+	return self;
 }
 
-export interface Err<E = undefined, T = never> extends ResultImpl<T, E> {
-	[symbols.tag]: "Err";
+/**
+ * Contains the error value of a `Result`.
+ *
+ * @param value - The value to wrap in an `Err` variant.
+ * @returns A new `Err` variant containing the given value.
+ *
+ * @example
+ * ```typescript
+ * const x = Err("error");
+ * assertEquals(x.unwrapErr(), "error");
+ * ```
+ */
+export interface Err<E, T = unknown> extends ResultImpl<T, E> {
+	[tag]: "Err";
 
-	unwrap(): undefined;
+	/**
+	 * Safely unwraps the contained `Err` value. Only available on `Err` variants.
+	 *
+	 * @example
+	 * ```typescript
+	 * const x: Result<number, string> = Err("error");
+	 * if (x.isErr()) {
+	 *     assertEquals(x.unwrapErr(), "error");
+	 * } else {
+	 *     // TypeScript error: Property 'unwrapErr' does not exist on 'Ok<number, string>'.
+	 *     assertEquals(x.unwrapErr(), "error");
+	 * }
+	 * ```
+	 */
 	unwrapErr(): E;
-	expect(message: string): never;
-	expectErr(message: string): E;
-
-	// Deprecated
-
-	/**
-	 * Returns the contained value, if it exists.
-	 *
-	 * @deprecated Use `unwrap()` instead.
-	 */
-	value(): undefined;
-	/**
-	 * Returns the contained value, if it exists.
-	 *
-	 * @deprecated Use `unwrapErr()` instead.
-	 */
-	error(): E;
 }
 
-/**
- * Contains the error value.
- */
-export function Err<E>(error: E): Err<E> {
-	return new ResultImpl<never, E>(false, error) as Err<E>;
+export function Err<E, T = unknown>(value: E): Err<E, T> {
+	const self = new ResultImpl<T, E>(false, value) as Err<E, T>;
+	self.unwrapErr = self[unwrapErrSymbol];
+	return self;
 }
 
 /**
@@ -1237,16 +1176,11 @@ export namespace Result {
 	export function fromThrowableAsync<T>(f: () => Promise<T>): AsyncResult<T, Error> {
 		async function safe(): Promise<Result<T, Error>> {
 			try {
-				return Ok(await f());
+				return Ok(await f() as T);
 			} catch (error) {
 				return Err(handleCaughtError(error));
 			}
 		}
 		return new AsyncResult(safe());
 	}
-
-	/**
-	 * @deprecated Use `Result.fromThrowable()` instead.
-	 */
-	export const from = fromThrowable;
 }

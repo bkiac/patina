@@ -1,5 +1,5 @@
 // deno-lint-ignore-file require-await
-import { describe, it, test } from "@std/testing/bdd";
+import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import { assertSpyCall, assertSpyCalls, spy } from "@std/testing/mock";
 import { expectTypeOf } from "expect-type";
@@ -22,15 +22,16 @@ describe("core", () => {
 		expect(r.isOk()).toEqual(true);
 		expect(r.isErr()).toEqual(false);
 
-		expect(r.value()).toEqual(42);
-		expectTypeOf(r.value).toEqualTypeOf<() => number>();
-		expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
-
 		expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
-		expectTypeOf(r.unwrapErr).toEqualTypeOf<() => undefined>();
+		expect(r.unwrap()).toEqual(42);
+
+		// @ts-expect-error - unwrapErr should not exist on Ok
+		expectTypeOf(r.unwrapErr).toEqualTypeOf<any>();
 
 		expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
-		expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
+		expect(r.expect("")).toEqual(42);
+
+		expect(() => r.expectErr("")).toThrow(Panic);
 	});
 
 	it("returns an Err result", () => {
@@ -39,83 +40,40 @@ describe("core", () => {
 		expect(r.isOk()).toEqual(false);
 		expect(r.isErr()).toEqual(true);
 
-		expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
-		expect(r.error()).toEqual("error");
-		expectTypeOf(r.error).toEqualTypeOf<() => string>();
+		// @ts-expect-error - unwrap should not exist on Err
+		expectTypeOf(r.unwrap).toEqualTypeOf<any>();
 
-		expectTypeOf(r.unwrap).toEqualTypeOf<() => undefined>();
 		expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
+		expect(r.unwrapErr()).toEqual("error");
 
-		expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
+		expect(() => r.expect("")).toThrow(Panic);
+
 		expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
+		expect(r.expectErr("")).toEqual("error");
 	});
 
 	it("works as discriminated union", () => {
 		const r = TestOk<number, string>(42);
-		expectTypeOf(r.value()).toEqualTypeOf<number | undefined>();
-		expectTypeOf(r.error()).toEqualTypeOf<string | undefined>();
+
+		// @ts-expect-error - unwrap should not exist on Result
+		expectTypeOf(r.unwrap).toEqualTypeOf<any>();
+		// @ts-expect-error - unwrapErr should not exist on Result
+		expectTypeOf(r.unwrapErr).toEqualTypeOf<any>();
+
+		// These do not work for some reason, value and error are reported to be `never`
+		// but type hints are correct if I hover over them.
+		// expectTypeOf(r.value).toEqualTypeOf<() => number | undefined>();
+		// expectTypeOf(r.error).toEqualTypeOf<() => number | undefined>();
+
 		if (r.isOk()) {
-			expectTypeOf(r.value).toEqualTypeOf<() => number>();
-			expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
-
 			expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
-			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => undefined>();
-
-			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
-			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
+			// @ts-expect-error - unwrapErr should not exist on Err
+			expectTypeOf(r.unwrapErr).toEqualTypeOf<any>();
 		} else {
-			expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
-			expectTypeOf(r.error).toEqualTypeOf<() => string>();
-
-			expectTypeOf(r.unwrap).toEqualTypeOf<() => undefined>();
+			// @ts-expect-error - unwrap should not exist on Err
+			expectTypeOf(r.unwrap).toEqualTypeOf<any>();
 			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
-
-			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
-			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
 		}
-
-		if (r.isErr()) {
-			expectTypeOf(r.value).toEqualTypeOf<() => undefined>();
-			expectTypeOf(r.error).toEqualTypeOf<() => string>();
-
-			expectTypeOf(r.unwrap).toEqualTypeOf<() => undefined>();
-			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => string>();
-
-			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => never>();
-			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => string>();
-		} else {
-			expectTypeOf(r.value).toEqualTypeOf<() => number>();
-			expectTypeOf(r.error).toEqualTypeOf<() => undefined>();
-
-			expectTypeOf(r.unwrap).toEqualTypeOf<() => number>();
-			expectTypeOf(r.unwrapErr).toEqualTypeOf<() => undefined>();
-
-			expectTypeOf(r.expect).toEqualTypeOf<(msg: string) => number>();
-			expectTypeOf(r.expectErr).toEqualTypeOf<(msg: string) => never>();
-		}
-	});
-
-	test("equality check", () => {
-		// Check if implementing iterator does not mess up tests
-		let a: Result<number, string> = Ok(0);
-		let b: Result<number, string> = Ok(0);
-		expect(a).toEqual(b);
-
-		a = Err("error");
-		b = Err("error");
-		expect(a).toEqual(b);
-
-		a = Ok(0);
-		b = Err("error");
-		expect(a).not.toEqual(b);
-
-		a = Ok(0);
-		b = Ok(1);
-		expect(a).not.toEqual(b);
-
-		a = Err("error");
-		b = Err("other");
-		expect(a).not.toEqual(b);
 	});
 });
 
@@ -147,51 +105,56 @@ describe("and", () => {
 	it("returns the error when Ok and Err", () => {
 		const a = TestOk<string, string>("a");
 		const b = TestErr<string, string>("b");
-		expect(a.and(b).unwrapErr()).toEqual("b");
+		expect(a.and(b)).toEqual(b);
 	});
 
 	it("returns the late value when Ok and Ok", () => {
 		const a = TestOk<string, string>("a");
 		const b = TestOk<string, string>("b");
-		expect(a.and(b).unwrap()).toEqual("b");
+		expect(a.and(b)).toEqual(b);
 	});
 
 	it("returns the error when Err and Ok", () => {
 		const a = TestErr<string, string>("a");
 		const b = TestOk<string, string>("b");
-		expect(a.and(b).unwrapErr()).toEqual("a");
+		expect(a.and(b)).toEqual(a);
 	});
 
 	it("returns the early error when Err and Err", () => {
 		const a = TestErr<number, string>("a");
 		const b = TestErr<number, string>("b");
-		expect(a.and(b).unwrapErr()).toEqual("a");
+		expect(a.and(b)).toEqual(a);
 	});
 });
 
 describe("andThen", () => {
 	it("returns the mapped value for an Ok result", () => {
 		const a = TestOk<number, string>(0);
-		expect(a.andThen((value) => Ok(value + 1)).unwrap()).toEqual(1);
+		expect(a.andThen((value) => Ok(value + 1)).expect("ok")).toEqual(1);
 	});
 
 	it("returns the result for an Err result", () => {
 		const a = TestErr<number, string>("early error");
-		expect(a.andThen((value) => Ok(value + 1)).unwrapErr()).toEqual(a.unwrapErr());
+		expect(a.andThen((value) => Ok(value + 1)).expectErr("err")).toEqual(
+			a.expectErr("err"),
+		);
 	});
 });
 
 describe("andThenAsync", () => {
 	it("returns the mapped value for an Ok result", async () => {
 		const a = TestOk<number, string>(0);
-		await expect(a.andThenAsync(async (value) => Ok(value + 1)).unwrap()).resolves.toEqual(1);
+		await expect(a.andThenAsync(async (value) => Ok(value + 1)).expect("ok")).resolves.toEqual(
+			1,
+		);
 	});
 
 	it("returns the result for an Err result", async () => {
 		const a = TestErr<number, string>("early error");
-		await expect(a.andThenAsync(async (value) => Ok(value + 1)).unwrapErr()).resolves.toEqual(
-			a.unwrapErr(),
-		);
+		await expect(a.andThenAsync(async (value) => Ok(value + 1)).expectErr("err")).resolves
+			.toEqual(
+				a.expectErr("err"),
+			);
 	});
 });
 
@@ -229,20 +192,20 @@ describe("flatten", () => {
 		const inner = TestOk<number, string>(42);
 		const flattened = TestOk<Result<number, string>, boolean>(inner).flatten();
 		expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>();
-		expect(flattened.unwrap()).toEqual(inner.unwrap());
+		expect(flattened.expect("ok")).toEqual(inner.expect("ok"));
 	});
 
 	it("works with an Ok<Err> result", () => {
 		const inner = TestErr<number, string>("error");
 		const flattened = TestOk<Result<number, string>, boolean>(inner).flatten();
 		expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>();
-		expect(flattened.unwrapErr()).toEqual(inner.unwrapErr());
+		expect(flattened.expectErr("err")).toEqual(inner.expectErr("err"));
 	});
 
 	it("works with an Err result", () => {
 		const flattened = TestErr<Result<number, string>, boolean>(true).flatten();
 		expectTypeOf(flattened).toEqualTypeOf<Result<number, string | boolean>>();
-		expect(flattened.unwrapErr()).toEqual(true);
+		expect(flattened.expectErr("err")).toEqual(true);
 	});
 
 	it("works with non-primitive value or error", () => {
@@ -331,13 +294,13 @@ describe("map", () => {
 	it("returns the mapped value for an Ok result", () => {
 		const result = TestOk<number, string>(42);
 		const result2 = result.map((value) => value * 2);
-		expect(result2.unwrap()).toEqual(84);
+		expect(result2.expect("ok")).toEqual(84);
 	});
 
 	it("returns the original Err for an Err result", () => {
 		const result = TestErr<number, string>("error");
 		const result2 = result.map((value) => value * 2);
-		expect(result2.unwrapErr()).toEqual(result.unwrapErr());
+		expect(result2.expectErr("err")).toEqual(result.expectErr("err"));
 	});
 });
 
@@ -345,13 +308,13 @@ describe("mapAsync", () => {
 	it("returns the mapped value for an Ok result", async () => {
 		const a = TestOk<number, string>(42);
 		const b = a.mapAsync(async (value) => value * 2);
-		await expect(b.unwrap()).resolves.toEqual(84);
+		await expect(b.expect("ok")).resolves.toEqual(84);
 	});
 
 	it("returns the original Err for an Err result", async () => {
 		const a = TestErr<number, string>("error");
 		const b = a.mapAsync(async (value) => value * 2);
-		await expect(b.unwrapErr()).resolves.toEqual(a.unwrapErr());
+		await expect(b.expectErr("err")).resolves.toEqual(a.expectErr("err"));
 	});
 });
 
@@ -359,13 +322,13 @@ describe("mapErr", () => {
 	it("returns the mapped error for an Err result", () => {
 		const a = TestErr<number, string>("error");
 		const b = a.mapErr(() => "new error");
-		expect(b.unwrapErr()).toEqual("new error");
+		expect(b.expectErr("err")).toEqual("new error");
 	});
 
 	it("returns the original Ok for an Err result", () => {
 		const a = TestOk<number, string>(0);
 		const b = a.mapErr(() => "new error");
-		expect(b.unwrap()).toEqual(0);
+		expect(b.expect("ok")).toEqual(0);
 	});
 });
 
@@ -373,13 +336,13 @@ describe("mapErrAsync", () => {
 	it("returns the mapped error for an Err result", async () => {
 		const a = TestErr<number, string>("error");
 		const b = a.mapErrAsync(async () => "new error");
-		await expect(b.unwrapErr()).resolves.toEqual("new error");
+		await expect(b.expectErr("err")).resolves.toEqual("new error");
 	});
 
 	it("returns the original Ok for an Err result", async () => {
 		const a = TestOk<number, string>(0);
 		const b = a.mapErrAsync(async () => "new error");
-		await expect(b.unwrap()).resolves.toEqual(a.unwrap());
+		await expect(b.expect("ok")).resolves.toEqual(a.expect("ok"));
 	});
 });
 
@@ -421,75 +384,85 @@ describe("or", () => {
 	it("returns the value when Ok or Err", () => {
 		const a = TestOk<string, string>("a");
 		const b = TestErr<string, string>("b");
-		expect(a.or(b).unwrap()).toEqual("a");
+		expect(a.or(b).expect("ok")).toEqual("a");
 	});
 
 	it("returns the early value when Ok or Ok", () => {
 		const a = TestOk<string, string>("a");
 		const b = TestOk<string, string>("b");
-		expect(a.or(b).unwrap()).toEqual("a");
+		expect(a.or(b).expect("ok")).toEqual("a");
 	});
 
 	it("returns the late value when Err or Ok", () => {
 		const a = TestErr<string, string>("a");
 		const b = TestOk<string, string>("b");
-		expect(a.or(b).unwrap()).toEqual("b");
+		expect(a.or(b).expect("ok")).toEqual("b");
 	});
 
 	it("returns the late error when Err and Err", () => {
 		const a = TestErr<string, string>("a");
 		const b = TestErr<string, string>("b");
-		expect(a.or(b).unwrapErr()).toEqual("b");
+		expect(a.or(b).expectErr("err")).toEqual("b");
 	});
 });
 
 describe("orElse", () => {
 	it("returns the result for an Ok result", () => {
 		const a = TestOk<number, string>(0);
-		expect(a.orElse(() => Ok(1)).unwrap()).toEqual(a.unwrap());
+		expect(a.orElse(() => Ok(1)).expect("ok")).toEqual(a.expect("ok"));
 	});
 
 	it("returns the mapped value for an Err result", () => {
 		const a = TestErr<number, string>("early error");
-		expect(a.orElse(() => Ok(1)).unwrap()).toEqual(1);
-		expect(a.orElse(() => Err(1)).unwrapErr()).toEqual(1);
+		expect(a.orElse(() => Ok(1)).expect("ok")).toEqual(1);
+		expect(a.orElse(() => Err(1)).expectErr("err")).toEqual(1);
 	});
 });
 
 describe("orElseAsync", () => {
 	it("returns the result for an Ok result", async () => {
 		const a = TestOk<number, string>(0);
-		await expect(a.orElseAsync(async () => Ok(1)).unwrap()).resolves.toEqual(0);
+		await expect(a.orElseAsync(async () => Ok(1)).expect("ok")).resolves.toEqual(0);
 	});
 
 	it("returns the mapped value for an Err result", async () => {
 		const a = TestErr<number, string>("early error");
-		await expect(a.orElseAsync(async () => Ok(1)).unwrap()).resolves.toEqual(1);
-		await expect(a.orElseAsync(async () => Err(1)).unwrapErr()).resolves.toEqual(1);
+		await expect(a.orElseAsync(async () => Ok(1)).expect("ok")).resolves.toEqual(1);
+		await expect(a.orElseAsync(async () => Err(1)).expectErr("err")).resolves.toEqual(1);
 	});
 });
 
 describe("unwrap", () => {
 	it("returns the value for an Ok result", () => {
 		const result = TestOk<number, string>(42);
-		expect(result.unwrap()).toEqual(42);
+		if (result.isOk()) {
+			expect(result.unwrap()).toEqual(42);
+		} else {
+			throw new Error("should not happen");
+		}
 	});
 
-	it("returns undefined for an Err result", () => {
+	it("should not exist on Err", () => {
 		const result = TestErr<number, string>("error");
-		expect(result.unwrap()).toEqual(undefined);
+		// @ts-expect-error - unwrap should not exist on Err
+		expectTypeOf(result.unwrap).toEqualTypeOf<any>();
 	});
 });
 
 describe("unwrapErr", () => {
 	it("returns the error for an Err result", () => {
 		const result = TestErr<number, string>("error");
-		expect(result.unwrapErr()).toEqual("error");
+		if (result.isErr()) {
+			expect(result.unwrapErr()).toEqual("error");
+		} else {
+			throw new Error("should not happen");
+		}
 	});
 
-	it("returns undefined for an Ok result", () => {
+	it("does not exist on Ok", () => {
 		const result = TestOk<number, string>(42);
-		expect(result.unwrapErr()).toEqual(undefined);
+		// @ts-expect-error - unwrapErr should not exist on Ok
+		expectTypeOf(result.unwrapErr).toEqualTypeOf<any>();
 	});
 });
 
@@ -547,8 +520,8 @@ describe("iterator", () => {
 		}
 
 		const result = gen();
-		expect(result.next().value.unwrap()).toEqual(1);
-		expect(result.next().value.unwrapErr()).toEqual("error");
-		expect(result.next().value.unwrap()).toEqual(2);
+		expect(result.next().value.expect("ok")).toEqual(1);
+		expect(result.next().value.expectErr("err")).toEqual("error");
+		expect(result.next().value.expect("ok")).toEqual(2);
 	});
 });

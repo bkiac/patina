@@ -4,7 +4,12 @@
  */
 
 import { AsyncResult } from "./async_result.ts";
-import { None, type Option, type OptionMatch, type OptionMatchAsync, Some } from "./option.ts";
+import type { Option, OptionMatch, OptionMatchAsync } from "./option.ts";
+
+type OptionPromiseType<T> =
+	| Promise<Option<T>>
+	| PromiseLike<Option<T>>
+	| AsyncOption<T>;
 
 /**
  * A promise that resolves to an `Option`.
@@ -15,13 +20,13 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	/**
 	 * The promise that resolves to an `Option`.
 	 */
-	public readonly promise: Promise<Option<T>> | PromiseLike<Option<T>> | AsyncOption<T>;
+	public readonly promise: OptionPromiseType<T>;
 
 	/**
 	 * Creates a new `AsyncOption`.
 	 * @param promise - The promise that resolves to an `Option`.
 	 */
-	public constructor(promise: Promise<Option<T>> | PromiseLike<Option<T>> | AsyncOption<T>) {
+	public constructor(promise: OptionPromiseType<T>) {
 		this.promise = promise;
 	}
 
@@ -611,33 +616,6 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 	}
 
 	/**
-	 * Returns the contained `Some` value, if exists, otherwise returns `undefined`.
-	 *
-	 * Type is narrowed to `T` if the option is already checked to be `Some`.
-	 *
-	 * @returns The contained value, if exists, otherwise `undefined`.
-	 *
-	 * @example
-	 * ```
-	 * const x = AsyncSome("air")
-	 * assertEquals(await x.unwrap(), "air")
-	 *
-	 * const y = None
-	 * assertEquals(await y.unwrap(), undefined)
-	 *
-	 * const z = await Promise.resolve(Option.fromNullish(...)) // Option<T>
-	 * if (z.isSome()) {
-	 * 	const a = await z.unwrap() // `a` has type `T`
-	 * } else {
-	 * 	const b = z.unwrap() // `b` has type `undefined`
-	 * }
-	 * ```
-	 */
-	public async unwrap(): Promise<T | undefined> {
-		return (await this).unwrap();
-	}
-
-	/**
 	 * Returns the contained `Some` value, if exists.
 	 *
 	 * Otherwise, returns the provided default value.
@@ -723,19 +701,4 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 			this.then((thisOption) => other.then((otherOption) => thisOption.xor(otherOption))),
 		);
 	}
-
-	// Deprecated
-
-	/**
-	 * @deprecated Use `unwrap()` instead.
-	 */
-	async value(): Promise<T | undefined> {
-		return (await this).value();
-	}
 }
-
-export function AsyncSome<T>(value: T): AsyncOption<T> {
-	return new AsyncOption(Promise.resolve(Some(value)));
-}
-
-export const AsyncNone: AsyncOption<never> = new AsyncOption(Promise.resolve(None));

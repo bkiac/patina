@@ -1,9 +1,9 @@
 import { asyncFn } from "../src/fn.ts";
-import { Ok } from "../src/result.ts";
+import { Ok, type Result } from "../src/result.ts";
 import { tryBlockAsync } from "../src/try.ts";
 
 // deno-lint-ignore require-await
-const getOne = asyncFn(async () => Ok(1));
+const getOne = asyncFn(async (): Promise<Result<number, string>> => Ok(1));
 
 function chain() {
 	return getOne().map((n) => n + 1);
@@ -14,7 +14,7 @@ const af = asyncFn(async () => {
 	if (one.isErr()) {
 		return one;
 	}
-	return Ok(one.unwrap() + 1);
+	return Ok(one.expect("ok") + 1);
 });
 
 function tba() {

@@ -4,7 +4,7 @@
  */
 
 import { type Err, type Ok, type Result, ResultImpl } from "./result.ts";
-import { type Option, OptionImpl } from "./option.ts";
+import { type Option, OptionImpl, type Some } from "./option.ts";
 import { AsyncResult } from "./async_result.ts";
 import { AsyncOption } from "./async_option.ts";
 
@@ -19,18 +19,9 @@ export type InferOk<T> = T extends Ok<infer O, any> ? O : never;
 export type InferErr<T> = T extends Err<infer E, any> ? E : never;
 
 /**
- * Extracts the `Ok` type from a `Result`.
+ * Infers the `Some` type from an `Option`.
  */
-export type ExtractOk<T> = T extends Ok<infer O, any> ? O
-	: T extends Result<infer O, infer _> ? O
-	: never;
-
-/**
- * Extracts the `Err` type from a `Result`.
- */
-export type ExtractErr<T> = T extends Err<infer E, any> ? E
-	: T extends Result<infer _, infer E> ? E
-	: never;
+export type InferSome<T> = T extends Some<infer S> ? S : never;
 
 /**
  * Checks if a value is a `Result`.

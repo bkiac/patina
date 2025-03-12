@@ -9,11 +9,11 @@ import { None, Some } from "../src/option.ts";
 import { ErrorWithTag, Panic } from "../src/error.ts";
 
 function TestOkPromise<T, E>(value: T) {
-	return new AsyncResult<T, E>(Promise.resolve(Ok<T>(value)));
+	return new AsyncResult<T, E>(Promise.resolve(Ok<T, E>(value)));
 }
 
 function TestErrPromise<T, E>(error: E) {
-	return new AsyncResult<T, E>(Promise.resolve(Err<E>(error)));
+	return new AsyncResult<T, E>(Promise.resolve(Err<E, T>(error)));
 }
 
 function TestOk<T, E>(value: T): Result<T, E> {
@@ -42,51 +42,56 @@ describe("and", () => {
 	it("returns the error when Ok and Err", async () => {
 		const a = TestOkPromise(1);
 		const b = TestErrPromise("late error");
-		await expect(a.and(b).unwrapErr()).resolves.toEqual("late error");
+		await expect(a.and(b).expectErr("err")).resolves.toEqual("late error");
 	});
 
 	it("returns the late value when Ok and Ok", async () => {
 		const a = TestOkPromise(1);
 		const b = TestOkPromise(2);
-		await expect(a.and(b).unwrap()).resolves.toEqual(2);
+		await expect(a.and(b).expect("ok")).resolves.toEqual(2);
 	});
 
 	it("returns the error when Err and Ok", async () => {
 		const a = TestErrPromise("early error");
 		const b = TestOkPromise(1);
-		await expect(a.and(b).unwrapErr()).resolves.toEqual("early error");
+		await expect(a.and(b).expectErr("err")).resolves.toEqual("early error");
 	});
 
 	it("returns the early error when Err and Err", async () => {
 		const a = TestErrPromise("early error");
 		const b = TestErrPromise("late error");
-		await expect(a.and(b).unwrapErr()).resolves.toEqual("early error");
+		await expect(a.and(b).expectErr("err")).resolves.toEqual("early error");
 	});
 });
 
 describe("andThen", () => {
 	it("returns the mapped value for an Ok result", async () => {
 		const a = TestOkPromise(0);
-		await expect(a.andThen((value) => Ok(value + 1)).unwrap()).resolves.toEqual(1);
+		await expect(a.andThen((value) => Ok(value + 1)).expect("ok")).resolves.toEqual(1);
 	});
 
 	it("returns the result for an Err result", async () => {
 		const a = TestErrPromise<number, string>("error");
-		await expect(a.andThen((value) => Ok(value + 1)).unwrapErr()).resolves.toEqual("error");
+		await expect(a.andThen((value) => Ok(value + 1)).expectErr("err")).resolves.toEqual(
+			"error",
+		);
 	});
 });
 
 describe("andThenAsync", () => {
 	it("returns the mapped value for an Ok result", async () => {
 		const a = TestOkPromise<number, string>(0);
-		await expect(a.andThenAsync(async (value) => Ok(value + 1)).unwrap()).resolves.toEqual(1);
+		await expect(a.andThenAsync(async (value) => Ok(value + 1)).expect("ok")).resolves.toEqual(
+			1,
+		);
 	});
 
 	it("returns the result for an Err result", async () => {
 		const a = TestErrPromise<number, string>("error");
-		await expect(a.andThenAsync(async (value) => Ok(value + 1)).unwrapErr()).resolves.toEqual(
-			"error",
-		);
+		await expect(a.andThenAsync(async (value) => Ok(value + 1)).expectErr("err")).resolves
+			.toEqual(
+				"error",
+			);
 	});
 });
 
@@ -122,20 +127,20 @@ describe("flatten", () => {
 		const inner = TestOk<number, string>(42);
 		const flattened = TestOkPromise<Result<number, string>, boolean>(inner).flatten();
 		expectTypeOf(flattened).toEqualTypeOf<AsyncResult<number, string | boolean>>();
-		await expect(flattened.unwrap()).resolves.toEqual(inner.unwrap());
+		await expect(flattened.expect("ok")).resolves.toEqual(inner.expect("ok"));
 	});
 
 	it("works with an Ok<Err> result", async () => {
 		const inner = TestErr<number, string>("error");
 		const flattened = TestOkPromise<Result<number, string>, boolean>(inner).flatten();
 		expectTypeOf(flattened).toEqualTypeOf<AsyncResult<number, string | boolean>>();
-		await expect(flattened.unwrapErr()).resolves.toEqual(inner.unwrapErr());
+		await expect(flattened.expectErr("err")).resolves.toEqual(inner.expectErr("err"));
 	});
 
 	it("works with an Err result", async () => {
 		const flattened = TestErrPromise<Result<number, string>, boolean>(true).flatten();
 		expectTypeOf(flattened).toEqualTypeOf<AsyncResult<number, string | boolean>>();
-		await expect(flattened.unwrapErr()).resolves.toEqual(true);
+		await expect(flattened.expectErr("err")).resolves.toEqual(true);
 	});
 
 	it("works with non-primitive value or error", () => {
@@ -223,7 +228,7 @@ describe("map", () => {
 	it("returns the mapped value for an Ok result", async () => {
 		const result = TestOkPromise<number, string>(42);
 		const result2 = result.map((value) => value * 2);
-		await expect(result2.unwrap()).resolves.toEqual(84);
+		await expect(result2.expect("ok")).resolves.toEqual(84);
 	});
 
 	it("returns the original Err for an Err result", async () => {
@@ -231,7 +236,7 @@ describe("map", () => {
 		const result = TestErrPromise<number, Error>(error);
 		const result2 = result.map((value) => value * 2);
 		const awaitedResult = await result;
-		await expect(result2.unwrapErr()).resolves.toEqual(awaitedResult.unwrapErr());
+		await expect(result2.expectErr("err")).resolves.toEqual(awaitedResult.expectErr("err"));
 	});
 });
 
@@ -239,14 +244,14 @@ describe("mapAsync", () => {
 	it("returns the mapped value for an Ok result", async () => {
 		const a = TestOkPromise<number, string>(42);
 		const b = a.mapAsync(async (value) => value * 2);
-		await expect(b.unwrap()).resolves.toEqual(84);
+		await expect(b.expect("ok")).resolves.toEqual(84);
 	});
 
 	it("returns the original Err for an Err result", async () => {
 		const a = TestErrPromise<number, string>("error");
 		const b = a.map((value) => value * 2);
 		const awaitedResult = await a;
-		await expect(b.unwrapErr()).resolves.toEqual(awaitedResult.unwrapErr());
+		await expect(b.expectErr("err")).resolves.toEqual(awaitedResult.expectErr("err"));
 	});
 });
 
@@ -254,13 +259,13 @@ describe("mapErr", () => {
 	it("returns the mapped error for an Err result", async () => {
 		const a = TestErrPromise<number, string>("error");
 		const b = a.mapErr(() => "new error");
-		await expect(b.unwrapErr()).resolves.toEqual("new error");
+		await expect(b.expectErr("err")).resolves.toEqual("new error");
 	});
 
 	it("returns the original Ok for an Err result", async () => {
 		const result = TestOkPromise<number, string>(42);
 		const result2 = result.mapErr(() => new Error("Error"));
-		await expect(result2.unwrap()).resolves.toEqual(42);
+		await expect(result2.expect("ok")).resolves.toEqual(42);
 	});
 });
 
@@ -268,13 +273,13 @@ describe("mapErr", () => {
 	it("returns the mapped error for an Err result", async () => {
 		const a = TestErrPromise<number, string>("string");
 		const b = a.mapErrAsync(async () => "error");
-		await expect(b.unwrapErr()).resolves.toEqual("error");
+		await expect(b.expectErr("err")).resolves.toEqual("error");
 	});
 
 	it("returns the original Ok for an Err result", async () => {
 		const a = TestOkPromise<number, string>(42);
 		const b = a.mapErrAsync(async () => new Error("Error"));
-		await expect(b.unwrap()).resolves.toEqual(42);
+		await expect(b.expect("ok")).resolves.toEqual(42);
 	});
 });
 
@@ -317,77 +322,51 @@ describe("or", () => {
 	it("returns the value when Ok or Err", async () => {
 		const a = TestOkPromise("a");
 		const b = TestErrPromise("b");
-		await expect(a.or(b).unwrap()).resolves.toEqual("a");
+		await expect(a.or(b).expect("ok")).resolves.toEqual("a");
 	});
 
 	it("returns the early value when Ok or Ok", async () => {
 		const a = TestOkPromise("a");
 		const b = TestOkPromise("b");
-		await expect(a.or(b).unwrap()).resolves.toEqual("a");
+		await expect(a.or(b).expect("ok")).resolves.toEqual("a");
 	});
 
 	it("returns the late value when Err or Ok", async () => {
 		const a = TestErrPromise("a");
 		const b = TestOkPromise("b");
-		await expect(a.or(b).unwrap()).resolves.toEqual("b");
+		await expect(a.or(b).expect("ok")).resolves.toEqual("b");
 	});
 
 	it("returns the late error when Err and Err", async () => {
 		const a = TestErrPromise("a");
 		const b = TestErrPromise("b");
-		await expect(a.or(b).unwrapErr()).resolves.toEqual("b");
+		await expect(a.or(b).expectErr("err")).resolves.toEqual("b");
 	});
 });
 
 describe("orElse", () => {
 	it("returns the result for an Ok result", async () => {
 		const a = TestOkPromise(1);
-		await expect(a.orElse(() => Ok(1)).unwrap()).resolves.toEqual(1);
+		await expect(a.orElse(() => Ok(1)).expect("ok")).resolves.toEqual(1);
 	});
 
 	it("returns the mapped value for an Err result", async () => {
 		const a = TestErrPromise("error");
-		await expect(a.orElse(() => Ok(1)).unwrap()).resolves.toEqual(1);
-		await expect(a.orElse(() => Err(1)).unwrapErr()).resolves.toEqual(1);
+		await expect(a.orElse(() => Ok(1)).expect("ok")).resolves.toEqual(1);
+		await expect(a.orElse(() => Err(1)).expectErr("err")).resolves.toEqual(1);
 	});
 });
 
 describe("orElseAsync", () => {
 	it("returns the result for an Ok result", async () => {
 		const a = TestOkPromise<number, string>(0);
-		await expect(a.orElseAsync(async () => Ok(1)).unwrap()).resolves.toEqual(0);
+		await expect(a.orElseAsync(async () => Ok(1))).resolves.toEqual(Ok(0));
 	});
 
 	it("returns the mapped value for an Err result", async () => {
 		const a = TestErrPromise<string, string>("original");
-		await expect(a.orElseAsync(async () => Ok(1)).unwrap()).resolves.toEqual(1);
-		await expect(a.orElseAsync(async () => Err(1)).unwrapErr()).resolves.toEqual(1);
-	});
-});
-
-describe("unwrap", () => {
-	it("returns the value for an Ok result", async () => {
-		const result = TestOkPromise<number, string>(42);
-		await expect(result.unwrap()).resolves.toEqual(42);
-	});
-
-	it("returns undefined for an Err result", async () => {
-		const error = new Error("Test error");
-		const result = TestErrPromise<number, Error>(error);
-		await expect(result.unwrap()).resolves.toEqual(undefined);
-	});
-});
-
-describe("unwrapErr", () => {
-	it("returns the error for an Err result", async () => {
-		const error = new Error("Test error");
-		const result = TestErrPromise<number, Error>(error);
-		await expect(result.unwrapErr()).resolves.toEqual(error);
-	});
-
-	it("returns undefined for an Ok result", async () => {
-		const result = TestOkPromise<number, string>(42);
-		await expect(result.unwrapErr()).resolves.toEqual(undefined);
+		await expect(a.orElseAsync(async () => Ok(0))).resolves.toEqual(Ok(0));
+		await expect(a.orElseAsync(async () => Err(0))).resolves.toEqual(Err(0));
 	});
 });
 
