@@ -428,7 +428,7 @@ describe("all", () => {
 			expectTypeOf(result).toEqualTypeOf<AsyncResult<[number, string], number | string>>();
 		});
 
-		it("infers iterable", () => {
+		it("infers array", () => {
 			const array = [
 				TestOkPromise<number, number>(0),
 				TestOkPromise<string, string>("s"),
@@ -450,9 +450,9 @@ describe("all", () => {
 
 	it("returns the values for an Err result", async () => {
 		let timeoutId: number;
-		const long: AsyncResult<number, string> = new AsyncResult(
+		const long: AsyncResult<string, string> = new AsyncResult(
 			new Promise((resolve) => {
-				timeoutId = setTimeout(resolve, 100, Ok(2));
+				timeoutId = setTimeout(resolve, 100, Ok("s"));
 			}),
 		);
 
@@ -482,7 +482,7 @@ describe("allSettled", () => {
 			>();
 		});
 
-		it("infers iterable", () => {
+		it("infers array", () => {
 			const array = [
 				TestOkPromise<number, number>(0),
 				TestOkPromise<string, string>("s"),
@@ -498,33 +498,50 @@ describe("allSettled", () => {
 		const result = AsyncResult.allSettled([
 			AsyncOk(0),
 			AsyncErr("error"),
-			AsyncOk(1),
+			AsyncOk("s"),
 		]);
 		await expect(result).resolves.toEqual([
 			Ok(0),
 			Err("error"),
-			Ok(1),
+			Ok("s"),
 		]);
 	});
 });
 
-// describe("any", () => {
-// 	it("returns the values for an Ok result", async () => {
-// 		const result = AsyncResult.any([
-// 			AsyncOk(1),
-// 			AsyncErr("error"),
-// 		]);
-// 		expectTypeOf(result).toEqualTypeOf<AsyncResult<number, string>>();
-// 		await expect(result.expect("ok")).resolves.toEqual(1);
-// 	});
+describe("any", () => {
+	describe("types", () => {
+		it("infers readonly array", () => {
+			const result = AsyncResult.any([
+				TestOkPromise<number, number>(0),
+				TestOkPromise<string, string>("s"),
+			]);
+			expectTypeOf(result).toEqualTypeOf<AsyncResult<number | string, [number, string]>>();
+		});
 
-// 	it("returns the values for an Err result", async () => {
-// 		const result = AsyncResult.any([
-// 			AsyncErr("error"),
-// 			AsyncErr("error2"),
-// 			AsyncErr("error3"),
-// 		]);
-// 		expectTypeOf(result).toEqualTypeOf<AsyncResult<number, string>>();
-// 		await expect(result.expectErr("err")).resolves.toEqual("error");
-// 	});
-// });
+		it("infers array", () => {
+			const array = [
+				TestOkPromise<number, number>(0),
+				TestOkPromise<string, string>("s"),
+			];
+			const result = AsyncResult.any(array);
+			expectTypeOf(result).toEqualTypeOf<
+				AsyncResult<number | string, Array<(number | string)>>
+			>();
+		});
+	});
+
+	it("returns the first Ok result", async () => {
+		const result = AsyncResult.any([
+			AsyncOk(0),
+			AsyncOk("string"),
+			AsyncErr("error"),
+		]);
+		await expect(result.expect("ok")).resolves.toEqual(0);
+	});
+
+	it("returns the first Err result", async () => {
+		const errors = ["error", "error2"];
+		const result = AsyncResult.any(errors.map((error) => AsyncErr(error)));
+		await expect(result.expectErr("err")).resolves.toEqual(errors);
+	});
+});
