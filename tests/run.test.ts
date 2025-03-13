@@ -3,7 +3,7 @@ import { Err, Ok } from "../src/result.ts";
 import { expect } from "@std/expect";
 import { test } from "@std/testing/bdd";
 import { expectTypeOf } from "expect-type";
-import { AsyncResult } from "../src/async_result.ts";
+import { ResultAsync } from "../src/result_async.ts";
 
 test("runAsync", async () => {
 	const result = runAsync(async () => {
@@ -12,7 +12,7 @@ test("runAsync", async () => {
 		}
 		return Err("error");
 	});
-	expectTypeOf(result).toEqualTypeOf<AsyncResult<number, string>>();
+	expectTypeOf(result).toEqualTypeOf<ResultAsync<number, string>>();
 
 	const result2 = await runAsync(async () => {
 		return Ok(1);

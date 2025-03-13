@@ -36,9 +36,9 @@
   - [unwrapOr](#unwrapordefaultvalue-t)
   - [unwrapOrElse](#unwraporelsef-function)
   - [match](#matchmatcher-matcher)
-- [AsyncResult](#asyncresult)
+- [ResultAsync](#ResultAsync)
 - [Option](#option)
-- [AsyncOption](#asyncoption)
+- [OptionAsync](#OptionAsync)
 - [Utilities](#utilities)
   - [asyncFn](#asyncfn)
   - [tryBlock](#tryblock)
@@ -58,7 +58,6 @@ npm install @patina/core
 ```ts
 import {
 	asyncFn,
-	AsyncResult,
 	Err,
 	ErrorWithCause,
 	None,
@@ -66,6 +65,7 @@ import {
 	Option,
 	Panic,
 	Result,
+	ResultAsync,
 	Some,
 } from "@patina/core";
 import { db } from "./db";
@@ -101,14 +101,14 @@ namespace DatabaseError {
 export type DatabaseError = DatabaseError.ValidationError | DatabaseError.Unreachable;
 
 // Chain API example:
-function findGradesByStudentId(id: string): AsyncResult<Option<number[]>, DatabaseError> {
+function findGradesByStudentId(id: string): ResultAsync<Option<number[]>, DatabaseError> {
 	return Result.fromPromise(db.findGradesByStudentId(id))
 		.map((grades) => (grades ? Some(grades) : None))
 		.mapErr(DatabaseError.from);
 }
 
-// Or you can use `asyncFn` to wrap functions that return `Promise<Result<T, E>>` to convert return type to `AsyncResult<T, E>`
-// Inferred type is `(studentId: string) => AsyncResult<number, Error>`
+// Or you can use `asyncFn` to wrap functions that return `Promise<Result<T, E>>` to convert return type to `ResultAsync<T, E>`
+// Inferred type is `(studentId: string) => ResultAsync<number, Error>`
 const getAverageGrade = asyncFn(async (studentId: string) => {
 	const grades = await findGradesByStudentId(studentId)
 		.andThen((maybeGrades) => {
@@ -200,10 +200,10 @@ const result = Result.from(() => {
 
 ### `.fromPromise(promise: Promise)`
 
-Tries to resolve a promise and returns the result as a `AsyncResult`.
+Tries to resolve a promise and returns the result as a `ResultAsync`.
 
 ```ts
-// AsyncResult<number, Error>
+// ResultAsync<number, Error>
 const result = Result.fromPromise(Promise.resolve(42));
 ```
 
@@ -466,18 +466,18 @@ assert.strictEqual(
 );
 ```
 
-## `AsyncResult`
+## `ResultAsync`
 
-`AsyncResult` is a type that represents either success (`Ok`) or failure (`Err`) of an asynchronous
+`ResultAsync` is a type that represents either success (`Ok`) or failure (`Err`) of an asynchronous
 operation.
 
 It implements the `Promise` interface, so you can use it as a drop-in replacement for promises.
 
-The same methods are available on `AsyncResult` as on `Result`.
+The same methods are available on `ResultAsync` as on `Result`.
 
-Methods on both `Result` and `AsyncResult` have `async` versions that accept a function that return
+Methods on both `Result` and `ResultAsync` have `async` versions that accept a function that return
 a `Promise`, e.g. `mapAsync`, `inspectAsync` `andThenAsync`, etc. These methods are useful for
-chaining asynchronous operations and will turn a `Result` into an `AsyncResult`.
+chaining asynchronous operations and will turn a `Result` into an `ResultAsync`.
 
 ## `Option`
 
@@ -498,9 +498,9 @@ const z = Option.fromNullish(undefined);
 assert.deepStrictEqual(z, None);
 ```
 
-## `AsyncOption`
+## `OptionAsync`
 
-`AsyncOption` is a type that represents either a value (`Some`) or nothing (`None`) of an
+`OptionAsync` is a type that represents either a value (`Some`) or nothing (`None`) of an
 asynchronous operation.
 
 ## Utilities
@@ -509,28 +509,28 @@ asynchronous operation.
 
 Returns `true` if `value` is an instance of `Result`.
 
-### `isAsyncResult(value: any): value is AsyncResult`
+### `isResultAsync(value: any): value is ResultAsync`
 
-Returns `true` if `value` is an instance of `AsyncResult`.
+Returns `true` if `value` is an instance of `ResultAsync`.
 
 ### `isOption(value: any): value is Option`
 
 Returns `true` if `value` is an instance of `Option`.
 
-### `isAsyncOption(value: any): value is AsyncOption`
+### `isOptionAsync(value: any): value is OptionAsync`
 
-Returns `true` if `value` is an instance of `AsyncOption`.
+Returns `true` if `value` is an instance of `OptionAsync`.
 
 ### `asyncFn`
 
 Wraps a function that returns any shape of `Promise<Result<any, any>>` and wraps the return value in
-a `AsyncResult`.
+a `ResultAsync`.
 
 ```ts
 // (a: number, b: number) => Promise<Err<string> | Ok<number>>
 const divide = async (a: number, b: number) => (b === 0 ? Err("division by zero") : Ok(a / b));
 
-// (a: number, b: number) => AsyncResult<number, string>
+// (a: number, b: number) => ResultAsync<number, string>
 const wrapped = asyncFn(divide);
 
 // then you can await the result
@@ -557,12 +557,12 @@ assert.equal(result.unwrap(), 3);
 ### `tryBlockAsync`
 
 Creates a scope where you can use `yield*` and `try()` together to unwrap or propagate errors from a
-`Result` or `AsyncResult`. This is trying to emulate Rust's
+`Result` or `ResultAsync`. This is trying to emulate Rust's
 [`try_blocks`](https://doc.rust-lang.org/stable/unstable-book/language-features/try-blocks.html) and
 [`?` operator](https://doc.rust-lang.org/rust-by-example/std/result/question_mark.html).
 
 ```ts
-const asyncNumber = new AsyncResult(Promise.resolve(Ok(2)));
+const asyncNumber = new ResultAsync(Promise.resolve(Ok(2)));
 
 const result = await tryBlockAsync(async function* () {
 	const x = yield* Ok(1).try();

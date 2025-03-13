@@ -1,6 +1,6 @@
 import { Panic, parseError } from "./error.ts";
 import { None, type Option, Some } from "./option.ts";
-import { AsyncResult } from "./async_result.ts";
+import { ResultAsync } from "./result_async.ts";
 import type { InferErr, InferOk } from "./util.ts";
 
 export type ResultMatch<T, E, A, B> = {
@@ -308,13 +308,13 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Maps a `Result<T, E>` to `AsyncResult<U, E>` by applying an async function to a contained `Ok` value,
+	 * Maps a `Result<T, E>` to `ResultAsync<U, E>` by applying an async function to a contained `Ok` value,
 	 * leaving an `Err` value untouched.
 	 *
 	 * This function can be used to compose the results of two functions.
 	 *
 	 * @param f - The async function to apply to the contained value
-	 * @returns A new AsyncResult with the async function applied to the contained value if `Ok`,
+	 * @returns A new ResultAsync with the async function applied to the contained value if `Ok`,
 	 *          or the original error if `Err`
 	 *
 	 * @example
@@ -338,11 +338,11 @@ export class ResultImpl<T, E> {
 	 * }
 	 * ```
 	 */
-	public mapAsync<U>(f: (value: T) => Promise<U>): AsyncResult<U, E> {
+	public mapAsync<U>(f: (value: T) => Promise<U>): ResultAsync<U, E> {
 		if (this._ok) {
-			return new AsyncResult(f(this._value as T).then((value) => Ok(value)));
+			return new ResultAsync(f(this._value as T).then((value) => Ok(value)));
 		}
-		return new AsyncResult(Promise.resolve(Err(this._value as E)));
+		return new ResultAsync(Promise.resolve(Err(this._value as E)));
 	}
 
 	/**
@@ -479,13 +479,13 @@ export class ResultImpl<T, E> {
 	}
 
 	/**
-	 * Maps a `Result<T, E>` to `AsyncResult<T, F>` by applying an async function to a contained `Err` value,
+	 * Maps a `Result<T, E>` to `ResultAsync<T, F>` by applying an async function to a contained `Err` value,
 	 * leaving an `Ok` value untouched.
 	 *
 	 * This function can be used to pass through a successful result while handling an error.
 	 *
 	 * @param f - The async function to apply to the contained error
-	 * @returns A new AsyncResult with the async function applied to the contained error if `Err`,
+	 * @returns A new ResultAsync with the async function applied to the contained error if `Err`,
 	 *          or the original value if `Ok`
 	 *
 	 * @example
@@ -499,11 +499,11 @@ export class ResultImpl<T, E> {
 	 * assertEquals(x.mapErrAsync(stringify), Err("error code: 13"));
 	 * ```
 	 */
-	public mapErrAsync<F>(f: (error: E) => Promise<F>): AsyncResult<T, F> {
+	public mapErrAsync<F>(f: (error: E) => Promise<F>): ResultAsync<T, F> {
 		if (this._ok) {
-			return new AsyncResult(Promise.resolve(Ok(this._value as T)));
+			return new ResultAsync(Promise.resolve(Ok(this._value as T)));
 		}
-		return new AsyncResult(f(this._value as E).then((error) => Err(error)));
+		return new ResultAsync(f(this._value as E).then((error) => Err(error)));
 	}
 
 	/**
@@ -545,11 +545,11 @@ export class ResultImpl<T, E> {
 	 *     .expect("failed to parse number");
 	 * ```
 	 */
-	public inspectAsync(f: (value: T) => Promise<void>): AsyncResult<T, E> {
+	public inspectAsync(f: (value: T) => Promise<void>): ResultAsync<T, E> {
 		if (this._ok) {
-			return new AsyncResult(f(this._value as T).then(() => this as unknown as Result<T, E>));
+			return new ResultAsync(f(this._value as T).then(() => this as unknown as Result<T, E>));
 		}
-		return new AsyncResult(Promise.resolve(this as unknown as Result<T, E>));
+		return new ResultAsync(Promise.resolve(this as unknown as Result<T, E>));
 	}
 
 	/**
@@ -768,12 +768,12 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	public andThenAsync<U, F>(
-		f: (value: T) => AsyncResult<U, F> | Promise<Result<U, F>>,
-	): AsyncResult<U, E | F> {
+		f: (value: T) => ResultAsync<U, F> | Promise<Result<U, F>>,
+	): ResultAsync<U, E | F> {
 		if (this._ok) {
-			return new AsyncResult(f(this._value as T));
+			return new ResultAsync(f(this._value as T));
 		}
-		return new AsyncResult(Promise.resolve(Err(this._value as E)));
+		return new ResultAsync(Promise.resolve(Err(this._value as E)));
 	}
 
 	/**
@@ -854,12 +854,12 @@ export class ResultImpl<T, E> {
 	 * ```
 	 */
 	public orElseAsync<U, F>(
-		f: (error: E) => AsyncResult<U, F> | Promise<Result<U, F>>,
-	): AsyncResult<T | U, F> {
+		f: (error: E) => ResultAsync<U, F> | Promise<Result<U, F>>,
+	): ResultAsync<T | U, F> {
 		if (this._ok) {
-			return new AsyncResult(Promise.resolve(this) as Promise<Result<T | U, F>>);
+			return new ResultAsync(Promise.resolve(this) as Promise<Result<T | U, F>>);
 		}
-		return new AsyncResult(f(this._value as E));
+		return new ResultAsync(f(this._value as E));
 	}
 
 	/**
@@ -1112,7 +1112,7 @@ export namespace Result {
 	}
 
 	/**
-	 * Tries to resolve a promise and returns the result as a `AsyncResult`.
+	 * Tries to resolve a promise and returns the result as a `ResultAsync`.
 	 *
 	 * This may allow a synchronous error to escape, prefer using `Result.fromThrowableAsync()` instead.
 	 *
@@ -1131,12 +1131,12 @@ export namespace Result {
 	 *
 	 * @example
 	 * ```typescript
-	 * // const result: AsyncResult<number, Error>
+	 * // const result: ResultAsync<number, Error>
 	 * const result = Result.fromPromise(Promise.resolve(42))
 	 * ```
 	 */
-	export function fromPromise<T>(promise: Promise<T>): AsyncResult<T, Error> {
-		return new AsyncResult(
+	export function fromPromise<T>(promise: Promise<T>): ResultAsync<T, Error> {
+		return new ResultAsync(
 			promise.then(
 				(value) => Ok(value),
 				(error) => Err(handleCaughtError(error)),
@@ -1145,7 +1145,7 @@ export namespace Result {
 	}
 
 	/**
-	 * Tries to execute an async function and returns the result as a `AsyncResult`.
+	 * Tries to execute an async function and returns the result as a `ResultAsync`.
 	 *
 	 * This is safer then `Result.fromPromise()` because it will not allow a synchronous error to escape.
 	 *
@@ -1164,7 +1164,7 @@ export namespace Result {
 	 *
 	 * @example
 	 * ```typescript
-	 * // const result: AsyncResult<number, Error>
+	 * // const result: ResultAsync<number, Error>
 	 * const result = Result.fromThrowableAsync((): Promise<number> => {
 	 *   if (Math.random() > 0.5) {
 	 *     throw new Error("random error")
@@ -1173,7 +1173,7 @@ export namespace Result {
 	 *   }
 	 * })
 	 */
-	export function fromThrowableAsync<T>(f: () => Promise<T>): AsyncResult<T, Error> {
+	export function fromThrowableAsync<T>(f: () => Promise<T>): ResultAsync<T, Error> {
 		async function safe(): Promise<Result<T, Error>> {
 			try {
 				return Ok(await f() as T);
@@ -1181,8 +1181,6 @@ export namespace Result {
 				return Err(handleCaughtError(error));
 			}
 		}
-		return new AsyncResult(safe());
+		return new ResultAsync(safe());
 	}
 }
-
-console.log(Ok(new Map([["a", 1]])));

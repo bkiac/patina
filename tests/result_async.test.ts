@@ -3,18 +3,17 @@ import { describe, it } from "@std/testing/bdd";
 import { expect } from "@std/expect";
 import { expectTypeOf } from "expect-type";
 import { assertSpyCall, assertSpyCalls, spy } from "@std/testing/mock";
-import { AsyncResult } from "../src/async_result.ts";
+import { ErrAsync, OkAsync, ResultAsync } from "../src/result_async.ts";
 import { Err, Ok, Result } from "../src/result.ts";
 import { None, Some } from "../src/option.ts";
 import { ErrorWithTag, Panic } from "../src/error.ts";
-import { AsyncErr, AsyncOk } from "../src/async_helpers.ts";
 
 function TestOkPromise<T, E>(value: T) {
-	return new AsyncResult<T, E>(Promise.resolve(Ok<T, E>(value)));
+	return new ResultAsync<T, E>(Promise.resolve(Ok<T, E>(value)));
 }
 
 function TestErrPromise<T, E>(error: E) {
-	return new AsyncResult<T, E>(Promise.resolve(Err<E, T>(error)));
+	return new ResultAsync<T, E>(Promise.resolve(Err<E, T>(error)));
 }
 
 function TestOk<T, E>(value: T): Result<T, E> {
@@ -127,20 +126,20 @@ describe("flatten", () => {
 	it("works with an Ok<Ok> result", async () => {
 		const inner = TestOk<number, string>(42);
 		const flattened = TestOkPromise<Result<number, string>, boolean>(inner).flatten();
-		expectTypeOf(flattened).toEqualTypeOf<AsyncResult<number, string | boolean>>();
+		expectTypeOf(flattened).toEqualTypeOf<ResultAsync<number, string | boolean>>();
 		await expect(flattened.expect("ok")).resolves.toEqual(inner.expect("ok"));
 	});
 
 	it("works with an Ok<Err> result", async () => {
 		const inner = TestErr<number, string>("error");
 		const flattened = TestOkPromise<Result<number, string>, boolean>(inner).flatten();
-		expectTypeOf(flattened).toEqualTypeOf<AsyncResult<number, string | boolean>>();
+		expectTypeOf(flattened).toEqualTypeOf<ResultAsync<number, string | boolean>>();
 		await expect(flattened.expectErr("err")).resolves.toEqual(inner.expectErr("err"));
 	});
 
 	it("works with an Err result", async () => {
 		const flattened = TestErrPromise<Result<number, string>, boolean>(true).flatten();
-		expectTypeOf(flattened).toEqualTypeOf<AsyncResult<number, string | boolean>>();
+		expectTypeOf(flattened).toEqualTypeOf<ResultAsync<number, string | boolean>>();
 		await expect(flattened.expectErr("err")).resolves.toEqual(true);
 	});
 
@@ -165,7 +164,7 @@ describe("flatten", () => {
 		const bar = foo
 			.map((value) => (value === undefined ? Err(new Bar()) : Ok(value)))
 			.flatten();
-		expectTypeOf(bar).toEqualTypeOf<AsyncResult<{ id: string }, _Foo | Bar>>();
+		expectTypeOf(bar).toEqualTypeOf<ResultAsync<{ id: string }, _Foo | Bar>>();
 	});
 });
 
@@ -421,11 +420,11 @@ describe("match", () => {
 describe("all", () => {
 	describe("types", () => {
 		it("infers readonly array", () => {
-			const result = AsyncResult.all([
+			const result = ResultAsync.all([
 				TestOkPromise<number, number>(0),
 				TestOkPromise<string, string>("s"),
 			]);
-			expectTypeOf(result).toEqualTypeOf<AsyncResult<[number, string], number | string>>();
+			expectTypeOf(result).toEqualTypeOf<ResultAsync<[number, string], number | string>>();
 		});
 
 		it("infers array", () => {
@@ -433,17 +432,17 @@ describe("all", () => {
 				TestOkPromise<number, number>(0),
 				TestOkPromise<string, string>("s"),
 			];
-			const result = AsyncResult.all(array);
+			const result = ResultAsync.all(array);
 			expectTypeOf(result).toEqualTypeOf<
-				AsyncResult<Array<(string | number)>, number | string>
+				ResultAsync<Array<(string | number)>, number | string>
 			>();
 		});
 	});
 
 	it("returns the values for an Ok result", async () => {
-		const result = AsyncResult.all([
-			AsyncOk(0),
-			AsyncOk(1),
+		const result = ResultAsync.all([
+			OkAsync(0),
+			OkAsync(1),
 		]);
 		await expect(result.expect("ok")).resolves.toEqual([0, 1]);
 	});
@@ -452,7 +451,7 @@ describe("all", () => {
 		const fn = spy(() => {});
 
 		let timeoutId: number;
-		const slow: AsyncResult<string, string> = new AsyncResult(
+		const slow: ResultAsync<string, string> = new ResultAsync(
 			new Promise((resolve) => {
 				timeoutId = setTimeout(
 					() => {
@@ -464,9 +463,9 @@ describe("all", () => {
 			}),
 		);
 
-		const result = await AsyncResult.all([
-			AsyncOk(0),
-			AsyncErr("error"),
+		const result = await ResultAsync.all([
+			OkAsync(0),
+			ErrAsync("error"),
 			slow,
 		]);
 
@@ -479,7 +478,7 @@ describe("all", () => {
 describe("allSettled", () => {
 	describe("types", () => {
 		it("infers readonly array", () => {
-			const result = AsyncResult.allSettled([
+			const result = ResultAsync.allSettled([
 				TestOkPromise<number, number>(0),
 				TestOkPromise<string, string>("s"),
 			]);
@@ -493,7 +492,7 @@ describe("allSettled", () => {
 				TestOkPromise<number, number>(0),
 				TestOkPromise<string, string>("s"),
 			];
-			const result = AsyncResult.allSettled(array);
+			const result = ResultAsync.allSettled(array);
 			expectTypeOf(result).toEqualTypeOf<
 				Promise<Array<Result<number | string, number | string>>>
 			>();
@@ -501,10 +500,10 @@ describe("allSettled", () => {
 	});
 
 	it("returns all values", async () => {
-		const result = AsyncResult.allSettled([
-			AsyncOk(0),
-			AsyncErr("error"),
-			AsyncOk("s"),
+		const result = ResultAsync.allSettled([
+			OkAsync(0),
+			ErrAsync("error"),
+			OkAsync("s"),
 		]);
 		await expect(result).resolves.toEqual([
 			Ok(0),
@@ -517,11 +516,11 @@ describe("allSettled", () => {
 describe("any", () => {
 	describe("types", () => {
 		it("infers readonly array", () => {
-			const result = AsyncResult.any([
+			const result = ResultAsync.any([
 				TestOkPromise<number, number>(0),
 				TestOkPromise<string, string>("s"),
 			]);
-			expectTypeOf(result).toEqualTypeOf<AsyncResult<number | string, [number, string]>>();
+			expectTypeOf(result).toEqualTypeOf<ResultAsync<number | string, [number, string]>>();
 		});
 
 		it("infers array", () => {
@@ -529,25 +528,25 @@ describe("any", () => {
 				TestOkPromise<number, number>(0),
 				TestOkPromise<string, string>("s"),
 			];
-			const result = AsyncResult.any(array);
+			const result = ResultAsync.any(array);
 			expectTypeOf(result).toEqualTypeOf<
-				AsyncResult<number | string, Array<(number | string)>>
+				ResultAsync<number | string, Array<(number | string)>>
 			>();
 		});
 	});
 
 	it("returns the first Ok result", async () => {
-		const result = AsyncResult.any([
-			AsyncOk(0),
-			AsyncOk("string"),
-			AsyncErr("error"),
+		const result = ResultAsync.any([
+			OkAsync(0),
+			OkAsync("string"),
+			ErrAsync("error"),
 		]);
 		await expect(result.expect("ok")).resolves.toEqual(0);
 	});
 
 	it("returns the first Err result", async () => {
 		const errors = ["error", "error2"];
-		const result = AsyncResult.any(errors.map((error) => AsyncErr(error)));
+		const result = ResultAsync.any(errors.map((error) => ErrAsync(error)));
 		await expect(result.expectErr("err")).resolves.toEqual(errors);
 	});
 });
@@ -555,11 +554,11 @@ describe("any", () => {
 describe("race", () => {
 	describe("types", () => {
 		it("infers readonly array", () => {
-			const result = AsyncResult.race([
+			const result = ResultAsync.race([
 				TestOkPromise<number, number>(0),
 				TestOkPromise<string, string>("s"),
 			]);
-			expectTypeOf(result).toEqualTypeOf<AsyncResult<number | string, number | string>>();
+			expectTypeOf(result).toEqualTypeOf<ResultAsync<number | string, number | string>>();
 		});
 
 		it("infers array", () => {
@@ -567,9 +566,9 @@ describe("race", () => {
 				TestOkPromise<number, number>(0),
 				TestOkPromise<string, string>("s"),
 			];
-			const result = AsyncResult.race(array);
+			const result = ResultAsync.race(array);
 			expectTypeOf(result).toEqualTypeOf<
-				AsyncResult<number | string, number | string>
+				ResultAsync<number | string, number | string>
 			>();
 		});
 	});
@@ -578,7 +577,7 @@ describe("race", () => {
 		let quickTimeoutId: number;
 		let slowTimeoutId: number;
 
-		const quick: AsyncResult<string, string> = new AsyncResult(
+		const quick: ResultAsync<string, string> = new ResultAsync(
 			new Promise((resolve) => {
 				quickTimeoutId = setTimeout(
 					resolve,
@@ -588,7 +587,7 @@ describe("race", () => {
 			}),
 		);
 
-		const slow: AsyncResult<string, string> = new AsyncResult(
+		const slow: ResultAsync<string, string> = new ResultAsync(
 			new Promise((resolve) => {
 				slowTimeoutId = setTimeout(
 					resolve,
@@ -598,7 +597,7 @@ describe("race", () => {
 			}),
 		);
 
-		const result = AsyncResult.race([
+		const result = ResultAsync.race([
 			quick,
 			slow,
 		]);

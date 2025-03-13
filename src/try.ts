@@ -3,7 +3,7 @@
  * @module
  */
 
-import { AsyncResult } from "./async_result.ts";
+import { ResultAsync } from "./result_async.ts";
 import { Panic } from "./error.ts";
 import type { Err, Result } from "./result.ts";
 import type { InferErr, InferOk } from "./util.ts";
@@ -47,16 +47,16 @@ export function tryBlock<Y extends Err<any, never>, R extends Result<any, any>>(
 }
 
 /**
- * Creates an async scope where you can use `yield*` to unwrap or propagate errors from a `Result` or `AsyncResult`.
+ * Creates an async scope where you can use `yield*` to unwrap or propagate errors from a `Result` or `ResultAsync`.
  *
  * This is intended to emulate Rust's `try_blocks` and `?` operator and offer a more ergonomic way to handle errors,
  * just be aware that this can be significantly slower than manually handling and propagating errors because of the generator overhead.
  *
- * The `scope` function should not throw any errors, instead it should return a `Result` or `AsyncResult` that contains
+ * The `scope` function should not throw any errors, instead it should return a `Result` or `ResultAsync` that contains
  * the error. If an error is thrown, it will be wrapped in a `Panic`.
  *
- * @param scope - A generator function that yields `Result` or `AsyncResult` values
- * @returns A `Result` or `AsyncResult` that is the value of the last `yield*` statement in the generator function
+ * @param scope - A generator function that yields `Result` or `ResultAsync` values
+ * @returns A `Result` or `ResultAsync` that is the value of the last `yield*` statement in the generator function
  *
  * @example
  * ```typescript
@@ -83,9 +83,9 @@ export function tryBlock<Y extends Err<any, never>, R extends Result<any, any>>(
  */
 export function tryBlockAsync<Y extends Err<any, never>, R extends Result<any, any>>(
 	scope: () => AsyncGenerator<Y, R>,
-): AsyncResult<InferOk<R>, InferErr<Y> | InferErr<R>> {
+): ResultAsync<InferOk<R>, InferErr<Y> | InferErr<R>> {
 	const next = scope().next();
-	return new AsyncResult(
+	return new ResultAsync(
 		next
 			.then((result) => result.value as Result<InferOk<R>, InferErr<Y> | InferErr<R>>)
 			.catch((error) => {

@@ -4,7 +4,7 @@ import { expect } from "@std/expect";
 import { expectTypeOf } from "expect-type";
 import { asyncFn } from "../src/fn.ts";
 import { Err, Ok, Result } from "../src/result.ts";
-import { AsyncResult } from "../src/async_result.ts";
+import { ResultAsync } from "../src/result_async.ts";
 import { ErrorWithTag } from "../src/error.ts";
 
 export class TaggedError extends ErrorWithTag {
@@ -41,7 +41,7 @@ describe("asyncFn", () => {
 			const wrapped = asyncFn(f);
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
 			expectTypeOf(wrapped).returns.toEqualTypeOf<
-				AsyncResult<number | string, number | string>
+				ResultAsync<number | string, number | string>
 			>();
 		});
 
@@ -49,21 +49,21 @@ describe("asyncFn", () => {
 			const f = async (_arg: number) => Ok(1);
 			const wrapped = asyncFn(f);
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
-			expectTypeOf(wrapped).returns.toEqualTypeOf<AsyncResult<number, never>>();
+			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultAsync<number, never>>();
 		});
 
 		it("returns correct type with function returning Promise<Err>", () => {
 			const f = async (_arg: number) => Err(1);
 			const wrapped = asyncFn(f);
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
-			expectTypeOf(wrapped).returns.toEqualTypeOf<AsyncResult<never, number>>();
+			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultAsync<never, number>>();
 		});
 
-		it("returns correct type with function returning AsyncResult", () => {
+		it("returns correct type with function returning ResultAsync", () => {
 			const f = (_arg: number) => Result.fromPromise(Promise.resolve(1));
 			const wrapped = asyncFn(f);
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
-			expectTypeOf(wrapped).returns.toEqualTypeOf<AsyncResult<number, Error>>();
+			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultAsync<number, Error>>();
 		});
 
 		it("returns correct type with function returning Promise<Result>", () => {
@@ -73,7 +73,7 @@ describe("asyncFn", () => {
 			};
 			const wrapped = asyncFn(f);
 			expectTypeOf(wrapped).parameter(0).toBeNumber();
-			expectTypeOf(wrapped).returns.toEqualTypeOf<AsyncResult<number, Error>>();
+			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultAsync<number, Error>>();
 		});
 
 		it("works with generics", () => {
@@ -84,7 +84,7 @@ describe("asyncFn", () => {
 				return Err(b);
 			});
 			expectTypeOf(wrapped).branded.toEqualTypeOf<
-				<A, B>(a: A, b: B) => AsyncResult<A, B>
+				<A, B>(a: A, b: B) => ResultAsync<A, B>
 			>();
 		});
 
@@ -102,7 +102,7 @@ describe("asyncFn", () => {
 				}
 				return Ok(true);
 			});
-			expectTypeOf(wrapped).returns.toEqualTypeOf<AsyncResult<boolean, string>>();
+			expectTypeOf(wrapped).returns.toEqualTypeOf<ResultAsync<boolean, string>>();
 		});
 	});
 });

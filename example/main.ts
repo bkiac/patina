@@ -1,6 +1,6 @@
 import { db } from "./db.ts";
 import { Err, Ok, Result } from "../src/result.ts";
-import { AsyncResult } from "../src/async_result.ts";
+import { ResultAsync } from "../src/result_async.ts";
 import { asyncFn } from "../src/fn.ts";
 import { None, Option, Some } from "../src/option.ts";
 import { ErrorWithCause, Panic } from "../src/error.ts";
@@ -37,14 +37,14 @@ namespace DatabaseError {
 export type DatabaseError = DatabaseError.ValidationError | DatabaseError.Unreachable;
 
 // Chain API example:
-function findGradesByStudentId(id: string): AsyncResult<Option<number[]>, DatabaseError> {
+function findGradesByStudentId(id: string): ResultAsync<Option<number[]>, DatabaseError> {
 	return Result.fromPromise(db.findGradesByStudentId(id))
 		.map((grades) => (grades ? Some(grades) : None))
 		.mapErr(DatabaseError.from);
 }
 
-// Or you can use `asyncFn` to wrap functions that return `Promise<Result<T, E>>` to convert return type to `AsyncResult<T, E>`
-// Inferred type is `(studentId: string) => AsyncResult<number, Error>`
+// Or you can use `asyncFn` to wrap functions that return `Promise<Result<T, E>>` to convert return type to `ResultAsync<T, E>`
+// Inferred type is `(studentId: string) => ResultAsync<number, Error>`
 // @ts-ignore
 const getAverageGrade = asyncFn(async (studentId: string) => {
 	const grades = await findGradesByStudentId(studentId)
