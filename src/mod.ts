@@ -6,11 +6,12 @@
  * @module
  */
 
-export * from "./option_async.ts";
-export * from "./result_async.ts";
 export * from "./error.ts";
-export { None, Option, type OptionMatch, type OptionMatchAsync, Some } from "./option.ts";
-export { Err, Ok, Result, type ResultMatch, type ResultMatchAsync } from "./result.ts";
+export * from "./none_async.ts";
+export * from "./option_async.ts";
+export * from "./option.ts";
+export * from "./result_async.ts";
+export * from "./result.ts";
 export * from "./run.ts";
 export * from "./try.ts";
 export * from "./unwind.ts";

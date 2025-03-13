@@ -39,7 +39,7 @@ export type OptionMatchAsync<T, A, B> = {
 const unwrapSymbol = Symbol("unwrap");
 
 /**
- * @internal The internal implementation of `Option`.
+ * @internal The internal implementation of the `Option` union type.
  */
 export class OptionImpl<T> {
 	private readonly _some: boolean;

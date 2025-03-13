@@ -16,6 +16,9 @@ export type ResultMatchAsync<T, E, A, B> = {
 const unwrapSymbol = Symbol("unwrap");
 const unwrapErrSymbol = Symbol("unwrapErr");
 
+/**
+ * @internal Internal implementation class for the `Result` union type.
+ */
 export class ResultImpl<T, E> {
 	private readonly _ok: boolean;
 	private readonly _value: T | E;
