@@ -88,8 +88,8 @@ describe("isResult", () => {
 
 describe("isResultAsync", () => {
 	it("identifies ResultAsync values", () => {
-		const ResultAsync = new ResultAsync(Promise.resolve(Ok(42)));
-		expect(isResultAsync(ResultAsync)).toBe(true);
+		const r = new ResultAsync(Promise.resolve(Ok(42)));
+		expect(isResultAsync(r)).toBe(true);
 	});
 
 	it("rejects non-ResultAsync values", () => {
@@ -121,8 +121,8 @@ describe("isOption", () => {
 
 describe("isOptionAsync", () => {
 	it("identifies OptionAsync values", () => {
-		const OptionAsync = new OptionAsync(Promise.resolve(Some(42)));
-		expect(isOptionAsync(OptionAsync)).toBe(true);
+		const o = new OptionAsync(Promise.resolve(Some(42)));
+		expect(isOptionAsync(o)).toBe(true);
 	});
 
 	it("rejects non-OptionAsync values", () => {
