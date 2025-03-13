@@ -1,23 +1,28 @@
-import { asyncFn } from "../src/fn.ts";
 import { Ok, type Result } from "../src/result.ts";
+import { runAsync } from "../src/run.ts";
 import { tryBlockAsync } from "../src/try.ts";
 
-// deno-lint-ignore require-await
-const getOne = asyncFn(async (): Promise<Result<number, string>> => Ok(1));
+function getOne() {
+	return runAsync(async (): Promise<Result<number, string>> => {
+		return Ok(1);
+	});
+}
 
 function chain() {
 	return getOne().map((n) => n + 1);
 }
 
-const af = asyncFn(async () => {
-	const one = await getOne();
-	if (one.isErr()) {
-		return one;
-	}
-	return Ok(one.expect("ok") + 1);
-});
+function runner() {
+	return runAsync(async (): Promise<Result<number, string>> => {
+		const one = await getOne();
+		if (one.isErr()) {
+			return one;
+		}
+		return Ok(one.unwrap() + 1);
+	});
+}
 
-function tba() {
+function block() {
 	return tryBlockAsync(async function* () {
 		const one = yield* getOne();
 		return Ok(one + 1);
@@ -33,15 +38,15 @@ Deno.bench({
 });
 
 Deno.bench({
-	name: "asyncFn",
+	name: "runner",
 	fn: async () => {
-		await af();
+		await runner();
 	},
 });
 
 Deno.bench({
 	name: "tryBlockAsync",
 	fn: async () => {
-		await tba();
+		await block();
 	},
 });

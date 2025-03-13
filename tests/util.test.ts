@@ -3,16 +3,16 @@ import { expect } from "@std/expect";
 import { expectTypeOf } from "expect-type";
 import { Err, Ok } from "../src/result.ts";
 import { None, Some } from "../src/option.ts";
-import { AsyncResult } from "../src/async_result.ts";
-import { AsyncOption } from "../src/async_option.ts";
+import { ResultAsync } from "../src/result_async.ts";
+import { OptionAsync } from "../src/option_async.ts";
 import {
 	type InferErr,
 	type InferOk,
 	type InferSome,
-	isAsyncOption,
-	isAsyncResult,
 	isOption,
+	isOptionAsync,
 	isResult,
+	isResultAsync,
 } from "../src/util.ts";
 
 describe("InferOk", () => {
@@ -86,17 +86,17 @@ describe("isResult", () => {
 	});
 });
 
-describe("isAsyncResult", () => {
-	it("identifies AsyncResult values", () => {
-		const asyncResult = new AsyncResult(Promise.resolve(Ok(42)));
-		expect(isAsyncResult(asyncResult)).toBe(true);
+describe("isResultAsync", () => {
+	it("identifies ResultAsync values", () => {
+		const r = new ResultAsync(Promise.resolve(Ok(42)));
+		expect(isResultAsync(r)).toBe(true);
 	});
 
-	it("rejects non-AsyncResult values", () => {
-		expect(isAsyncResult(Ok(42))).toBe(false);
-		expect(isAsyncResult(Promise.resolve(Ok(42)))).toBe(false);
-		expect(isAsyncResult(42)).toBe(false);
-		expect(isAsyncResult(null)).toBe(false);
+	it("rejects non-ResultAsync values", () => {
+		expect(isResultAsync(Ok(42))).toBe(false);
+		expect(isResultAsync(Promise.resolve(Ok(42)))).toBe(false);
+		expect(isResultAsync(42)).toBe(false);
+		expect(isResultAsync(null)).toBe(false);
 	});
 });
 
@@ -119,16 +119,16 @@ describe("isOption", () => {
 	});
 });
 
-describe("isAsyncOption", () => {
-	it("identifies AsyncOption values", () => {
-		const asyncOption = new AsyncOption(Promise.resolve(Some(42)));
-		expect(isAsyncOption(asyncOption)).toBe(true);
+describe("isOptionAsync", () => {
+	it("identifies OptionAsync values", () => {
+		const o = new OptionAsync(Promise.resolve(Some(42)));
+		expect(isOptionAsync(o)).toBe(true);
 	});
 
-	it("rejects non-AsyncOption values", () => {
-		expect(isAsyncOption(Some(42))).toBe(false);
-		expect(isAsyncOption(Promise.resolve(Some(42)))).toBe(false);
-		expect(isAsyncOption(42)).toBe(false);
-		expect(isAsyncOption(null)).toBe(false);
+	it("rejects non-OptionAsync values", () => {
+		expect(isOptionAsync(Some(42))).toBe(false);
+		expect(isOptionAsync(Promise.resolve(Some(42)))).toBe(false);
+		expect(isOptionAsync(42)).toBe(false);
+		expect(isOptionAsync(null)).toBe(false);
 	});
 });

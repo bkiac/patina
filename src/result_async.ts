@@ -1,13 +1,13 @@
 /**
- * This module contains the `AsyncResult` class, which is a promise that resolves to a `Result`.
+ * This module contains the `ResultAsync` class, which is a promise that resolves to a `Result`.
  * @module
  */
 
-import { AsyncOption } from "./async_option.ts";
+import { OptionAsync } from "./option_async.ts";
 import { Err, Ok, type Result, type ResultMatch, type ResultMatchAsync } from "./result.ts";
 import type { InferErr, InferOk } from "./util.ts";
 
-type WrappedResult<T, E> = Promise<Result<T, E>> | PromiseLike<Result<T, E>> | AsyncResult<T, E>;
+type WrappedResult<T, E> = Promise<Result<T, E>> | PromiseLike<Result<T, E>> | ResultAsync<T, E>;
 
 /**
  * A promise that resolves to a `Result`.
@@ -16,29 +16,29 @@ type WrappedResult<T, E> = Promise<Result<T, E>> | PromiseLike<Result<T, E>> | A
  *
  * This class also implements the `PromiseLike<Result<T, E>>` interface, so it can be awaited like a `Promise` to convert to a `Result`.
  */
-export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
+export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
 	/**
-	 * Takes an array of `AsyncResult`s and returns `Ok` when all of them are `Ok`, otherwise returns the first `Err`.
+	 * Takes an array of `ResultAsync`s and returns `Ok` when all of them are `Ok`, otherwise returns the first `Err`.
 	 *
 	 * Uses `Promise.all()` under the hood.
 	 *
-	 * @param results - The `AsyncResult`s to resolve
-	 * @returns A new `AsyncResult` that resolves to an array of the results of the given `AsyncResult`s
+	 * @param results - The `ResultAsync`s to resolve
+	 * @returns A new `ResultAsync` that resolves to an array of the results of the given `ResultAsync`s
 	 *
 	 * @example
 	 * ```typescript
-	 * const allOks = [AsyncOk(1), AsyncOk(2)];
-	 * const result = AsyncResult.all(allOks);
+	 * const allOks = [OkAsync(1), OkAsync(2)];
+	 * const result = ResultAsync.all(allOks);
 	 * assertEquals(await result, Ok([1, 2]));
 	 *
-	 * const withErr = [AsyncOk(1), AsyncErr("error")];
-	 * const result2 = AsyncResult.all(withErr);
+	 * const withErr = [OkAsync(1), ErrAsync("error")];
+	 * const result2 = ResultAsync.all(withErr);
 	 * assertEquals(await result2, Err("error"));
 	 * ```
 	 */
-	public static all<A extends readonly AsyncResult<any, any>[] | []>(
+	public static all<A extends readonly ResultAsync<any, any>[] | []>(
 		results: A,
-	): AsyncResult<
+	): ResultAsync<
 		{ -readonly [I in keyof A]: InferOk<Awaited<A[I]>> },
 		InferErr<Awaited<A[number]>>
 	> {
@@ -46,7 +46,7 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 		for (const result of results) {
 			promises.push(result.toPromise());
 		}
-		return new AsyncResult(
+		return new ResultAsync(
 			Promise.all(promises).then((values) => {
 				return Ok(values as any);
 			}).catch((e) => {
@@ -56,21 +56,21 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	}
 
 	/**
-	 * Takes an array of `AsyncResult`s and returns a `Promise` that resolves to an array of `Result`s.
+	 * Takes an array of `ResultAsync`s and returns a `Promise` that resolves to an array of `Result`s.
 	 *
 	 * Uses `Promise.allSettled()` under the hood.
 	 *
-	 * @param results - The `AsyncResult`s to resolve
-	 * @returns A promise that resolves to an array of the results of the given `AsyncResult`s
+	 * @param results - The `ResultAsync`s to resolve
+	 * @returns A promise that resolves to an array of the results of the given `ResultAsync`s
 	 *
 	 * @example
 	 * ```typescript
-	 * const allOks = [AsyncOk(1), AsyncErr("error"), AsyncOk(2)];
-	 * const result = AsyncResult.allSettled(allOks);
+	 * const allOks = [OkAsync(1), ErrAsync("error"), OkAsync(2)];
+	 * const result = ResultAsync.allSettled(allOks);
 	 * assertEquals(await result, [Ok(1), Err("error"), Ok(2)]);
 	 * ```
 	 */
-	public static async allSettled<A extends readonly AsyncResult<any, any>[] | []>(
+	public static async allSettled<A extends readonly ResultAsync<any, any>[] | []>(
 		results: A,
 	): Promise<
 		{ -readonly [I in keyof A]: Result<InferOk<Awaited<A[I]>>, InferErr<Awaited<A[I]>>> }
@@ -88,27 +88,27 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	}
 
 	/**
-	 * Takes an array of `AsyncResult`s and returns the first `Ok`, otherwise returns an `Err` containing an array of all the errors.
+	 * Takes an array of `ResultAsync`s and returns the first `Ok`, otherwise returns an `Err` containing an array of all the errors.
 	 *
 	 * Uses `Promise.any()` under the hood.
 	 *
-	 * @param results - The `AsyncResult`s to resolve
-	 * @returns A new `AsyncResult` that resolves to the first `Ok` result, or an `Err` containing all the errors if all results are `Err`
+	 * @param results - The `ResultAsync`s to resolve
+	 * @returns A new `ResultAsync` that resolves to the first `Ok` result, or an `Err` containing all the errors if all results are `Err`
 	 *
 	 * @example
 	 * ```typescript
-	 * const anyOk = [AsyncOk(1), AsyncErr("error"), AsyncOk(2)];
-	 * const result = AsyncResult.any(anyOk);
+	 * const anyOk = [OkAsync(1), ErrAsync("error"), OkAsync(2)];
+	 * const result = ResultAsync.any(anyOk);
 	 * assertEquals(await result, Ok(1));
 	 *
-	 * const allErrs = [AsyncErr("error1"), AsyncErr("error2")];
-	 * const result2 = AsyncResult.any(allErrs);
+	 * const allErrs = [ErrAsync("error1"), ErrAsync("error2")];
+	 * const result2 = ResultAsync.any(allErrs);
 	 * assertEquals(await result2, Err(["error1", "error2"]));
 	 * ```
 	 */
-	public static any<A extends readonly AsyncResult<any, any>[] | []>(
+	public static any<A extends readonly ResultAsync<any, any>[] | []>(
 		results: A,
-	): AsyncResult<
+	): ResultAsync<
 		InferOk<Awaited<A[number]>>,
 		{ -readonly [I in keyof A]: InferErr<Awaited<A[I]>> }
 	> {
@@ -116,7 +116,7 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 		for (const result of results) {
 			promises.push(result.toPromise());
 		}
-		return new AsyncResult(
+		return new ResultAsync(
 			Promise.any(promises).then((value) => {
 				return Ok(value);
 			}).catch((e) => {
@@ -128,16 +128,16 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	}
 
 	/**
-	 * Takes an array of `AsyncResult`s and returns the first settled `Result`.
+	 * Takes an array of `ResultAsync`s and returns the first settled `Result`.
 	 *
 	 * Uses `Promise.race()` under the hood.
 	 *
-	 * @param results - The `AsyncResult`s to resolve
-	 * @returns A new `AsyncResult` that resolves to the first settled `Result`
+	 * @param results - The `ResultAsync`s to resolve
+	 * @returns A new `ResultAsync` that resolves to the first settled `Result`
 	 *
 	 * @example
 	 * ```typescript
-	 * const quick: AsyncResult<string, string> = new AsyncResult(
+	 * const quick: ResultAsync<string, string> = new ResultAsync(
 	 * 	new Promise((resolve) => {
 	 * 		setTimeout(
 	 * 			resolve,
@@ -146,7 +146,7 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 * 		);
 	 * 	}),
 	 * );
-	 * const slow: AsyncResult<string, string> = new AsyncResult(
+	 * const slow: ResultAsync<string, string> = new ResultAsync(
 	 * 	new Promise((resolve) => {
 	 * 		setTimeout(
 	 * 			resolve,
@@ -155,13 +155,13 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 * 		);
 	 * 	}),
 	 * );
-	 * const result = AsyncResult.race([quick, slow]);
+	 * const result = ResultAsync.race([quick, slow]);
 	 * assertEquals(await result, Ok("quick"));
 	 * ```
 	 */
-	public static race<A extends readonly AsyncResult<any, any>[] | []>(
+	public static race<A extends readonly ResultAsync<any, any>[] | []>(
 		results: A,
-	): AsyncResult<
+	): ResultAsync<
 		InferOk<Awaited<A[number]>>,
 		InferErr<Awaited<A[number]>>
 	> {
@@ -169,7 +169,7 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 		for (const result of results) {
 			promises.push(result.toPromise());
 		}
-		return new AsyncResult(
+		return new ResultAsync(
 			Promise.race(promises).then((value) => {
 				return Ok(value);
 			}).catch((e) => {
@@ -184,37 +184,37 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 		this.promise = promise;
 	}
 
-	public get [Symbol.toStringTag](): "AsyncResult" {
-		return "AsyncResult";
+	public get [Symbol.toStringTag](): "ResultAsync" {
+		return "ResultAsync";
 	}
 
 	public toJSON(): {
-		AsyncResult: WrappedResult<T, E>;
+		ResultAsync: WrappedResult<T, E>;
 	} {
-		return { AsyncResult: this.promise };
+		return { ResultAsync: this.promise };
 	}
 
 	public toString(): string {
-		return `AsyncResult(${this.promise.toString()})`;
+		return `ResultAsync(${this.promise.toString()})`;
 	}
 
 	public [Symbol.for("nodejs.util.inspect.custom")](): {
-		AsyncResult: WrappedResult<T, E>;
+		ResultAsync: WrappedResult<T, E>;
 	} {
 		return this.toJSON();
 	}
 
 	/**
-	 * Converts an `AsyncResult` to a regular `Promise`.
+	 * Converts an `ResultAsync` to a regular `Promise`.
 	 *
 	 * @returns A promise that resolves to the contained value if `Ok`, otherwise throws the contained error
 	 *
 	 * @example
 	 * ```typescript
-	 * const x: AsyncResult<number, string> = AsyncOk(2)
+	 * const x: ResultAsync<number, string> = OkAsync(2)
 	 * assertEquals(await x.toPromise(), 2)
 	 *
-	 * const y: AsyncResult<number, string> = AsyncErr("error")
+	 * const y: ResultAsync<number, string> = ErrAsync("error")
 	 * await y.toPromise().catch((e) => assertEquals(e, "error"))
 	 * ```
 	 */
@@ -265,13 +265,13 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 *
 	 * @example
 	 * ```typescript
-	 * const x: AsyncResult<number, string> = AsyncOk(2)
+	 * const x: ResultAsync<number, string> = OkAsync(2)
 	 * assertEquals(await x.match({
 	 * 	Ok: (v) => v * 2,
 	 * 	Err: (e) => e.length,
 	 * }), 4)
 	 *
-	 * const y: AsyncResult<number, string> = AsyncErr("error")
+	 * const y: ResultAsync<number, string> = ErrAsync("error")
 	 * assertEquals(await y.match({
 	 * 	Ok: (v) => v * 2,
 	 * 	Err: (e) => e.length,
@@ -290,13 +290,13 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 *
 	 * @example
 	 * ```typescript
-	 * const x: AsyncResult<number, string> = AsyncOk(2)
+	 * const x: ResultAsync<number, string> = OkAsync(2)
 	 * assertEquals(await x.matchAsync({
 	 * 	Ok: async (v) => v * 2,
 	 * 	Err: async (e) => e.length,
 	 * }), 4)
 	 *
-	 * const y: AsyncResult<number, string> = AsyncErr("error")
+	 * const y: ResultAsync<number, string> = ErrAsync("error")
 	 * assertEquals(await y.matchAsync({
 	 * 	Ok: async (v) => v * 2,
 	 * 	Err: async (e) => e.length,
@@ -308,39 +308,39 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	}
 
 	/**
-	 * Converts from `AsyncResult<T, E>` to `AsyncOption<T>`, discarding the error if any.
+	 * Converts from `ResultAsync<T, E>` to `OptionAsync<T>`, discarding the error if any.
 	 *
 	 * @returns An `Option` containing the success value if this is `Ok`, or `None` if this is `Err`
 	 *
 	 * @example
 	 * ```typescript
-	 * const x: AsyncResult<number, string> = AsyncOk(2);
+	 * const x: ResultAsync<number, string> = OkAsync(2);
 	 * assertEquals(await x.ok(), Some(2));
 	 *
-	 * const x: AsyncResult<number, string> = AsyncErr("Nothing here");
+	 * const x: ResultAsync<number, string> = ErrAsync("Nothing here");
 	 * assertEquals(await x.ok(), None);
 	 * ```
 	 */
-	public ok(): AsyncOption<T> {
-		return new AsyncOption(this.then((result) => result.ok()));
+	public ok(): OptionAsync<T> {
+		return new OptionAsync(this.then((result) => result.ok()));
 	}
 
 	/**
-	 * Converts from `AsyncResult<T, E>` to `AsyncOption<E>`, discarding the success value if any.
+	 * Converts from `ResultAsync<T, E>` to `OptionAsync<E>`, discarding the success value if any.
 	 *
-	 * @returns An `AsyncOption` containing the error value if this is `Err`, or `None` if this is `Ok`.
+	 * @returns An `OptionAsync` containing the error value if this is `Err`, or `None` if this is `Ok`.
 	 *
 	 * @example
 	 * ```typescript
-	 * const x: AsyncResult<number, string> = AsyncOk(2);
+	 * const x: ResultAsync<number, string> = OkAsync(2);
 	 * assertEquals(await x.err(), None);
 	 *
-	 * const x: AsyncResult<number, string> = AsyncErr("Nothing here");
+	 * const x: ResultAsync<number, string> = ErrAsync("Nothing here");
 	 * assertEquals(await x.err(), Some("Nothing here"));
 	 * ```
 	 */
-	public err(): AsyncOption<E> {
-		return new AsyncOption(this.then((result) => result.err()));
+	public err(): OptionAsync<E> {
+		return new OptionAsync(this.then((result) => result.err()));
 	}
 
 	/**
@@ -351,25 +351,25 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 *
 	 * @example
 	 * ```typescript
-	 * let x: AsyncResult<number, string> = AsyncOk(2)
-	 * let y: AsyncResult<string, string> = AsyncErr("late error")
+	 * let x: ResultAsync<number, string> = OkAsync(2)
+	 * let y: ResultAsync<string, string> = ErrAsync("late error")
 	 * assertEquals(await x.and(y), Err("late error"))
 	 *
-	 * let x: AsyncResult<number, string> = AsyncErr("early error")
-	 * let y: AsyncResult<string, string> = AsyncOk("foo")
+	 * let x: ResultAsync<number, string> = ErrAsync("early error")
+	 * let y: ResultAsync<string, string> = OkAsync("foo")
 	 * assertEquals(await x.and(y), Err("early error"))
 	 *
-	 * let x: AsyncResult<number, string> = AsyncErr("not a 2")
-	 * let y: AsyncResult<string, string> = AsyncErr("late error")
+	 * let x: ResultAsync<number, string> = ErrAsync("not a 2")
+	 * let y: ResultAsync<string, string> = ErrAsync("late error")
 	 * assertEquals(await x.and(y), Err("not a 2"))
 	 *
-	 * let x: AsyncResult<number, string> = AsyncOk(2)
-	 * let y: AsyncResult<string, string> = AsyncOk("different result type")
+	 * let x: ResultAsync<number, string> = OkAsync(2)
+	 * let y: ResultAsync<string, string> = OkAsync("different result type")
 	 * assertEquals(await x.and(y), Ok("different result type"))
 	 * ```
 	 */
-	public and<U, F>(other: AsyncResult<U, F>): AsyncResult<U, E | F> {
-		return new AsyncResult(
+	public and<U, F>(other: ResultAsync<U, F>): ResultAsync<U, E | F> {
+		return new ResultAsync(
 			this.then((result) => other.then((otherResult) => result.and(otherResult))),
 		);
 	}
@@ -391,9 +391,9 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 *     return Ok((a / b).toString())
 	 * }
 	 *
-	 * assertEquals(await AsyncOk(100).andThen(divideThenToString), Ok("50"))
-	 * assertEquals(await AsyncOk(100).andThen(divideThenToString), Err("division by zero"))
-	 * assertEquals(await AsyncErr("not a number").andThen(divideThenToString), Err("not a number"))
+	 * assertEquals(await OkAsync(100).andThen(divideThenToString), Ok("50"))
+	 * assertEquals(await OkAsync(100).andThen(divideThenToString), Err("division by zero"))
+	 * assertEquals(await ErrAsync("not a number").andThen(divideThenToString), Err("not a number"))
 	 *
 	 * // Often used to chain fallible operations that may return Err
 	 * const json = await Result.fromThrowableAsync(async () => {
@@ -411,8 +411,8 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 * assertEquals(shouldFail.isErr(), true)
 	 * ```
 	 */
-	public andThen<U, F>(f: (value: T) => Result<U, F>): AsyncResult<U, E | F> {
-		return new AsyncResult(this.then((result) => result.andThen((value) => f(value))));
+	public andThen<U, F>(f: (value: T) => Result<U, F>): ResultAsync<U, E | F> {
+		return new ResultAsync(this.then((result) => result.andThen((value) => f(value))));
 	}
 
 	/**
@@ -432,9 +432,9 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 *     return Ok((a / b).toString())
 	 * }
 	 *
-	 * assertEquals(await AsyncOk(100, 2).andThenAsync(divideThenToString), Ok("50"))
-	 * assertEquals(await AsyncOk(100, 0).andThenAsync(divideThenToString), Err("division by zero"))
-	 * assertEquals(await AsyncErr("not a number").andThenAsync(divideThenToString), Err("not a number"))
+	 * assertEquals(await OkAsync(100, 2).andThenAsync(divideThenToString), Ok("50"))
+	 * assertEquals(await OkAsync(100, 0).andThenAsync(divideThenToString), Err("division by zero"))
+	 * assertEquals(await ErrAsync("not a number").andThenAsync(divideThenToString), Err("not a number"))
 	 *
 	 * // Often used to chain fallible operations that may return Err
 	 * const json = await Result.fromThrowableAsync(async () => {
@@ -452,8 +452,8 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 * assertEquals(shouldFail.isErr(), true)
 	 * ```
 	 */
-	public andThenAsync<U, F>(f: (value: T) => Promise<Result<U, F>>): AsyncResult<U, E | F> {
-		return new AsyncResult(this.then((result) => result.andThenAsync((value) => f(value))));
+	public andThenAsync<U, F>(f: (value: T) => Promise<Result<U, F>>): ResultAsync<U, E | F> {
+		return new ResultAsync(this.then((result) => result.andThenAsync((value) => f(value))));
 	}
 
 	/**
@@ -469,7 +469,7 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 *
 	 * @example
 	 * ```typescript
-	 * const x: AsyncResult<number, string> = AsyncErr("emergency failure");
+	 * const x: ResultAsync<number, string> = ErrAsync("emergency failure");
 	 * await x.expect("Testing expect"); // throws Panic: Testing expect: emergency failure
 	 * ```
 	 *
@@ -499,7 +499,7 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 *
 	 * @example
 	 * ```typescript
-	 * const x: AsyncResult<number, string> = AsyncOk(10);
+	 * const x: ResultAsync<number, string> = OkAsync(10);
 	 * await x.expectErr("Testing expectErr"); // throws Panic: Testing expectErr: 10
 	 * ```
 	 */
@@ -508,32 +508,32 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	}
 
 	/**
-	 * Converts from `AsyncResult<Result<T, F>, E>` to `AsyncResult<T, E | F>`.
+	 * Converts from `ResultAsync<Result<T, F>, E>` to `ResultAsync<T, E | F>`.
 	 *
-	 * @returns A flattened `AsyncResult<T, E | F>`.
+	 * @returns A flattened `ResultAsync<T, E | F>`.
 	 *
 	 * @example
 	 * ```typescript
 	 * // Basic usage:
-	 * let x: AsyncResult<Result<string, number>, number> = AsyncOk(Ok("hello"));
+	 * let x: ResultAsync<Result<string, number>, number> = OkAsync(Ok("hello"));
 	 * assertEquals(await x.flatten(), Ok("hello"));
 	 *
-	 * let x: AsyncResult<Result<string, number>, number> = AsyncOk(Err(6));
+	 * let x: ResultAsync<Result<string, number>, number> = OkAsync(Err(6));
 	 * assertEquals(await x.flatten(), Err(6));
 	 *
-	 * let x: AsyncResult<Result<string, number>, number> = AsyncErr(6);
+	 * let x: ResultAsync<Result<string, number>, number> = ErrAsync(6);
 	 * assertEquals(await x.flatten(), Err(6));
 	 *
 	 * // Flattening only removes one level of nesting at a time:
-	 * let x: AsyncResult<Result<Result<string, number>, number>, number> = AsyncOk(Ok(Ok("hello")));
+	 * let x: ResultAsync<Result<Result<string, number>, number>, number> = OkAsync(Ok(Ok("hello")));
 	 * assertEquals(await x.flatten(), Ok(Ok("hello")));
 	 * assertEquals(await x.flatten().flatten(), Ok("hello"));
 	 * ```
 	 */
 	public flatten<R extends Result<any, any>>(
-		this: AsyncResult<R, E>,
-	): AsyncResult<InferOk<R>, InferErr<R> | E> {
-		return new AsyncResult(this.then((result) => result.flatten()));
+		this: ResultAsync<R, E>,
+	): ResultAsync<InferOk<R>, InferErr<R> | E> {
+		return new ResultAsync(this.then((result) => result.flatten()));
 	}
 
 	/**
@@ -552,8 +552,8 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 *     .expect("failed to parse number");
 	 * ```
 	 */
-	public inspect(f: (value: T) => void): AsyncResult<T, E> {
-		return new AsyncResult(this.then((result) => result.inspect(f)));
+	public inspect(f: (value: T) => void): ResultAsync<T, E> {
+		return new ResultAsync(this.then((result) => result.inspect(f)));
 	}
 
 	/**
@@ -572,8 +572,8 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 *     .expect("failed to parse number");
 	 * ```
 	 */
-	public inspectAsync(f: (value: T) => Promise<void>): AsyncResult<T, E> {
-		return new AsyncResult(this.then((result) => result.inspectAsync(f)));
+	public inspectAsync(f: (value: T) => Promise<void>): ResultAsync<T, E> {
+		return new ResultAsync(this.then((result) => result.inspectAsync(f)));
 	}
 
 	/**
@@ -592,8 +592,8 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 *     .map(async (contents) => processContents(contents));
 	 * ```
 	 */
-	public inspectErr(f: (error: E) => void): AsyncResult<T, E> {
-		return new AsyncResult(this.then((result) => result.inspectErr(f)));
+	public inspectErr(f: (error: E) => void): ResultAsync<T, E> {
+		return new ResultAsync(this.then((result) => result.inspectErr(f)));
 	}
 
 	/**
@@ -611,26 +611,26 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 *     .map((contents) => processContents(contents));
 	 * ```
 	 */
-	public inspectErrAsync(f: (error: E) => Promise<void>): AsyncResult<T, E> {
-		return new AsyncResult(this.then((result) => result.inspectErrAsync(f)));
+	public inspectErrAsync(f: (error: E) => Promise<void>): ResultAsync<T, E> {
+		return new ResultAsync(this.then((result) => result.inspectErrAsync(f)));
 	}
 
 	/**
-	 * Maps a `AsyncResult<T, E>` to `AsyncResult<U, E>` by applying a function to a contained `Ok` value,
+	 * Maps a `ResultAsync<T, E>` to `ResultAsync<U, E>` by applying a function to a contained `Ok` value,
 	 * leaving an `Err` value untouched.
 	 *
 	 * This function can be used to compose the results of two functions.
 	 *
 	 * @param f - The function to apply to the contained value
-	 * @returns A new AsyncResult with the function applied to the contained value if `Ok`,
+	 * @returns A new ResultAsync with the function applied to the contained value if `Ok`,
 	 *          or the original error if `Err`
 	 *
 	 * @example
 	 * ```typescript
-	 * const x = await AsyncOk(2).map((x) => x.toString());
+	 * const x = await OkAsync(2).map((x) => x.toString());
 	 * assertEquals(x, Ok("2"));
 	 *
-	 * const x = await AsyncErr("error").map((x) => x.toString());
+	 * const x = await ErrAsync("error").map((x) => x.toString());
 	 * assertEquals(x, Err("error"));
 	 *
 	 * // Processing lines of numbers:
@@ -646,26 +646,26 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 * }
 	 * ```
 	 */
-	public map<U>(f: (value: T) => U): AsyncResult<U, E> {
-		return new AsyncResult(this.then((result) => result.map(f)));
+	public map<U>(f: (value: T) => U): ResultAsync<U, E> {
+		return new ResultAsync(this.then((result) => result.map(f)));
 	}
 
 	/**
-	 * Maps a `AsyncResult<T, E>` to `AsyncResult<U, E>` by applying an async function to a contained `Ok` value,
+	 * Maps a `ResultAsync<T, E>` to `ResultAsync<U, E>` by applying an async function to a contained `Ok` value,
 	 * leaving an `Err` value untouched.
 	 *
 	 * This function can be used to compose the results of two functions.
 	 *
 	 * @param f - The async function to apply to the contained value
-	 * @returns A new AsyncResult with the async function applied to the contained value if `Ok`,
+	 * @returns A new ResultAsync with the async function applied to the contained value if `Ok`,
 	 *          or the original error if `Err`
 	 *
 	 * @example
 	 * ```typescript
-	 * const x = await AsyncOk(2).mapAsync(async (x) => x.toString());
+	 * const x = await OkAsync(2).mapAsync(async (x) => x.toString());
 	 * assertEquals(x, Ok("2"));
 	 *
-	 * const x = await AsyncErr("error").mapAsync(async (x) => x.toString());
+	 * const x = await ErrAsync("error").mapAsync(async (x) => x.toString());
 	 * assertEquals(x, Err("error"));
 	 *
 	 * // Processing lines of numbers:
@@ -681,12 +681,12 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 * }
 	 * ```
 	 */
-	public mapAsync<U>(f: (value: T) => Promise<U>): AsyncResult<U, E> {
-		return new AsyncResult(this.then((result) => result.mapAsync(f)));
+	public mapAsync<U>(f: (value: T) => Promise<U>): ResultAsync<U, E> {
+		return new ResultAsync(this.then((result) => result.mapAsync(f)));
 	}
 
 	/**
-	 * Maps a `AsyncResult<T, E>` to `AsyncResult<T, F>` by applying a function to a contained `Err` value,
+	 * Maps a `ResultAsync<T, E>` to `ResultAsync<T, F>` by applying a function to a contained `Err` value,
 	 * leaving an `Ok` value untouched.
 	 *
 	 * This function can be used to pass through a successful result while handling an error.
@@ -699,40 +699,40 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 * ```typescript
 	 * const stringify = (x: number): string => `error code: ${x}`;
 	 *
-	 * const x: AsyncResult<number, number> = AsyncOk(2);
+	 * const x: ResultAsync<number, number> = OkAsync(2);
 	 * assertEquals(await x.mapErr(stringify), Ok(2));
 	 *
-	 * const x: AsyncResult<number, number> = AsyncErr(13);
+	 * const x: ResultAsync<number, number> = ErrAsync(13);
 	 * assertEquals(await x.mapErr(stringify), Err("error code: 13"));
 	 * ```
 	 */
-	public mapErr<F>(f: (error: E) => F): AsyncResult<T, F> {
-		return new AsyncResult(this.then((result) => result.mapErr(f)));
+	public mapErr<F>(f: (error: E) => F): ResultAsync<T, F> {
+		return new ResultAsync(this.then((result) => result.mapErr(f)));
 	}
 
 	/**
-	 * Maps a `AsyncResult<T, E>` to `AsyncResult<T, F>` by applying an async function to a contained `Err` value,
+	 * Maps a `ResultAsync<T, E>` to `ResultAsync<T, F>` by applying an async function to a contained `Err` value,
 	 * leaving an `Ok` value untouched.
 	 *
 	 * This function can be used to pass through a successful result while handling an error.
 	 *
 	 * @param f - The async function to apply to the contained error
-	 * @returns A new AsyncResult with the async function applied to the contained error if `Err`,
+	 * @returns A new ResultAsync with the async function applied to the contained error if `Err`,
 	 *          or the original value if `Ok`
 	 *
 	 * @example
 	 * ```typescript
 	 * const stringify = async (x: number): Promise<string> => `error code: ${x}`;
 	 *
-	 * const x: AsyncResult<number, number> = AsyncOk(2);
+	 * const x: ResultAsync<number, number> = OkAsync(2);
 	 * assertEquals(await x.mapErrAsync(stringify), Ok(2));
 	 *
-	 * const x: AsyncResult<number, number> = AsyncErr(13);
+	 * const x: ResultAsync<number, number> = ErrAsync(13);
 	 * assertEquals(await x.mapErrAsync(stringify), Err("error code: 13"));
 	 * ```
 	 */
-	public mapErrAsync<F>(f: (error: E) => Promise<F>): AsyncResult<T, F> {
-		return new AsyncResult(this.then((result) => result.mapErrAsync(f)));
+	public mapErrAsync<F>(f: (error: E) => Promise<F>): ResultAsync<T, F> {
+		return new ResultAsync(this.then((result) => result.mapErrAsync(f)));
 	}
 
 	/**
@@ -744,10 +744,10 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 *
 	 * @example
 	 * ```typescript
-	 * let x: AsyncResult<string, string> = AsyncOk("foo")
+	 * let x: ResultAsync<string, string> = OkAsync("foo")
 	 * assertEquals(await x.mapOr(42, (v) => v.length), 3)
 	 *
-	 * let x: AsyncResult<string, string> = AsyncErr("bar")
+	 * let x: ResultAsync<string, string> = ErrAsync("bar")
 	 * assertEquals(await x.mapOr(42, (v) => v.length), 42)
 	 * ```
 	 */
@@ -764,10 +764,10 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 *
 	 * @example
 	 * ```typescript
-	 * let x: AsyncResult<string, string> = AsyncOk("foo")
+	 * let x: ResultAsync<string, string> = OkAsync("foo")
 	 * assertEquals(await x.mapOrAsync(42, async (v) => v.length), 3)
 	 *
-	 * let x: AsyncResult<string, string> = AsyncErr("bar")
+	 * let x: ResultAsync<string, string> = ErrAsync("bar")
 	 * assertEquals(await x.mapOrAsync(42, async (v) => v.length), 42)
 	 * ```
 	 */
@@ -776,7 +776,7 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	}
 
 	/**
-	 * Maps a `AsyncResult<T, E>` to `A | B` by applying fallback function `defaultValue` to a contained `Err` value,
+	 * Maps a `ResultAsync<T, E>` to `A | B` by applying fallback function `defaultValue` to a contained `Err` value,
 	 * or function `f` to a contained `Ok` value.
 	 *
 	 * This function can be used to unpack a successful result while handling an error.
@@ -789,7 +789,7 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 * ```typescript
 	 * const k = 21;
 	 *
-	 * let x: AsyncResult<string, string> = AsyncOk("foo");
+	 * let x: ResultAsync<string, string> = OkAsync("foo");
 	 * assertEquals(await x.mapOrElse((e) => k * 2, (v) => v.length), 3);
 	 *
 	 * let x: Result<string, string> = Err("bar");
@@ -804,7 +804,7 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	}
 
 	/**
-	 * Maps a `AsyncResult<T, E>` to `Promise<A | B>` by applying fallback function `defaultValue` to a contained `Err` value,
+	 * Maps a `ResultAsync<T, E>` to `Promise<A | B>` by applying fallback function `defaultValue` to a contained `Err` value,
 	 * or function `f` to a contained `Ok` value.
 	 *
 	 * This function can be used to unpack a successful result while handling an error.
@@ -817,10 +817,10 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 * ```typescript
 	 * const k = 21;
 	 *
-	 * let x: AsyncResult<string, string> = AsyncOk("foo");
+	 * let x: ResultAsync<string, string> = OkAsync("foo");
 	 * assertEquals(await x.mapOrElseAsync(async (e) => k * 2, (v) => v.length), 3);
 	 *
-	 * let x: AsyncResult<string, string> = AsyncErr("bar");
+	 * let x: ResultAsync<string, string> = ErrAsync("bar");
 	 * assertEquals(await x.mapOrElseAsync(async (e) => k * 2, async (v) => v.length), 42);
 	 * ```
 	 */
@@ -839,25 +839,25 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 *
 	 * @example
 	 * ```typescript
-	 * let x: AsyncResult<number, string> = AsyncOk(2)
-	 * let y: AsyncResult<number, string> = AsyncErr("late error")
+	 * let x: ResultAsync<number, string> = OkAsync(2)
+	 * let y: ResultAsync<number, string> = ErrAsync("late error")
 	 * assertEquals(await x.or(y), Ok(2))
 	 *
-	 * let x: AsyncResult<number, string> = AsyncErr("early error")
-	 * let y: AsyncResult<number, string> = AsyncOk(2)
+	 * let x: ResultAsync<number, string> = ErrAsync("early error")
+	 * let y: ResultAsync<number, string> = OkAsync(2)
 	 * assertEquals(await x.or(y), Ok(2))
 	 *
-	 * let x: AsyncResult<number, string> = AsyncErr("not a 2")
-	 * let y: AsyncResult<number, string> = AsyncErr("late error")
+	 * let x: ResultAsync<number, string> = ErrAsync("not a 2")
+	 * let y: ResultAsync<number, string> = ErrAsync("late error")
 	 * assertEquals(await x.or(y), Err("late error"))
 	 *
-	 * let x: AsyncResult<number, string> = AsyncOk(2)
-	 * let y: AsyncResult<number, string> = AsyncOk(100)
+	 * let x: ResultAsync<number, string> = OkAsync(2)
+	 * let y: ResultAsync<number, string> = OkAsync(100)
 	 * assertEquals(await x.or(y), Ok(2))
 	 * ```
 	 */
-	public or<U, F>(other: AsyncResult<U, F>): AsyncResult<T | U, F> {
-		return new AsyncResult(
+	public or<U, F>(other: ResultAsync<U, F>): ResultAsync<T | U, F> {
+		return new ResultAsync(
 			this.then((thisResult) => other.then((otherResult) => thisResult.or(otherResult))),
 		);
 	}
@@ -875,14 +875,14 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 * function sq(x: number): Result<number, number> { return Ok(x * x) }
 	 * function err(x: number): Result<number, number> { return Err(x) }
 	 *
-	 * assertEquals(await AsyncOk(2).orElse(sq).orElse(sq), Ok(2))
-	 * assertEquals(await AsyncOk(2).orElse(err).orElse(sq), Ok(2))
-	 * assertEquals(await AsyncErr(3).orElse(sq).orElse(err), Ok(9))
-	 * assertEquals(await AsyncErr(3).orElse(err).orElse(err), Err(3))
+	 * assertEquals(await OkAsync(2).orElse(sq).orElse(sq), Ok(2))
+	 * assertEquals(await OkAsync(2).orElse(err).orElse(sq), Ok(2))
+	 * assertEquals(await ErrAsync(3).orElse(sq).orElse(err), Ok(9))
+	 * assertEquals(await ErrAsync(3).orElse(err).orElse(err), Err(3))
 	 * ```
 	 */
-	public orElse<U, F>(f: (error: E) => Result<U, F>): AsyncResult<T | U, F> {
-		return new AsyncResult(this.then((thisResult) => thisResult.orElse((error) => f(error))));
+	public orElse<U, F>(f: (error: E) => Result<U, F>): ResultAsync<T | U, F> {
+		return new ResultAsync(this.then((thisResult) => thisResult.orElse((error) => f(error))));
 	}
 
 	/**
@@ -898,14 +898,14 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 * async function sq(x: number): Promise<Result<number, number>> { return Ok(x * x) }
 	 * async function err(x: number): Promise<Result<number, number>> { return Err(x) }
 	 *
-	 * assertEquals(await AsyncOk(2).orElseAsync(sq).orElseAsync(sq), Ok(2))
-	 * assertEquals(await AsyncOk(2).orElseAsync(err).orElseAsync(sq), Ok(2))
-	 * assertEquals(await AsyncErr(3).orElseAsync(sq).orElseAsync(err), Ok(9))
-	 * assertEquals(await AsyncErr(3).orElseAsync(err).orElseAsync(err), Err(3))
+	 * assertEquals(await OkAsync(2).orElseAsync(sq).orElseAsync(sq), Ok(2))
+	 * assertEquals(await OkAsync(2).orElseAsync(err).orElseAsync(sq), Ok(2))
+	 * assertEquals(await ErrAsync(3).orElseAsync(sq).orElseAsync(err), Ok(9))
+	 * assertEquals(await ErrAsync(3).orElseAsync(err).orElseAsync(err), Err(3))
 	 * ```
 	 */
-	public orElseAsync<U, F>(f: (error: E) => Promise<Result<U, F>>): AsyncResult<T | U, F> {
-		return new AsyncResult(
+	public orElseAsync<U, F>(f: (error: E) => Promise<Result<U, F>>): ResultAsync<T | U, F> {
+		return new ResultAsync(
 			this.then((thisResult) => thisResult.orElseAsync((error) => f(error))),
 		);
 	}
@@ -920,10 +920,10 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 * ```typescript
 	 * const defaultValue = 2
 	 *
-	 * let x: AsyncResult<number, string> = AsyncOk(9)
+	 * let x: ResultAsync<number, string> = OkAsync(9)
 	 * assertEquals(await x.unwrapOr(defaultValue), 9)
 	 *
-	 * let x: AsyncResult<number, string> = AsyncErr("error")
+	 * let x: ResultAsync<number, string> = ErrAsync("error")
 	 * assertEquals(await x.unwrapOr(defaultValue), defaultValue)
 	 * ```
 	 */
@@ -941,8 +941,8 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 * ```typescript
 	 * function count(x: string): number { return x.length }
 	 *
-	 * assertEquals(await AsyncOk(2).unwrapOrElse(count), 2)
-	 * assertEquals(await AsyncErr("foo").unwrapOrElse(count), 3)
+	 * assertEquals(await OkAsync(2).unwrapOrElse(count), 2)
+	 * assertEquals(await ErrAsync("foo").unwrapOrElse(count), 3)
 	 * ```
 	 */
 	public async unwrapOrElse<U>(defaultValue: (error: E) => U): Promise<T | U> {
@@ -959,11 +959,19 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	 * ```typescript
 	 * async function count(x: string): Promise<number> { return x.length }
 	 *
-	 * assertEquals(await AsyncOk(2).unwrapOrElseAsync(count), 2)
-	 * assertEquals(await AsyncErr("foo").unwrapOrElseAsync(count), 3)
+	 * assertEquals(await OkAsync(2).unwrapOrElseAsync(count), 2)
+	 * assertEquals(await ErrAsync("foo").unwrapOrElseAsync(count), 3)
 	 * ```
 	 */
 	public async unwrapOrElseAsync<U>(defaultValue: (error: E) => Promise<U>): Promise<T | U> {
 		return (await this).unwrapOrElseAsync(defaultValue);
 	}
+}
+
+export function OkAsync<T, E = never>(value: T): ResultAsync<T, E> {
+	return new ResultAsync(Promise.resolve(Ok(value)));
+}
+
+export function ErrAsync<E, T = never>(error: E): ResultAsync<T, E> {
+	return new ResultAsync(Promise.resolve(Err(error)));
 }

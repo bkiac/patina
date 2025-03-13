@@ -2,13 +2,13 @@ import { test } from "@std/testing/bdd";
 import { expectTypeOf } from "expect-type";
 import { expect } from "@std/expect";
 import {
-	AsyncErr,
-	AsyncOk,
-	AsyncResult,
 	Err,
+	ErrAsync,
 	Ok,
+	OkAsync,
 	Panic,
 	Result,
+	ResultAsync,
 	tryBlock,
 	tryBlockAsync,
 } from "../src/mod.ts";
@@ -89,38 +89,38 @@ test("tryBlockAsync", async () => {
 		const y = yield* oky;
 		return Ok(x + y);
 	});
-	expectTypeOf(block5).toEqualTypeOf<AsyncResult<number, string>>();
+	expectTypeOf(block5).toEqualTypeOf<ResultAsync<number, string>>();
 	await expect(block5.expect("ok")).resolves.toEqual(2);
 
 	const block1 = tryBlockAsync(async function* () {
 		yield* Err("error");
-		yield* AsyncErr(2);
+		yield* ErrAsync(2);
 		if (Math.random() > 0.5) {
 			return Ok("foo");
 		} else {
 			return Ok(0);
 		}
 	});
-	expectTypeOf(block1).toEqualTypeOf<AsyncResult<string | number, string | number>>();
+	expectTypeOf(block1).toEqualTypeOf<ResultAsync<string | number, string | number>>();
 
 	const block6 = tryBlockAsync(async function* () {
-		const okx: AsyncResult<number, string> = AsyncOk(1);
+		const okx: ResultAsync<number, string> = OkAsync(1);
 		const x = yield* okx;
-		const oky: AsyncResult<number, string> = AsyncOk(1);
+		const oky: ResultAsync<number, string> = OkAsync(1);
 		const y = yield* oky;
 		return Ok(x + y);
 	});
-	expectTypeOf(block6).toEqualTypeOf<AsyncResult<number, string>>();
+	expectTypeOf(block6).toEqualTypeOf<ResultAsync<number, string>>();
 	await expect(block6.expect("ok")).resolves.toEqual(2);
 
 	const block7 = tryBlockAsync(async function* () {
-		const okx: AsyncResult<number, string> = AsyncOk(1);
+		const okx: ResultAsync<number, string> = OkAsync(1);
 		const x = yield* okx;
-		const oky: AsyncResult<number, string> = AsyncErr("error");
+		const oky: ResultAsync<number, string> = ErrAsync("error");
 		const y = yield* oky;
 		return Ok(x + y);
 	});
-	expectTypeOf(block7).toEqualTypeOf<AsyncResult<number, string>>();
+	expectTypeOf(block7).toEqualTypeOf<ResultAsync<number, string>>();
 	await expect(block7.expectErr("err")).resolves.toEqual("error");
 
 	// Do not catch panic

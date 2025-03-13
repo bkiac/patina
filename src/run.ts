@@ -1,13 +1,11 @@
-import { AsyncResult } from "./async_result.ts";
+import { ResultAsync } from "./result_async.ts";
 import type { Result } from "./result.ts";
 import type { InferErr, InferOk } from "./util.ts";
 
 /**
  * Runs an async function and returns a `Result<T, E>`.
  *
- * This is useful for running async functions that return `Promise<Result<T, E>>` or `AsyncResult<T, E>`.
- *
- * Alternatively you can use `asyncFn` to wrap the function or `tryBlockAsync` to wrap the function in a try/catch block.
+ * This is useful for running async functions that return `Promise<Result<T, E>>` or `ResultAsync<T, E>`.
  *
  * @param fn - The async function to run.
  * @returns A `Result<T, E>` that is `Ok(value)` if the async function resolves to an `Ok` variant, otherwise `Err(error)`.
@@ -23,8 +21,8 @@ import type { InferErr, InferOk } from "./util.ts";
  * assertEquals(result.isErr(), true);
  * ```
  */
-export function runAsync<R extends Promise<Result<any, any>> | AsyncResult<any, any>>(
+export function runAsync<R extends Promise<Result<any, any>> | ResultAsync<any, any>>(
 	fn: () => R,
-): AsyncResult<InferOk<Awaited<R>>, InferErr<Awaited<R>>> {
-	return new AsyncResult(fn());
+): ResultAsync<InferOk<Awaited<R>>, InferErr<Awaited<R>>> {
+	return new ResultAsync(fn());
 }

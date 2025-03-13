@@ -5,8 +5,8 @@
 
 import { type Err, type Ok, type Result, ResultImpl } from "./result.ts";
 import { type Option, OptionImpl, type Some } from "./option.ts";
-import { AsyncResult } from "./async_result.ts";
-import { AsyncOption } from "./async_option.ts";
+import { ResultAsync } from "./result_async.ts";
+import { OptionAsync } from "./option_async.ts";
 
 /**
  * Infers the `Ok` type from a `Result`.
@@ -31,10 +31,10 @@ export function isResult<T, E>(value: unknown): value is Result<T, E> {
 }
 
 /**
- * Checks if a value is an `AsyncResult`.
+ * Checks if a value is an `ResultAsync`.
  */
-export function isAsyncResult<T, E>(value: unknown): value is AsyncResult<T, E> {
-	return value instanceof AsyncResult;
+export function isResultAsync<T, E>(value: unknown): value is ResultAsync<T, E> {
+	return value instanceof ResultAsync;
 }
 
 /**
@@ -45,8 +45,8 @@ export function isOption<T>(value: unknown): value is Option<T> {
 }
 
 /**
- * Checks if a value is an `AsyncOption`.
+ * Checks if a value is an `OptionAsync`.
  */
-export function isAsyncOption<T>(value: unknown): value is AsyncOption<T> {
-	return value instanceof AsyncOption;
+export function isOptionAsync<T>(value: unknown): value is OptionAsync<T> {
+	return value instanceof OptionAsync;
 }
