@@ -1,6 +1,8 @@
 {
 	"name": "@patina/core",
-	"version": "4.0.0",
+	"version": "4.0.0-rc.0",
+	"license": "MIT",
+	"exports": "./src/mod.ts",
 	"compilerOptions": {
 		"strict": true,
 		"allowUnusedLabels": false,
@@ -40,7 +42,7 @@
 		"@std/expect": "jsr:@std/expect@1.0.7",
 		"expect-type": "npm:expect-type@1.1.0"
 	},
-	"exports": "./src/mod.ts",
+
 	"publish": {
 		"include": ["src/**/*.ts", "package.json", "README.md", "LICENSE"]
 	}
