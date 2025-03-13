@@ -62,8 +62,8 @@ export class OptionImpl<T> {
 		return this._some ? `Some(${String(this._value)})` : "None";
 	}
 
-	public [Symbol.for("nodejs.util.inspect.custom")](): string {
-		return this.toString();
+	public [Symbol.for("nodejs.util.inspect.custom")](): T | null {
+		return this.toJSON();
 	}
 
 	/**

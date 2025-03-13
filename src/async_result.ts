@@ -7,6 +7,8 @@ import { AsyncOption } from "./async_option.ts";
 import { Err, Ok, type Result, type ResultMatch, type ResultMatchAsync } from "./result.ts";
 import type { InferErr, InferOk } from "./util.ts";
 
+type WrappedResult<T, E> = Promise<Result<T, E>> | PromiseLike<Result<T, E>> | AsyncResult<T, E>;
+
 /**
  * A promise that resolves to a `Result`.
  *
@@ -176,11 +178,9 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 		);
 	}
 
-	public readonly promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>> | AsyncResult<T, E>;
+	public readonly promise: WrappedResult<T, E>;
 
-	public constructor(
-		promise: Promise<Result<T, E>> | PromiseLike<Result<T, E>> | AsyncResult<T, E>,
-	) {
+	public constructor(promise: WrappedResult<T, E>) {
 		this.promise = promise;
 	}
 
@@ -189,7 +189,7 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 	}
 
 	public toJSON(): {
-		AsyncResult: Promise<Result<T, E>> | PromiseLike<Result<T, E>> | AsyncResult<T, E>;
+		AsyncResult: WrappedResult<T, E>;
 	} {
 		return { AsyncResult: this.promise };
 	}
@@ -198,8 +198,10 @@ export class AsyncResult<T, E> implements PromiseLike<Result<T, E>> {
 		return `AsyncResult(${this.promise.toString()})`;
 	}
 
-	public [Symbol.for("nodejs.util.inspect.custom")](): string {
-		return this.toString();
+	public [Symbol.for("nodejs.util.inspect.custom")](): {
+		AsyncResult: WrappedResult<T, E>;
+	} {
+		return this.toJSON();
 	}
 
 	/**

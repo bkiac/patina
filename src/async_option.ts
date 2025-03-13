@@ -48,8 +48,10 @@ export class AsyncOption<T> implements PromiseLike<Option<T>> {
 		return `AsyncOption(${this.promise.toString()})`;
 	}
 
-	public [Symbol.for("nodejs.util.inspect.custom")](): string {
-		return this.toString();
+	public [Symbol.for("nodejs.util.inspect.custom")](): {
+		AsyncOption: OptionPromiseType<T>;
+	} {
+		return this.toJSON();
 	}
 
 	public then<A, B>(

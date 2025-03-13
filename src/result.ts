@@ -44,8 +44,8 @@ export class ResultImpl<T, E> {
 		return `Err(${str})`;
 	}
 
-	public [Symbol.for("nodejs.util.inspect.custom")](): string {
-		return this.toString();
+	public [Symbol.for("nodejs.util.inspect.custom")](): { Ok: T } | { Err: E } {
+		return this.toJSON();
 	}
 
 	/**
@@ -1184,3 +1184,5 @@ export namespace Result {
 		return new AsyncResult(safe());
 	}
 }
+
+console.log(Ok(new Map([["a", 1]])));
